@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <title>HVAC & Advanced Refrigeration Master Exam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html { -webkit-text-size-adjust: 100%; }
+        body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background-color: #f8fafc;
+               padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+        * { -webkit-tap-highlight-color: transparent; }
+        button, .option-btn, summary { touch-action: manipulation; }
+        /* 16px minimum stops iOS Safari from zooming in when a field is focused */
+        input[type="text"] { font-size: 16px !important; }
+        input[type="checkbox"] { width: 1.4rem; height: 1.4rem; flex-shrink: 0; }
+        .option-btn { transition: background-color 0.15s ease-in-out; min-height: 3.25rem; -webkit-user-select: none; user-select: none; }
+        @media (hover: hover) { .option-btn:hover { background-color: #e2e8f0; } }
+        .tap-btn { min-height: 2.75rem; }
+        .option-selected { background-color: #2563eb !important; color: white !important; border-color: #1d4ed8 !important; }
+        .hide { display: none !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .nav-dot { width: 2rem; height: 2rem; font-size: .75rem; }
+    </style>
+</head>
+<body class="min-h-screen flex items-start sm:items-center justify-center p-0 sm:p-4 text-slate-800">
+
+<div class="bg-white sm:rounded-2xl shadow-2xl w-full max-w-5xl min-h-screen sm:min-h-[600px] flex flex-col relative border-0 sm:border border-slate-200">
+
+    <!-- Header -->
+    <div class="bg-slate-900 text-white p-5 flex flex-col md:flex-row justify-between items-center shrink-0">
+        <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight">HVAC & Refrigeration Master Exam</h1>
+            <p class="text-slate-400 text-sm mt-1">60 Questions | Advanced Diagnostics & Theory</p>
+        </div>
+        <div id="timer-container" class="mt-4 md:mt-0 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 flex items-center space-x-2 hide shadow-inner" role="timer" aria-live="off">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="timer-text" class="text-xl font-mono font-bold text-amber-400 tracking-wider">60:00</span>
+        </div>
+    </div>
+
+    <!-- Registration -->
+    <div id="registration-screen" class="flex-1 flex flex-col items-center justify-center p-5 md:p-10">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-2">Technician Registration</h2>
+                <p class="text-slate-500">Enter your details to begin the 60-minute timed examination.</p>
+            </div>
+            <form id="registration-form" action="javascript:void(0)" class="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
+                <div>
+                    <label for="user-name" class="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+                    <input type="text" id="user-name" required autocomplete="name" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" placeholder="Jane Doe">
+                </div>
+                <div>
+                    <label for="user-title" class="block text-sm font-semibold text-slate-700 mb-1">Job Title</label>
+                    <input type="text" id="user-title" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" placeholder="Senior Technician">
+                </div>
+                <div>
+                    <label for="user-branch" class="block text-sm font-semibold text-slate-700 mb-1">Branch Location</label>
+                    <input type="text" id="user-branch" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" placeholder="Dallas, TX">
+                </div>
+                <div>
+                    <label for="user-empid" class="block text-sm font-semibold text-slate-700 mb-1">Employee ID</label>
+                    <input type="text" id="user-empid" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white" placeholder="EMP-12345">
+                </div>
+
+                <div class="text-xs text-slate-600 bg-blue-50 border border-blue-200 rounded-lg p-3 leading-relaxed">
+                    <strong>Before you begin:</strong> The timer cannot be paused and keeps running if you refresh the page.
+                    Questions and answer order are randomized. When you submit, your name, title, branch, employee ID,
+                    score and time will be emailed to the exam administrator.
+                </div>
+
+                <label class="flex items-start space-x-2 text-sm text-slate-700">
+                    <input type="checkbox" id="consent" required class="mt-1">
+                    <span>I understand and agree that my results will be sent to the exam administrator.</span>
+                </label>
+
+                <div id="js-warning" style="border:2px solid #dc2626;background:#fef2f2;color:#991b1b;border-radius:8px;padding:12px;font-size:14px;line-height:1.4;">
+                    <strong>The exam cannot start in this view.</strong>
+                    <span id="js-warning-text">This page is open in a preview that does not run the exam (for example a file or attachment preview). Open it in Safari or Chrome from a web link instead.</span>
+                </div>
+                <button type="submit" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-8 rounded-lg shadow-md transition focus:ring-4 focus:ring-blue-300">
+                    Start 60-Minute Exam
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quiz -->
+    <div id="quiz-screen" class="flex-1 flex flex-col p-4 md:p-8 hide bg-white">
+        <div class="mb-5 shrink-0">
+            <div class="flex justify-between text-sm text-slate-500 font-semibold mb-2">
+                <span id="question-tracker">Question 1 of 60</span>
+                <span id="answered-tracker">0 Answered</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col justify-start min-h-[280px]">
+            <div class="flex items-start justify-between gap-3 mb-6">
+                <h3 id="question-text" class="text-lg md:text-xl font-bold text-slate-800 leading-relaxed"></h3>
+                <button id="flag-btn" type="button" onclick="toggleFlag()" class="shrink-0 text-sm px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-amber-50">⚑ Flag</button>
+            </div>
+            <div id="options-container" class="space-y-3" role="radiogroup"></div>
+            <p class="text-xs text-slate-400 mt-4 hidden lg:block">Keyboard: A–D to select, ← → to navigate, F to flag.</p>
+        </div>
+
+        <div id="unanswered-warning" class="mt-4 p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-800 text-sm font-medium hide rounded-r-lg shrink-0"></div>
+
+        <!-- Question navigator -->
+        <details class="mt-6 shrink-0">
+            <summary class="cursor-pointer text-sm font-semibold text-slate-600">Question navigator</summary>
+            <div id="navigator" class="flex flex-wrap gap-1.5 mt-3"></div>
+            <p class="text-xs text-slate-500 mt-2">Blue = answered · White = unanswered · Amber ring = flagged</p>
+        </details>
+
+        <div class="sticky bottom-0 bg-white mt-6 pt-4 pb-3 border-t border-slate-200 flex justify-between items-center gap-3 shrink-0">
+            <button id="prev-btn" onclick="prevQuestion()" class="tap-btn px-5 py-2.5 bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-medium disabled:opacity-50">&larr; Previous</button>
+            <button id="next-btn" onclick="nextQuestion()" class="tap-btn px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg shadow-sm">Next &rarr;</button>
+            <button id="submit-btn" onclick="handleManualSubmit()" class="tap-btn px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-lg shadow-md hide">Submit Exam</button>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-screen" class="flex-1 flex flex-col hide bg-slate-50">
+        <div class="bg-white p-5 md:p-8 border-b border-slate-200 flex flex-col items-center shrink-0">
+            <h2 class="text-3xl font-extrabold text-slate-800 mb-1">Exam Complete</h2>
+            <p class="text-slate-500 font-medium mb-4 text-center" id="student-name-display"></p>
+            <div class="flex items-center space-x-6">
+                <div class="text-center">
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Final Score</div>
+                    <div id="score-display" class="text-5xl md:text-6xl font-black tracking-tighter">0%</div>
+                    <div id="score-fraction" class="text-sm text-slate-500 mt-1"></div>
+                </div>
+                <div class="w-px h-16 bg-slate-200"></div>
+                <div class="text-center">
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-1">Time Taken</div>
+                    <div id="time-taken-display" class="text-3xl md:text-4xl font-bold text-slate-700">00:00</div>
+                </div>
+            </div>
+            <h3 id="result-message" class="text-xl font-bold mt-4"></h3>
+
+            <!-- Email status -->
+            <div id="email-status" class="mt-4 text-sm rounded-lg border px-4 py-3 w-full max-w-xl text-center border-slate-200 bg-slate-50 text-slate-600">Preparing your results email…</div>
+            <div id="email-actions" class="mt-3 flex flex-col sm:flex-row gap-2 justify-center w-full max-w-xl">
+                <!-- A real mail link: its address, subject and message are filled in as soon as the exam is scored -->
+                <a id="mail-link" href="mailto:john.mitchell@equipmentshare.com" onclick="mailLinkTapped()" class="tap-btn flex-1 flex items-center justify-center text-center px-4 py-3 bg-blue-600 text-white font-bold rounded-lg shadow no-underline">✉ Email results to John Mitchell</a>
+                <button type="button" onclick="copyResults()" id="copy-btn" class="tap-btn px-4 py-3 bg-slate-100 border border-slate-300 text-slate-700 font-semibold rounded-lg">Copy results</button>
+            </div>
+            <p id="auto-status" class="text-xs text-slate-500 mt-2 text-center max-w-xl"></p>
+        </div>
+
+        <div class="flex-1 p-5 md:p-8 bg-slate-50">
+            <h3 class="text-2xl font-bold text-slate-800 mb-6">Comprehensive Exam Review</h3>
+            <div id="review-container" class="space-y-6"></div>
+            <div class="mt-8 text-center">
+                <button type="button" id="new-exam-btn" onclick="startNewExam()" class="tap-btn px-5 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium">Start a new exam</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* If the main script fails for any reason, say so on the page instead of failing silently */
+window.addEventListener('error', function (e) {
+    var t = document.getElementById('js-warning-text'), w = document.getElementById('js-warning');
+    if (t && w && e && e.message) { w.style.display = 'block'; t.textContent = 'Something stopped the exam from loading: ' + e.message + '. Please send this message to the exam administrator.'; }
+});
+</script>
+<script>
+/* ===================== CONFIG ===================== */
+const ADMIN_EMAIL = 'john.mitchell@equipmentshare.com';
+const FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + ADMIN_EMAIL;
+const TIME_LIMIT_SECONDS = 60 * 60;
+const PASS_PERCENT = 75;          // must score strictly greater than this (46/60 or better)
+const STORAGE_KEY = 'hvac_exam_active_v2';
+const RESULT_KEY  = 'hvac_exam_last_result_v3';
+const RESULT_KEEP_MS = 30 * 60 * 1000;       // finished results stay on this device for 30 minutes (covers a trip to the Mail app and back)
+// Opens a pre-written email in the technician's mail app the moment they tap Submit.
+// Once automatic delivery is confirmed working (see sendEmail), this can be set to false.
+const OPEN_MAIL_DRAFT_ON_SUBMIT = true;
+// The automatic delivery service refuses pages opened as a local file; it needs a real web address.
+const IS_LOCAL_FILE = location.protocol === 'file:';
+const MAILTO_MAX_LENGTH = 1900;              // keeps the mail link short enough for every mail app
+
+/* ===================== QUESTION BANK (60) ===================== */
+const questions = [
+    // 1-15: Basic Refrigeration Cycle & Thermodynamics
+    { q: "In a standard vapor-compression cycle, what is the primary state and condition of the refrigerant immediately as it exits the condenser?", options: ["High-pressure subcooled liquid", "Low-pressure saturated liquid", "High-pressure superheated vapor", "Low-pressure vapor mixture"], answer: 0 },
+    { q: "What defines 'latent heat'?", options: ["Heat that causes a change in temperature without a change in state", "Heat that causes a change in state without a change in temperature", "The total heat in a substance", "Heat measured by a standard thermometer"], answer: 1 },
+    { q: "What is the primary purpose of subcooling in a refrigeration system?", options: ["To prevent liquid slugging in the compressor", "To ensure a solid column of liquid reaches the metering device", "To increase compressor volumetric efficiency", "To decrease the condenser operating pressure"], answer: 1 },
+    { q: "What is the primary purpose of superheating the refrigerant in the evaporator?", options: ["To maximize heat rejection in the condenser", "To ensure 100% vapor enters the compressor, preventing damage", "To lower the boiling point of the refrigerant", "To clear frost from the evaporator coil"], answer: 1 },
+    { q: "One ton of refrigeration is equivalent to the removal of how many BTUs per hour?", options: ["10,000 BTU/hr", "12,000 BTU/hr", "144 BTU/hr", "288,000 BTU/hr"], answer: 1 },
+    { q: "Flash gas occurs in which part of the refrigeration system?", options: ["In the compressor cylinder", "In the condenser coil", "Immediately after the metering device", "At the exit of the evaporator"], answer: 2 },
+    { q: "What does the term 'saturation temperature' refer to?", options: ["The temperature at which oil separates from refrigerant", "The temperature at which a substance changes state at a given pressure", "The maximum temperature a compressor can safely reach", "The temperature of ambient air entering a condenser"], answer: 1 },
+    { q: "Which of the following is true regarding enthalpy in a refrigeration cycle?", options: ["It remains constant through the compressor", "It remains constant through the metering device (expansion process)", "It decreases in the evaporator", "It represents only sensible heat"], answer: 1 },
+    { q: "The net refrigerating effect (NRE) is determined by:", options: ["Enthalpy entering the evaporator minus enthalpy leaving the evaporator", "Enthalpy leaving the evaporator minus enthalpy entering the evaporator", "Heat of compression plus condenser heat rejection", "Compressor horsepower"], answer: 1 },
+    { q: "On a Pressure-Enthalpy (P-h) diagram, horizontal lines represent:", options: ["Constant temperature", "Constant entropy", "Constant pressure", "Constant volume"], answer: 2 },
+    { q: "On a P-h diagram, the process through a theoretical compressor (isentropic compression) follows lines of constant:", options: ["Enthalpy", "Entropy", "Pressure", "Temperature"], answer: 1 },
+    { q: "If the condensing temperature of a system increases while the evaporator temperature remains constant, the compressor's cooling capacity will generally:", options: ["Increase", "Decrease", "Remain the same", "Fluctuate rapidly"], answer: 1 },
+    { q: "What happens to the pressure and temperature of a gas when it is compressed?", options: ["Pressure increases, temperature decreases", "Pressure decreases, temperature increases", "Both pressure and temperature increase", "Both pressure and temperature decrease"], answer: 2 },
+    { q: "Sensible heat is best described as heat that:", options: ["Changes the state of a substance", "Cannot be measured with a thermometer", "Results in a measurable change in temperature", "Is absorbed during evaporation only"], answer: 2 },
+    { q: "Which component is responsible for rejecting both the heat absorbed in the evaporator and the heat of compression?", options: ["Evaporator", "Compressor", "Condenser", "Metering Device"], answer: 2 },
+
+    // 16-25: Refrigerants, Oils & Properties
+    { q: "What does 'temperature glide' refer to in zeotropic refrigerant blends?", options: ["The speed at which the refrigerant travels through the evaporator", "The difference between the bubble point and dew point temperatures at a constant pressure", "The drop in temperature across a TXV", "The rate of subcooling in the condenser"], answer: 1 },
+    { q: "Why must zeotropic blends (like R-407C or R-404A) be charged as a liquid?", options: ["To prevent compressor slugging", "To avoid fractionation of the blend components", "Because the gas phase is too dense", "To speed up the charging process"], answer: 1 },
+    { q: "Which class of refrigerants has the highest Ozone Depletion Potential (ODP)?", options: ["HFCs (Hydrofluorocarbons)", "HCFCs (Hydrochlorofluorocarbons)", "CFCs (Chlorofluorocarbons)", "HFOs (Hydrofluoroolefins)"], answer: 2 },
+    { q: "Which type of refrigeration oil is highly hygroscopic and commonly used with HFC refrigerants like R-410A?", options: ["Mineral Oil (MO)", "Alkylbenzene (AB)", "Polyolester (POE)", "White Oil"], answer: 2 },
+    { q: "When dealing with refrigerant oils, what does 'miscibility' mean?", options: ["The ability of the oil to lubricate bearings", "The ability of the oil to mix with the refrigerant", "The oil's resistance to heat breakdown", "The oil's dielectric strength"], answer: 1 },
+    { q: "What defines a transcritical refrigeration cycle (often seen with CO2)?", options: ["The system has no expansion valve", "The heat rejection side operates above the refrigerant's critical pressure, functioning as a gas cooler", "The evaporator operates below absolute zero", "The compressor runs backward during defrost"], answer: 1 },
+    { q: "At what point does a refrigerant reach its 'critical point'?", options: ["When it becomes highly flammable", "When the liquid and vapor densities are equal and no phase boundary exists", "When the ODP reaches 1.0", "When the compressor stalls due to high pressure"], answer: 1 },
+    { q: "R-32 is classified by ASHRAE as A2L. What does 'A2L' indicate?", options: ["High toxicity, non-flammable", "Lower toxicity, mildly flammable (low burning velocity)", "Lower toxicity, highly flammable", "High toxicity, highly flammable"], answer: 1 },
+    { q: "What is the purpose of performing a deep vacuum (e.g., 500 microns) on a refrigeration system?", options: ["To increase the oil's viscosity", "To remove non-condensables and boil off trapped moisture", "To pre-charge the compressor", "To test the burst strength of the copper pipes"], answer: 1 },
+    { q: "When calculating superheat on a system with a zeotropic blend, which pressure-temperature column should be used?", options: ["Bubble Point", "Dew Point", "Average of Bubble and Dew", "Critical Temperature"], answer: 1 },
+
+    // 26-35: Diagnostics
+    { q: "How is evaporator superheat calculated?", options: ["Condensing temperature minus ambient air temperature", "Suction line temperature minus evaporator saturation temperature", "Discharge line temperature minus liquid line temperature", "Evaporator saturation temperature minus return air temperature"], answer: 1 },
+    { q: "How is condenser subcooling calculated?", options: ["Condenser saturation temperature minus liquid line temperature", "Liquid line temperature minus ambient temperature", "Suction line temperature minus discharge temperature", "Condenser saturation temperature plus liquid line temperature"], answer: 0 },
+    { q: "A system with a TXV has normal superheat, but high subcooling and high head pressure. What is the most likely cause?", options: ["Undercharge", "System overcharge", "Dirty evaporator filter", "TXV sensing bulb lost its charge"], answer: 1 },
+    { q: "A TXV that is stuck open and overfeeding the evaporator will most likely cause:", options: ["Low superheat with a risk of liquid floodback to the compressor", "High superheat and a starved evaporator", "No change in superheat", "Excessively high discharge temperature from over-superheating"], answer: 0 },
+    { q: "What force acts to OPEN a TXV?", options: ["Evaporator pressure", "Sensing bulb pressure", "Spring pressure", "Compressor oil pressure"], answer: 1 },
+    { q: "An externally equalized TXV is required when:", options: ["The system uses a centrifugal compressor", "There is a significant pressure drop across the evaporator coil", "The refrigerant is an HFC", "The compressor is located above the evaporator"], answer: 1 },
+    { q: "Where should the TXV sensing bulb be mounted on a horizontal suction line (7/8\" or larger)?", options: ["On the very bottom of the pipe (6 o'clock position)", "On the top of the pipe (12 o'clock position)", "At the 4 or 8 o'clock position", "Inside the evaporator coil fins"], answer: 2 },
+    { q: "A system shows low suction pressure, high superheat, normal-to-low head pressure, high subcooling, and a measurable temperature drop across the liquid line filter drier. What is the diagnosis?", options: ["Overcharge", "Undercharge", "Restricted liquid line filter drier", "Inefficient compressor"], answer: 2 },
+    { q: "What is the effect of non-condensable gases (like air) in a refrigeration system?", options: ["Decreased head pressure and decreased capacity", "Increased head pressure and increased discharge temperature", "Increased suction pressure and frozen evaporator", "Zero effect on system performance"], answer: 1 },
+    { q: "If a compressor's internal valves are failing (leaking discharge back to suction), what readings are expected?", options: ["High suction pressure, low head pressure, low amp draw", "Low suction pressure, high head pressure, high amp draw", "High suction pressure, high head pressure, high amp draw", "Low suction pressure, low head pressure, low amp draw"], answer: 0 },
+
+    // 36-45: Compressors & Capacity Control
+    { q: "As the compression ratio of a reciprocating compressor increases, what happens to its volumetric efficiency?", options: ["It increases", "It decreases", "It remains constant", "It becomes exactly 100%"], answer: 1 },
+    { q: "What is the primary method of capacity control for a multi-cylinder reciprocating compressor?", options: ["Hot gas bypass", "Cylinder unloading (holding suction valves open)", "Inlet guide vanes", "Slide valves"], answer: 1 },
+    { q: "In a centrifugal chiller, what is the function of the inlet guide vanes?", options: ["To filter debris from the refrigerant", "To pre-rotate the refrigerant gas entering the impeller to control capacity", "To prevent oil from entering the evaporator", "To subcool the liquid refrigerant"], answer: 1 },
+    { q: "What condition is known as 'surge' in a centrifugal compressor?", options: ["An extreme increase in electrical voltage", "A rapid and noisy reversal of gas flow through the impeller due to low load or high lift conditions", "The flooding of the compressor with liquid refrigerant", "A sudden increase in cooling capacity"], answer: 1 },
+    { q: "Rotary screw compressors commonly use what mechanism for capacity control?", options: ["Inlet guide vanes", "Cylinder unloaders", "A slide valve that changes the effective length of the compression rotors", "Variable pitch fan blades"], answer: 2 },
+    { q: "What is the purpose of a crankcase heater on a compressor?", options: ["To keep the compressor warm during winter to heat the space", "To keep liquid refrigerant from migrating into and diluting the oil during off-cycles, preventing flooded starts", "To increase the superheat entering the compressor", "To prevent the oil from freezing into a solid block"], answer: 1 },
+    { q: "Which type of compressor requires large amounts of oil injected during compression for sealing, cooling, and lubrication?", options: ["Scroll", "Centrifugal", "Rotary Screw", "Linear"], answer: 2 },
+    { q: "What component is essential on the discharge line of an oil-flooded screw compressor?", options: ["Suction accumulator", "Oil separator", "TXV", "Liquid receiver"], answer: 1 },
+    { q: "What is the purpose of a suction accumulator?", options: ["To store liquid refrigerant for the metering device", "To separate and hold liquid refrigerant, allowing only vapor to enter the compressor", "To separate oil from the discharge gas", "To subcool the refrigerant before the compressor"], answer: 1 },
+    { q: "In an inverter-driven compressor, what dictates the speed of the motor?", options: ["The ambient air temperature only", "The frequency (Hz) of the electrical power supplied by the inverter drive", "The size of the run capacitor", "The position of the TXV"], answer: 1 },
+
+    // 46-52: Chillers & Cooling Towers
+    { q: "In a water-cooled chiller, what flows through the tubes of the shell-and-tube condenser?", options: ["Refrigerant", "Chilled water", "Condenser water (from the cooling tower)", "Compressor oil"], answer: 2 },
+    { q: "In a flooded chiller evaporator, where does the boiling of refrigerant occur?", options: ["Inside the tubes", "On the outside of the water tubes (in the shell)", "In the compressor casing", "In the expansion valve"], answer: 1 },
+    { q: "What is the 'approach temperature' of a cooling tower?", options: ["The difference between entering and leaving water temperatures", "The difference between the leaving water temperature and the ambient wet-bulb temperature", "The difference between ambient dry-bulb and wet-bulb", "The temperature of the makeup water"], answer: 1 },
+    { q: "Cooling tower performance is primarily limited by the ambient:", options: ["Dry-bulb temperature", "Wet-bulb temperature", "Wind speed", "Barometric pressure"], answer: 1 },
+    { q: "What is the purpose of blowdown (or bleed-off) in a cooling tower system?", options: ["To increase the water temperature during winter", "To remove dissolved solids and prevent scale concentration in the basin", "To clear air locks in the condenser water pump", "To test the pH of the water"], answer: 1 },
+    { q: "In a two-stage refrigeration or screw compressor system, what is the primary thermodynamic purpose of a liquid subcooling economizer?", options: ["To increase the net refrigerating effect", "To lower the compressor oil temperature", "To increase the discharge temperature", "To prevent surge"], answer: 0 },
+    { q: "In an air-source heat pump in heating mode, which component directs the hot discharge gas from the compressor to the indoor coil?", options: ["The scroll compressor", "The reversing valve (4-way valve)", "The check valve", "The accumulator"], answer: 1 },
+
+    // 53-60: VRF, Psychrometrics & Airflow
+    { q: "What uniquely distinguishes a Heat Recovery VRF system from a Heat Pump VRF system?", options: ["Heat recovery systems do not use compressors", "Heat recovery systems can provide simultaneous heating and cooling to different indoor units", "Heat pump systems use water, heat recovery systems use air", "Heat recovery systems cannot operate in the winter"], answer: 1 },
+    { q: "In a Heat Recovery VRF system, what component directs hot gas to units calling for heat and liquid to units calling for cooling?", options: ["The Branch Selector (or BC) box", "The outdoor unit reversing valve", "The indoor unit fan motor", "The main system thermostat"], answer: 0 },
+    { q: "On a psychrometric chart, lines of constant wet-bulb temperature run nearly parallel to lines of constant:", options: ["Dry-bulb temperature", "Enthalpy (total heat content of the air)", "Relative humidity", "Humidity ratio (grains of moisture)"], answer: 1 },
+    { q: "Dew point is defined as:", options: ["The temperature at which water freezes", "The temperature at which moisture in the air begins to condense (saturation)", "The average temperature of the conditioned space", "The ambient temperature on a rainy day"], answer: 1 },
+    { q: "Relative humidity is the ratio of:", options: ["Sensible heat to latent heat", "The actual amount of moisture in the air compared to the maximum it could hold at that temperature", "Dry bulb temperature to wet bulb temperature", "Indoor air volume to outdoor air volume"], answer: 1 },
+    { q: "What is Sensible Heat Ratio (SHR)?", options: ["Sensible heat removed divided by total heat removed", "Latent heat removed divided by total heat removed", "Total heat removed divided by sensible heat removed", "Compressor amps divided by fan amps"], answer: 0 },
+    { q: "If an evaporator coil's surface temperature is above the dew point of the return air, what will occur?", options: ["The coil will remove only latent heat", "The coil will freeze solid", "The coil will remove only sensible heat; no condensation will occur", "The coil will produce excessive water runoff"], answer: 2 },
+    { q: "An ECM programmed for constant airflow will do what as static duct pressure increases (e.g., dirty filter)?", options: ["Decrease its RPM and amp draw", "Increase its RPM to maintain the programmed CFM, increasing amp draw", "Shut down immediately", "Reverse rotation to clear the blockage"], answer: 1 }
+];
+
+/* ===================== STATE ===================== */
+let exam = [];              // shuffled copy of questions (order + option order randomized)
+let answers = [];           // index of chosen option per exam question
+let flagged = [];           // boolean per question
+let currentIndex = 0;
+let deadline = 0;           // epoch ms
+let timerInterval = null;
+let userInfo = {};
+let confirmSubmitPending = false;
+let submitted = false;
+let finalResult = null;     // { score, percentage, passed, timeStr, isTimeout, when, completedAt, autoSent }
+let lastResult = null;      // { subject, header, fullBody, mailto, payload }
+let newExamArmed = false;
+let mailTapped = false;
+
+const $ = id => document.getElementById(id);
+const registrationScreen = $('registration-screen'), quizScreen = $('quiz-screen'), resultsScreen = $('results-screen');
+const timerContainer = $('timer-container'), timerText = $('timer-text');
+
+/* ===================== HELPERS ===================== */
+function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+function buildExam() {
+    return shuffle(questions).map(q => {
+        const order = shuffle(q.options.map((_, i) => i));
+        return { q: q.q, options: order.map(i => q.options[i]), answer: order.indexOf(q.answer) };
+    });
+}
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function fmt(sec) { return `${pad(Math.floor(sec / 60))}:${pad(sec % 60)}`; }
+function saveState() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ exam, answers, flagged, currentIndex, deadline, userInfo }));
+    } catch (e) { /* storage unavailable – exam still works */ }
+}
+function clearState() { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+function saveResult() {
+    try { localStorage.setItem(RESULT_KEY, JSON.stringify({ exam, answers, userInfo, finalResult })); } catch (e) {}
+}
+function clearResult() { try { localStorage.removeItem(RESULT_KEY); } catch (e) {} }
+
+/* ===================== START / RESUME ===================== */
+$('registration-form').addEventListener('submit', e => {
+    e.preventDefault();
+    userInfo = {
+        name: $('user-name').value.trim(),
+        title: $('user-title').value.trim(),
+        branch: $('user-branch').value.trim(),
+        empId: $('user-empid').value.trim()
+    };
+    exam = buildExam();
+    answers = new Array(exam.length).fill(null);
+    flagged = new Array(exam.length).fill(false);
+    currentIndex = 0;
+    deadline = Date.now() + TIME_LIMIT_SECONDS * 1000;
+    saveState();
+    beginQuiz();
+});
+
+function beginQuiz() {
+    registrationScreen.classList.add('hide');
+    quizScreen.classList.remove('hide');
+    timerContainer.classList.remove('hide');
+    startTimer();
+    renderQuestion();
+}
+
+(function tryResume() {
+    // 1) An exam that was in progress when the page was closed or refreshed
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            const s = JSON.parse(raw);
+            if (s.exam && s.exam.length === questions.length) {
+                exam = s.exam; answers = s.answers; flagged = s.flagged;
+                currentIndex = s.currentIndex || 0; deadline = s.deadline; userInfo = s.userInfo;
+                beginQuiz();   // timer auto-submits immediately if the deadline already passed
+                return;
+            }
+            clearState();
+        }
+    } catch (e) { clearState(); }
+
+    // 2) A recently finished exam (iPhones often reload the page after a trip to the Mail app)
+    try {
+        const done = JSON.parse(localStorage.getItem(RESULT_KEY) || 'null');
+        if (!done || !done.finalResult) return;
+        if (Date.now() - done.finalResult.completedAt > RESULT_KEEP_MS) return clearResult();
+        exam = done.exam; answers = done.answers; userInfo = done.userInfo; finalResult = done.finalResult;
+        submitted = true;
+        showResults();
+        if (finalResult.autoSent) {
+            setEmailStatus('ok', 'Your results were sent to John Mitchell automatically. Nothing else is needed.');
+        } else {
+            setEmailStatus('fail', 'If you have not sent your results yet, tap "Email results to John Mitchell" below, then tap Send in your mail app.');
+        }
+    } catch (e) { clearResult(); }
+})();
+
+/* ===================== TIMER (wall-clock based, survives refresh/tab throttling) ===================== */
+function remainingSeconds() { return Math.max(0, Math.round((deadline - Date.now()) / 1000)); }
+function startTimer() {
+    clearInterval(timerInterval);
+    tick();
+    timerInterval = setInterval(tick, 1000);
+}
+function tick() {
+    const left = remainingSeconds();
+    timerText.innerText = fmt(left);
+    if (left <= 300) {
+        timerText.classList.remove('text-amber-400');
+        timerText.classList.add('text-red-500', 'animate-pulse');
+    }
+    if (left <= 0 && !submitted) {
+        clearInterval(timerInterval);
+        processSubmission(true);
+    }
+}
+
+/* ===================== QUIZ RENDERING ===================== */
+function renderQuestion() {
+    confirmSubmitPending = false;
+    $('unanswered-warning').classList.add('hide');
+    const q = exam[currentIndex];
+
+    $('question-text').innerText = `${currentIndex + 1}. ${q.q}`;
+    $('question-tracker').innerText = `Question ${currentIndex + 1} of ${exam.length}`;
+    const answeredCount = answers.filter(a => a !== null).length;
+    $('answered-tracker').innerText = `${answeredCount} Answered`;
+    $('progress-bar').style.width = `${(answeredCount / exam.length) * 100}%`;
+
+    const flagBtn = $('flag-btn');
+    flagBtn.className = 'shrink-0 text-sm px-3 py-1.5 rounded-lg border ' +
+        (flagged[currentIndex] ? 'border-amber-400 bg-amber-100 text-amber-800' : 'border-slate-300 text-slate-600 hover:bg-amber-50');
+    flagBtn.innerText = flagged[currentIndex] ? '⚑ Flagged' : '⚑ Flag';
+
+    const cont = $('options-container');
+    cont.innerHTML = '';
+    q.options.forEach((opt, i) => {
+        const div = document.createElement('div');
+        const sel = answers[currentIndex] === i;
+        div.className = `option-btn p-4 border border-slate-200 rounded-xl cursor-pointer text-slate-700 font-medium shadow-sm ${sel ? 'option-selected' : 'bg-white'}`;
+        div.setAttribute('role', 'radio');
+        div.setAttribute('aria-checked', sel);
+        div.tabIndex = 0;
+        const letter = document.createElement('span');
+        letter.className = 'font-bold mr-2 opacity-70';
+        letter.textContent = String.fromCharCode(65 + i) + '.';
+        div.appendChild(letter);
+        div.appendChild(document.createTextNode(' ' + opt));
+        div.onclick = () => selectOption(i);
+        div.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectOption(i); } };
+        cont.appendChild(div);
+    });
+
+    $('prev-btn').disabled = currentIndex === 0;
+    const last = currentIndex === exam.length - 1;
+    $('next-btn').classList.toggle('hide', last);
+    $('submit-btn').classList.toggle('hide', !last);
+    renderNavigator();
+}
+
+function renderNavigator() {
+    const nav = $('navigator');
+    nav.innerHTML = '';
+    exam.forEach((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = i + 1;
+        let cls = 'nav-dot rounded-md border font-semibold ';
+        cls += answers[i] !== null ? 'bg-blue-600 text-white border-blue-700 ' : 'bg-white text-slate-600 border-slate-300 ';
+        if (flagged[i]) cls += 'ring-2 ring-amber-400 ';
+        if (i === currentIndex) cls += 'outline outline-2 outline-slate-800 ';
+        b.className = cls;
+        b.onclick = () => { currentIndex = i; saveState(); renderQuestion(); };
+        nav.appendChild(b);
+    });
+}
+
+function selectOption(i) { answers[currentIndex] = i; saveState(); renderQuestion(); }
+function toggleFlag() { flagged[currentIndex] = !flagged[currentIndex]; saveState(); renderQuestion(); }
+function nextQuestion() { if (currentIndex < exam.length - 1) { currentIndex++; saveState(); renderQuestion(); } }
+function prevQuestion() { if (currentIndex > 0) { currentIndex--; saveState(); renderQuestion(); } }
+
+document.addEventListener('keydown', e => {
+    if (quizScreen.classList.contains('hide') || submitted) return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const k = e.key.toLowerCase();
+    if (['a', 'b', 'c', 'd'].includes(k)) selectOption(k.charCodeAt(0) - 97);
+    else if (e.key === 'ArrowRight') nextQuestion();
+    else if (e.key === 'ArrowLeft') prevQuestion();
+    else if (k === 'f') toggleFlag();
+});
+
+window.addEventListener('beforeunload', e => {
+    if (!submitted && !quizScreen.classList.contains('hide')) { e.preventDefault(); e.returnValue = ''; }
+});
+
+/* ===================== SUBMISSION ===================== */
+function handleManualSubmit() {
+    const unanswered = answers.filter(a => a === null).length;
+    if (unanswered > 0 && !confirmSubmitPending) {
+        const w = $('unanswered-warning');
+        const flaggedCount = flagged.filter(Boolean).length;
+        w.innerText = `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}` +
+            (flaggedCount ? ` and ${flaggedCount} flagged` : '') + `. Click "Submit Exam" again to confirm.`;
+        w.classList.remove('hide');
+        confirmSubmitPending = true;
+        return;
+    }
+    processSubmission(false);
+}
+
+function processSubmission(isTimeout) {
+    if (submitted) return;          // guard against double submission
+    submitted = true;
+    clearInterval(timerInterval);
+
+    let score = 0;
+    exam.forEach((q, i) => { if (answers[i] === q.answer) score++; });
+    const percentage = Math.round((score / exam.length) * 100);
+    finalResult = {
+        score,
+        percentage,
+        passed: percentage > PASS_PERCENT,
+        timeStr: fmt(TIME_LIMIT_SECONDS - remainingSeconds()),
+        isTimeout,
+        when: new Date().toLocaleString(),
+        completedAt: Date.now(),
+        autoSent: false
+    };
+    saveResult();                   // keep the finished result before anything else can go wrong
+    clearState();
+    showResults();
+
+    sendEmail();                    // automatic delivery in the background
+    if (!isTimeout && OPEN_MAIL_DRAFT_ON_SUBMIT) {
+        openMailDraft();            // runs inside the tap on "Submit Exam", so iPhone and iPad allow it to open the mail app
+    } else if (isTimeout) {
+        setEmailStatus('fail', 'Time expired and your exam was submitted. Tap "Email results to John Mitchell" below, then tap Send in your mail app.');
+    } else if (!finalResult.autoSent && !$('auto-status').innerText) {
+        setEmailStatus('pending', 'Sending your results to John Mitchell…');
+    }
+}
+
+function showResults() {
+    const r = finalResult;
+    registrationScreen.classList.add('hide');
+    quizScreen.classList.add('hide');
+    timerContainer.classList.add('hide');
+    resultsScreen.classList.remove('hide');
+
+    $('student-name-display').innerText = `${userInfo.name} | ${userInfo.title} | ${userInfo.branch} | ${userInfo.empId}`;
+    $('score-display').innerText = `${r.percentage}%`;
+    $('score-fraction').innerText = `${r.score} of ${exam.length} correct`;
+    $('time-taken-display').innerText = r.timeStr;
+
+    const colour = r.passed ? 'text-emerald-600' : 'text-red-600';
+    const msg = $('result-message');
+    $('score-display').classList.add(colour);
+    msg.classList.add(colour);
+    msg.innerText = r.passed ? 'Exam Passed' : (r.isTimeout ? 'Time Expired - Exam Failed' : 'Exam Failed');
+
+    buildReviewSection();
+    prepareEmail();
+    window.scrollTo(0, 0);
+}
+
+function startNewExam() {
+    if (!newExamArmed) {
+        newExamArmed = true;
+        $('new-exam-btn').innerText = 'Tap again to clear these results and start over';
+        return;
+    }
+    clearResult();
+    location.reload();
+}
+
+/* ===================== EMAIL ===================== */
+/* Two routes, both addressed to ADMIN_EMAIL:
+   1) Mail draft  - a normal mail link. Opens the technician's mail app with everything filled in; they tap Send.
+                    Works anywhere, including when this page is opened as a file.
+   2) Automatic   - posts the results to FormSubmit, which emails them with no action from the technician.
+                    Works only when this page is opened from a web address (not as a file) AND the one-time
+                    activation link FormSubmit emails to ADMIN_EMAIL after the first submission has been clicked. */
+function mailEncode(text) { return encodeURIComponent(text.replace(/\r?\n/g, '\r\n')); }
+
+function prepareEmail() {
+    const r = finalResult;
+    const missed = [], missedShort = [];
+    exam.forEach((q, i) => {
+        if (answers[i] !== q.answer) {
+            missed.push(`Q${i + 1}: ${q.q}\n   Answered: ${answers[i] === null ? '(unanswered)' : q.options[answers[i]]}\n   Correct:  ${q.options[q.answer]}`);
+            missedShort.push('- ' + (q.q.length > 70 ? q.q.slice(0, 70) + '...' : q.q));
+        }
+    });
+    const status = r.passed ? 'PASS' : 'FAIL';
+    const header =
+`HVAC & Refrigeration Master Exam - Results
+
+Name:        ${userInfo.name}
+Job Title:   ${userInfo.title}
+Branch:      ${userInfo.branch}
+Employee ID: ${userInfo.empId}
+Completed:   ${r.when}
+Score:       ${r.percentage}% (${r.score}/${exam.length})
+Result:      ${status} (pass requires more than ${PASS_PERCENT}%)
+Time Taken:  ${r.timeStr}${r.isTimeout ? '  [AUTO-SUBMITTED - TIME EXPIRED]' : ''}
+`;
+    const fullBody = header + `\nMissed questions (${missed.length}):\n\n` + (missed.join('\n\n') || 'None - perfect score.');
+    const subject = `HVAC Exam ${status}: ${userInfo.name} (${userInfo.empId}) - ${r.percentage}%`;
+
+    // Mail draft: same summary, with a shortened missed-question list so the link stays a safe length for every mail app
+    const prefix = `mailto:${ADMIN_EMAIL}?subject=${mailEncode(subject)}&body=`;
+    let draft = header + `\nMissed questions (${missed.length}):\n`;
+    if (!missedShort.length) draft += 'None - perfect score.\n';
+    for (let i = 0; i < missedShort.length; i++) {
+        const next = draft + missedShort[i] + '\n';
+        if ((prefix + mailEncode(next)).length > MAILTO_MAX_LENGTH) {
+            draft += `...and ${missedShort.length - i} more (the full list is on the results page)\n`;
+            break;
+        }
+        draft = next;
+    }
+    const mailto = prefix + mailEncode(draft);
+
+    lastResult = {
+        subject,
+        header,
+        fullBody,
+        mailto,
+        payload: {
+            _subject: subject,
+            _captcha: 'false',
+            _template: 'table',
+            Technician_Name: userInfo.name,
+            Title: userInfo.title,
+            Branch: userInfo.branch,
+            Employee_ID: userInfo.empId,
+            Completed: r.when,
+            Score: `${r.percentage}% (${r.score}/${exam.length})`,
+            Status: status,
+            Time_Taken: r.timeStr,
+            Auto_Submitted_On_Timeout: r.isTimeout ? 'Yes' : 'No',
+            Missed_Question_Details: missed.join('\n\n') || 'None'
+        }
+    };
+
+    const link = $('mail-link');
+    link.href = mailto;
+    if (window.self !== window.top) link.target = '_blank';   // inside a preview frame, open the mail app outside the frame
+}
+
+function setEmailStatus(kind, text) {
+    const el = $('email-status');
+    const styles = {
+        pending: 'border-slate-200 bg-slate-50 text-slate-600',
+        ok: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        fail: 'border-amber-300 bg-amber-50 text-amber-800'
+    };
+    el.className = 'mt-4 text-sm rounded-lg border px-4 py-3 w-full max-w-xl text-center ' + styles[kind];
+    el.innerText = text;
+}
+
+/* Route 2: automatic delivery */
+async function sendEmail() {
+    if (!lastResult || finalResult.autoSent) return;
+    if (IS_LOCAL_FILE) return autoSendFailed('this page was opened as a file instead of from a web address');
+    try {
+        const res = await fetch(FORM_ENDPOINT, {
+            method: 'POST',
+            keepalive: true,        // lets the request finish while the mail app is opening
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(lastResult.payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || String(data.success) !== 'true') {
+            throw new Error(data.message || `the email service replied with error ${res.status}`);
+        }
+        finalResult.autoSent = true;
+        saveResult();
+        $('auto-status').innerText = '';
+        setEmailStatus('ok', 'Your results were sent to John Mitchell automatically. Nothing else is needed. If an email draft also opened, you can send it as a second copy or discard it.');
+    } catch (err) {
+        autoSendFailed(err && err.message ? err.message : 'no connection');
+    }
+}
+
+function autoSendFailed(reason) {
+    $('auto-status').innerText = `Automatic delivery did not go through (${reason}). Use the email button above.`;
+    if (!mailTapped && !finalResult.isTimeout) {
+        setEmailStatus('fail', 'Your results were not delivered automatically. Tap "Email results to John Mitchell" below, then tap Send in your mail app.');
+    }
+}
+
+/* Route 1: mail draft. The blue button is a real mail link, so tapping it always works;
+   on Submit we also "tap" it for the technician so the draft appears without an extra step. */
+function openMailDraft() {
+    if (!lastResult) return;
+    $('mail-link').click();
+}
+function mailLinkTapped() {
+    mailTapped = true;
+    if (finalResult && !finalResult.autoSent) {
+        setEmailStatus('pending', 'Your mail app should now show an email to John Mitchell with your results already filled in. Tap Send to deliver it. If nothing opened, tap the blue button below or use "Copy results".');
+    }
+}
+
+function copyResults() {
+    if (!lastResult) return;
+    const btn = $('copy-btn');
+    const done = () => { btn.innerText = 'Copied ✓'; setTimeout(() => btn.innerText = 'Copy results', 2000); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(lastResult.fullBody).then(done, fallbackCopy);
+    } else fallbackCopy();
+    function fallbackCopy() {
+        const ta = document.createElement('textarea');
+        ta.value = lastResult.fullBody; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(ta);
+    }
+}
+
+/* ===================== REVIEW ===================== */
+function buildReviewSection() {
+    const container = $('review-container');
+    container.innerHTML = '';
+    exam.forEach((q, i) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white p-5 rounded-xl border border-slate-200 shadow-sm';
+        const ua = answers[i];
+        const ok = ua === q.answer;
+
+        const h = document.createElement('h4');
+        h.className = 'text-lg font-bold text-slate-800 mb-3';
+        h.textContent = `${i + 1}. ${q.q}`;
+        card.appendChild(h);
+
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+        const lbl = document.createElement('span');
+        lbl.className = 'text-sm font-bold text-slate-500 uppercase block mb-0.5';
+        lbl.textContent = 'Your Answer:';
+        const val = document.createElement('span');
+        if (ua === null) { val.className = 'text-slate-500'; val.textContent = 'Unanswered'; }
+        else if (ok) { val.className = 'text-emerald-700 font-semibold bg-emerald-50 px-2 py-1 rounded'; val.textContent = '✓ ' + q.options[ua]; }
+        else { val.className = 'text-red-700 font-semibold bg-red-50 px-2 py-1 rounded line-through decoration-red-400'; val.textContent = '✗ ' + q.options[ua]; }
+        row.appendChild(lbl); row.appendChild(val);
+        card.appendChild(row);
+
+        if (!ok) {
+            const c = document.createElement('div');
+            c.className = 'mt-3 pt-3 border-t border-slate-100';
+            const l2 = document.createElement('span');
+            l2.className = 'text-sm font-bold text-slate-500 uppercase block mb-0.5';
+            l2.textContent = 'Correct Answer:';
+            const v2 = document.createElement('span');
+            v2.className = 'text-emerald-700 font-semibold';
+            v2.textContent = q.options[q.answer];
+            c.appendChild(l2); c.appendChild(v2);
+            card.appendChild(c);
+        }
+        container.appendChild(card);
+    });
+}
+
+/* Everything above loaded and ran: the exam can start, so remove the warning */
+$('js-warning').style.display = 'none';
+</script>
+</body>
+</html>
