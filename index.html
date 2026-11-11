@@ -35,11 +35,11 @@
     <div class="bg-slate-900 text-white p-5 flex flex-col md:flex-row justify-between items-center shrink-0">
         <div>
             <h1 class="text-xl md:text-2xl font-bold tracking-tight">Rental Technician Skills Assessment</h1>
-            <p class="text-slate-400 text-sm mt-1">60 Questions | 4 Parts: Heating, Cooling, Air, Power</p>
+            <p class="text-slate-400 text-sm mt-1">100 Questions | 8 Parts | 90 Minutes</p>
         </div>
         <div id="timer-container" class="mt-4 md:mt-0 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 flex items-center space-x-2 hide shadow-inner" role="timer" aria-live="off">
             <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span id="timer-text" class="text-xl font-mono font-bold text-amber-400 tracking-wider">60:00</span>
+            <span id="timer-text" class="text-xl font-mono font-bold text-amber-400 tracking-wider">90:00</span>
         </div>
     </div>
 
@@ -48,7 +48,7 @@
         <div class="w-full max-w-md">
             <div class="text-center mb-6">
                 <h2 class="text-3xl font-extrabold text-slate-800 mb-2">Technician Registration</h2>
-                <p class="text-slate-500">Enter your details to begin the 60-minute timed assessment.</p>
+                <p class="text-slate-500">Enter your details to begin the 90-minute timed assessment.</p>
             </div>
             <form id="registration-form" action="javascript:void(0)" class="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
                 <div>
@@ -70,7 +70,7 @@
 
                 <div class="text-xs text-slate-600 bg-blue-50 border border-blue-200 rounded-lg p-3 leading-relaxed">
                     <strong>Before you begin:</strong> The timer cannot be paused and keeps running if you refresh the page.
-                    There are 4 parts of 15 questions: Heating &amp; Boilers; Cooling, Chillers, Cooling Towers &amp; Dehumidification; Air Compressors; Generators &amp; Electrical Distribution. Question and answer order are shuffled within each part. When you submit, your name, title, branch, employee ID,
+                    There are 100 questions in 8 parts: Heating; Boilers; Cooling &amp; Air Conditioning; Chillers &amp; Cooling Towers; Dehumidification; Air Compressors; Generators; Electrical Distribution. Question and answer order are shuffled within each part. When you submit, your name, title, branch, employee ID,
                     overall score, score for each part and time will be emailed to the exam administrator.
                 </div>
 
@@ -84,7 +84,7 @@
                     <span id="js-warning-text">This page is open in a preview that does not run the exam (for example a file or attachment preview). Open it in Safari or Chrome from a web link instead.</span>
                 </div>
                 <button type="submit" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-8 rounded-lg shadow-md transition focus:ring-4 focus:ring-blue-300">
-                    Start 60-Minute Exam
+                    Start 90-Minute Assessment
                 </button>
             </form>
         </div>
@@ -94,7 +94,7 @@
     <div id="quiz-screen" class="flex-1 flex flex-col p-4 md:p-8 hide bg-white">
         <div class="mb-5 shrink-0">
             <div class="flex justify-between text-sm text-slate-500 font-semibold mb-2">
-                <span id="question-tracker">Question 1 of 60</span>
+                <span id="question-tracker">Question 1 of 100</span>
                 <span id="answered-tracker">0 Answered</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
@@ -179,30 +179,33 @@ window.addEventListener('error', function (e) {
 /* ===================== CONFIG ===================== */
 const ADMIN_EMAIL = 'john.mitchell@equipmentshare.com';
 const FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + ADMIN_EMAIL;
-const TIME_LIMIT_SECONDS = 60 * 60;
-const PASS_PERCENT = 75;          // must score strictly greater than this (46/60 or better)
-const STORAGE_KEY = 'rental_assessment_active_v1';
-const RESULT_KEY  = 'rental_assessment_result_v1';
+const TIME_LIMIT_SECONDS = 90 * 60;
+const PASS_PERCENT = 75;          // must score strictly greater than this (76/100 or better)
+const STORAGE_KEY = 'rental_assessment_active_v2';
+const RESULT_KEY  = 'rental_assessment_result_v2';
 const RESULT_KEEP_MS = 30 * 60 * 1000;       // finished results stay on this device for 30 minutes (covers a trip to the Mail app and back)
 // Opens a pre-written email in the technician's mail app the moment they tap Submit.
 // Once automatic delivery is confirmed working (see sendEmail), this can be set to false.
 const OPEN_MAIL_DRAFT_ON_SUBMIT = true;
 // The automatic delivery service refuses pages opened as a local file; it needs a real web address.
 const IS_LOCAL_FILE = location.protocol === 'file:';
-const MAILTO_MAX_LENGTH = 1900;              // keeps the mail link short enough for every mail app
+const MAILTO_MAX_LENGTH = 2000;              // keeps the mail link short enough for every mail app
 
-/* ===================== QUESTION BANK (60 = 4 parts x 15) ===================== */
+/* ===================== QUESTION BANK (100 questions in 8 parts) ===================== */
 // Each question belongs to a part through "s" (its position in SECTIONS).
 const SECTIONS = [
-    'Heating & Boilers',
-    'Cooling, Chillers, Cooling Towers & Dehumidification',
+    'Heating',
+    'Boilers',
+    'Cooling & Air Conditioning',
+    'Chillers & Cooling Towers',
+    'Dehumidification',
     'Air Compressors',
-    'Generators & Electrical Distribution'
+    'Generators',
+    'Electrical Distribution'
 ];
-const SECTION_SHORT = ['Heating', 'Cooling', 'Air', 'Power'];
+const SECTION_SHORT = ['Heating', 'Boilers', 'Cooling', 'Chillers', 'Dehumidification', 'Air', 'Generators', 'Distribution'];
 
 const questions = [
-    // ---------- Part 1: Heating & Boilers ----------
     { s: 0, q: "What separates an indirect-fired heater from a direct-fired heater?", options: ["Combustion gases pass through a heat exchanger and out a flue, not into the heated air", "It burns the fuel directly in the airstream, so no flue or heat exchanger is needed", "It can only run on electricity, so it produces no exhaust and needs no fuel supply", "It has no blower, so heat reaches the space by radiation from an open burner only"], answer: 0 },
     { s: 0, q: "Which heater is the right choice for an occupied, tightly enclosed space with little fresh air?", options: ["A direct-fired propane heater placed in the middle of the space", "An indirect-fired heater set outside with its heated air ducted in", "An open-flame salamander heater with the doors kept closed", "A direct-fired natural gas heater with its thermostat bypassed"], answer: 1 },
     { s: 0, q: "Which dangerous gas comes from incomplete combustion in a fuel-fired heater?", options: ["Nitrogen", "Oxygen", "Carbon monoxide", "Water vapor"], answer: 2 },
@@ -215,60 +218,111 @@ const questions = [
     { s: 0, q: "Gas supply pressure at a heater's burner is normally measured in which unit?", options: ["Inches of water column", "Microns of mercury", "Pounds per square foot", "Cubic feet per hour"], answer: 0 },
     { s: 0, q: "What happens when too much flexible duct, or duct with tight bends, is added to a heater?", options: ["Airflow rises and the heater delivers more heat than its rating", "Nothing changes, because duct length has no effect on airflow", "The burner uses less fuel while producing the same heat output", "Airflow drops and the heater can overheat and trip on high limit"], answer: 3 },
     { s: 0, q: "What is the job of a heater's high-limit switch?", options: ["It raises the fuel pressure when more heat is needed", "It shuts the burner off if the heater gets too hot", "It keeps the blower off until the space is warm", "It limits how high the thermostat can be set"], answer: 1 },
-    { s: 0, q: "What does the low-water cutoff on a boiler do?", options: ["Drains the boiler when the water level rises too high", "Adds treatment chemicals when the water level is low", "Shuts the burner off if the water level drops too low", "Opens the relief valve if the water becomes too hot"], answer: 2 },
-    { s: 0, q: "A boiler's pressure relief valve is dripping. What is the correct response?", options: ["Cap the outlet so the boiler can keep running until the job is done", "Raise the valve's set pressure until the dripping finally stops", "Remove the valve and install a pipe plug of the same thread size", "Find the cause and replace the valve if needed; never cap or plug it"], answer: 3 },
-    { s: 0, q: "In a hot-water (hydronic) heating loop, what does the expansion tank do?", options: ["Absorbs the extra water volume as the water heats up", "Stores extra fuel for the burner during peak demand", "Separates steam from the water leaving the boiler", "Boosts the pump pressure on long runs of hose"], answer: 0 },
+    { s: 1, q: "What does the low-water cutoff on a boiler do?", options: ["Drains the boiler when the water level rises too high", "Adds treatment chemicals when the water level is low", "Shuts the burner off if the water level drops too low", "Opens the relief valve if the water becomes too hot"], answer: 2 },
+    { s: 1, q: "A boiler's pressure relief valve is dripping. What is the correct response?", options: ["Cap the outlet so the boiler can keep running until the job is done", "Raise the valve's set pressure until the dripping finally stops", "Remove the valve and install a pipe plug of the same thread size", "Find the cause and replace the valve if needed; never cap or plug it"], answer: 3 },
+    { s: 1, q: "In a hot-water (hydronic) heating loop, what does the expansion tank do?", options: ["Absorbs the extra water volume as the water heats up", "Stores extra fuel for the burner during peak demand", "Separates steam from the water leaving the boiler", "Boosts the pump pressure on long runs of hose"], answer: 0 },
 
-    // ---------- Part 2: Cooling, Chillers, Cooling Towers & Dehumidification ----------
-    { s: 1, q: "One ton of cooling equals how many BTU per hour?", options: ["3,412", "10,000", "12,000", "24,000"], answer: 2 },
-    { s: 1, q: "A portable spot cooler is set up inside a room. What must be done with its hot condenser air?", options: ["Aim it at the people being cooled", "Duct it out of the room being cooled", "Recirculate it through the evaporator", "Nothing; it cools down by itself"], answer: 1 },
-    { s: 1, q: "As a rule of thumb, about how much airflow does comfort cooling need per ton?", options: ["100 CFM", "400 CFM", "1,000 CFM", "4,000 CFM"], answer: 1 },
-    { s: 1, q: "What is the most common cause of an evaporator coil icing over?", options: ["Low airflow from a dirty filter or blocked duct", "An outdoor temperature above 95 degrees", "A refrigerant circuit that is overcharged", "A condenser coil that needs cleaning"], answer: 0 },
-    { s: 1, q: "What does a dirty condenser coil cause?", options: ["Lower head pressure and more cooling capacity", "Lower amp draw and colder supply air", "Higher head pressure and less cooling capacity", "No change, since only the evaporator matters"], answer: 2 },
-    { s: 1, q: "What is superheat?", options: ["The temperature of a liquid below its saturation temperature", "The temperature of the air leaving the condenser coil", "The heat a compressor motor gives off while running", "The temperature of a vapor above its saturation temperature"], answer: 3 },
-    { s: 1, q: "What does the law require before a technician opens a refrigerant circuit or adds refrigerant?", options: ["A commercial driver's license", "EPA Section 608 certification", "An OSHA 30-hour card", "A state boiler operator license"], answer: 1 },
-    { s: 1, q: "What does an air-cooled rental chiller send out to the customer's equipment?", options: ["Cold refrigerant, piped straight to the load", "Cold air, blown through flexible duct", "Chilled water or glycol, pumped through hoses", "Condenser water, on its way to a tower"], answer: 2 },
-    { s: 1, q: "Why is glycol added to a chilled-water loop?", options: ["To keep the fluid from freezing", "To make the pump move more water", "To raise the chiller's capacity", "To stop scale forming in the tower"], answer: 0 },
-    { s: 1, q: "What does the flow switch on a chiller protect against?", options: ["Running with too much refrigerant in the condenser", "Running with the condenser fans turning backward", "Running with glycol that is mixed too strong", "Running with no water flow and freezing the evaporator"], answer: 3 },
-    { s: 1, q: "A chilled-water loop flows 240 GPM with a 10-degree temperature difference. Using tons = GPM x temperature difference / 24, what is the load?", options: ["24 tons", "100 tons", "240 tons", "1,000 tons"], answer: 1 },
-    { s: 1, q: "How does a cooling tower cool the water passing through it?", options: ["Mostly by a refrigerant coil inside the tower", "Mostly by mixing in cold city makeup water", "Mostly by evaporating a small part of the water", "Mostly by shading the water from the sun"], answer: 2 },
-    { s: 1, q: "Why does a cooling tower need a steady supply of makeup water?", options: ["Water is used up by the chiller's compressor", "Water is lost to evaporation, drift and blowdown", "Water is pumped back to the city main", "Water is absorbed by the tower's fill"], answer: 1 },
-    { s: 1, q: "Which dehumidifier type keeps working well in cold spaces and at very low humidity?", options: ["Desiccant", "Refrigerant (compressor) type", "Evaporative cooler", "Spot cooler in fan mode"], answer: 0 },
-    { s: 1, q: "Moisture starts to condense on a surface when the surface is colder than the air's:", options: ["Dry-bulb temperature", "Wet-bulb temperature", "Relative humidity", "Dew point"], answer: 3 },
+    { s: 2, q: "One ton of cooling equals how many BTU per hour?", options: ["3,412", "10,000", "12,000", "24,000"], answer: 2 },
+    { s: 2, q: "A portable spot cooler is set up inside a room. What must be done with its hot condenser air?", options: ["Aim it at the people being cooled", "Duct it out of the room being cooled", "Recirculate it through the evaporator", "Nothing; it cools down by itself"], answer: 1 },
+    { s: 2, q: "As a rule of thumb, about how much airflow does comfort cooling need per ton?", options: ["100 CFM", "400 CFM", "1,000 CFM", "4,000 CFM"], answer: 1 },
+    { s: 2, q: "What is the most common cause of an evaporator coil icing over?", options: ["Low airflow from a dirty filter or blocked duct", "An outdoor temperature above 95 degrees", "A refrigerant circuit that is overcharged", "A condenser coil that needs cleaning"], answer: 0 },
+    { s: 2, q: "What does a dirty condenser coil cause?", options: ["Lower head pressure and more cooling capacity", "Lower amp draw and colder supply air", "Higher head pressure and less cooling capacity", "No change, since only the evaporator matters"], answer: 2 },
+    { s: 2, q: "What is superheat?", options: ["The temperature of a liquid below its saturation temperature", "The temperature of the air leaving the condenser coil", "The heat a compressor motor gives off while running", "The temperature of a vapor above its saturation temperature"], answer: 3 },
+    { s: 2, q: "What does the law require before a technician opens a refrigerant circuit or adds refrigerant?", options: ["A commercial driver's license", "EPA Section 608 certification", "An OSHA 30-hour card", "A state boiler operator license"], answer: 1 },
+    { s: 3, q: "What does an air-cooled rental chiller send out to the customer's equipment?", options: ["Cold refrigerant, piped straight to the load", "Cold air, blown through flexible duct", "Chilled water or glycol, pumped through hoses", "Condenser water, on its way to a tower"], answer: 2 },
+    { s: 3, q: "Why is glycol added to a chilled-water loop?", options: ["To keep the fluid from freezing", "To make the pump move more water", "To raise the chiller's capacity", "To stop scale forming in the tower"], answer: 0 },
+    { s: 3, q: "What does the flow switch on a chiller protect against?", options: ["Running with too much refrigerant in the condenser", "Running with the condenser fans turning backward", "Running with glycol that is mixed too strong", "Running with no water flow and freezing the evaporator"], answer: 3 },
+    { s: 3, q: "A chilled-water loop flows 240 GPM with a 10-degree temperature difference. Using tons = GPM x temperature difference / 24, what is the load?", options: ["24 tons", "100 tons", "240 tons", "1,000 tons"], answer: 1 },
+    { s: 3, q: "How does a cooling tower cool the water passing through it?", options: ["Mostly by a refrigerant coil inside the tower", "Mostly by mixing in cold city makeup water", "Mostly by evaporating a small part of the water", "Mostly by shading the water from the sun"], answer: 2 },
+    { s: 3, q: "Why does a cooling tower need a steady supply of makeup water?", options: ["Water is used up by the chiller's compressor", "Water is lost to evaporation, drift and blowdown", "Water is pumped back to the city main", "Water is absorbed by the tower's fill"], answer: 1 },
+    { s: 4, q: "Which dehumidifier type keeps working well in cold spaces and at very low humidity?", options: ["Desiccant", "Refrigerant (compressor) type", "Evaporative cooler", "Spot cooler in fan mode"], answer: 0 },
+    { s: 4, q: "Moisture starts to condense on a surface when the surface is colder than the air's:", options: ["Dry-bulb temperature", "Wet-bulb temperature", "Relative humidity", "Dew point"], answer: 3 },
 
-    // ---------- Part 3: Air Compressors ----------
-    { s: 2, q: "On an air compressor, what does the CFM rating tell you?", options: ["The highest pressure it can safely reach", "The volume of air it delivers each minute", "The size of its fuel tank in cubic feet", "The speed of its engine at full load"], answer: 1 },
-    { s: 2, q: "A customer will run two tools at once, each needing 90 CFM at 100 PSI. What is the smallest compressor that will do the job?", options: ["90 CFM at 100 PSI", "90 CFM at 200 PSI", "125 CFM at 150 PSI", "185 CFM at 100 PSI"], answer: 3 },
-    { s: 2, q: "What type of air end do most towable rental compressors use?", options: ["Rotary screw", "Centrifugal", "Diaphragm", "Scroll"], answer: 0 },
-    { s: 2, q: "In an oil-flooded rotary screw compressor, what does the oil do?", options: ["Lubricates only; all cooling is done by the air", "Only cleans the intake air before compression", "Lubricates, seals the rotors and carries away heat", "Only powers the hydraulic inlet valve"], answer: 2 },
-    { s: 2, q: "What does the air/oil separator element do?", options: ["Removes water from the oil before it is filtered", "Removes oil from the air before it leaves the machine", "Removes dust from the air before it is compressed", "Removes air from the fuel before it is injected"], answer: 1 },
-    { s: 2, q: "What is the job of the minimum pressure valve?", options: ["Shuts the engine down when the fuel pressure is low", "Opens the inlet valve when the air demand is low", "Drains condensed water when the tank is cold", "Holds enough sump pressure to keep the oil circulating"], answer: 3 },
-    { s: 2, q: "Oil is coming out with the discharge air. What is the most likely cause?", options: ["A failed separator element or a plugged scavenge line", "A dirty engine air filter or a loose fan belt", "A weak battery or a corroded ground cable", "A low fuel level or a plugged fuel filter"], answer: 0 },
-    { s: 2, q: "A compressor shuts down on high discharge temperature. What should be checked first?", options: ["Tire pressure and the trailer lights", "Hose length and the tool's air fitting", "Oil level and a dirty or blocked oil cooler", "Battery voltage and the alternator"], answer: 2 },
-    { s: 2, q: "What must be done before disconnecting an air hose or servicing the compressor?", options: ["Leave it running so that the pressure stays steady in the lines", "Shut it down, bleed off all pressure and confirm the gauge reads zero", "Close the service valve and loosen the fitting slowly under pressure", "Kink the hose near the fitting and pull the coupling apart fast"], answer: 1 },
-    { s: 2, q: "What are whip checks (safety cables) on air hose connections for?", options: ["They ground the hose against static buildup", "They stop the hose from kinking on corners", "They show which hose is under pressure", "They restrain the hose if a coupling lets go"], answer: 3 },
-    { s: 2, q: "What does the inlet (unloader) valve do?", options: ["Opens and closes the air intake to match demand", "Opens the fuel supply when the engine starts", "Vents the oil sump while the unit is running", "Closes the discharge when a tool is connected"], answer: 0 },
-    { s: 2, q: "Why does water collect in compressed-air lines?", options: ["Coolant leaks from the engine into the air end", "Rain is drawn in through the discharge hose", "Moisture in the air condenses as the compressed air cools", "Oil breaks down into water at high pressure"], answer: 2 },
-    { s: 2, q: "A tool is weak at the end of a long, small-diameter hose even though the compressor gauge reads normal. Why?", options: ["The compressor's engine speed is set too high", "Pressure is lost along the undersized hose", "The air is too dry for the tool to work", "The hose is storing too much air volume"], answer: 1 },
-    { s: 2, q: "When can air from a standard rental compressor be used for breathing?", options: ["Any time, as long as the compressor's oil has just been changed", "Any time, as long as the hose is shorter than fifty feet", "Only when the compressor is running at less than half load", "Only with breathing-air filtration and monitoring that meet the standard"], answer: 3 },
-    { s: 2, q: "What must be installed on universal (Chicago-style) hose couplings once they are connected?", options: ["Thread sealant", "Hose clamps", "Safety clips or pins", "A pressure gauge"], answer: 2 },
+    { s: 5, q: "On an air compressor, what does the CFM rating tell you?", options: ["The highest pressure it can safely reach", "The volume of air it delivers each minute", "The size of its fuel tank in cubic feet", "The speed of its engine at full load"], answer: 1 },
+    { s: 5, q: "A customer will run two tools at once, each needing 90 CFM at 100 PSI. What is the smallest compressor that will do the job?", options: ["90 CFM at 100 PSI", "90 CFM at 200 PSI", "125 CFM at 150 PSI", "185 CFM at 100 PSI"], answer: 3 },
+    { s: 5, q: "What type of air end do most towable rental compressors use?", options: ["Rotary screw", "Centrifugal", "Diaphragm", "Scroll"], answer: 0 },
+    { s: 5, q: "In an oil-flooded rotary screw compressor, what does the oil do?", options: ["Lubricates only; all cooling is done by the air", "Only cleans the intake air before compression", "Lubricates, seals the rotors and carries away heat", "Only powers the hydraulic inlet valve"], answer: 2 },
+    { s: 5, q: "What does the air/oil separator element do?", options: ["Removes water from the oil before it is filtered", "Removes oil from the air before it leaves the machine", "Removes dust from the air before it is compressed", "Removes air from the fuel before it is injected"], answer: 1 },
+    { s: 5, q: "What is the job of the minimum pressure valve?", options: ["Shuts the engine down when the fuel pressure is low", "Opens the inlet valve when the air demand is low", "Drains condensed water when the tank is cold", "Holds enough sump pressure to keep the oil circulating"], answer: 3 },
+    { s: 5, q: "Oil is coming out with the discharge air. What is the most likely cause?", options: ["A failed separator element or a plugged scavenge line", "A dirty engine air filter or a loose fan belt", "A weak battery or a corroded ground cable", "A low fuel level or a plugged fuel filter"], answer: 0 },
+    { s: 5, q: "A compressor shuts down on high discharge temperature. What should be checked first?", options: ["Tire pressure and the trailer lights", "Hose length and the tool's air fitting", "Oil level and a dirty or blocked oil cooler", "Battery voltage and the alternator"], answer: 2 },
+    { s: 5, q: "What must be done before disconnecting an air hose or servicing the compressor?", options: ["Leave it running so that the pressure stays steady in the lines", "Shut it down, bleed off all pressure and confirm the gauge reads zero", "Close the service valve and loosen the fitting slowly under pressure", "Kink the hose near the fitting and pull the coupling apart fast"], answer: 1 },
+    { s: 5, q: "What are whip checks (safety cables) on air hose connections for?", options: ["They ground the hose against static buildup", "They stop the hose from kinking on corners", "They show which hose is under pressure", "They restrain the hose if a coupling lets go"], answer: 3 },
+    { s: 5, q: "What does the inlet (unloader) valve do?", options: ["Opens and closes the air intake to match demand", "Opens the fuel supply when the engine starts", "Vents the oil sump while the unit is running", "Closes the discharge when a tool is connected"], answer: 0 },
+    { s: 5, q: "Why does water collect in compressed-air lines?", options: ["Coolant leaks from the engine into the air end", "Rain is drawn in through the discharge hose", "Moisture in the air condenses as the compressed air cools", "Oil breaks down into water at high pressure"], answer: 2 },
+    { s: 5, q: "A tool is weak at the end of a long, small-diameter hose even though the compressor gauge reads normal. Why?", options: ["The compressor's engine speed is set too high", "Pressure is lost along the undersized hose", "The air is too dry for the tool to work", "The hose is storing too much air volume"], answer: 1 },
+    { s: 5, q: "When can air from a standard rental compressor be used for breathing?", options: ["Any time, as long as the compressor's oil has just been changed", "Any time, as long as the hose is shorter than fifty feet", "Only when the compressor is running at less than half load", "Only with breathing-air filtration and monitoring that meet the standard"], answer: 3 },
+    { s: 5, q: "What must be installed on universal (Chicago-style) hose couplings once they are connected?", options: ["Thread sealant", "Hose clamps", "Safety clips or pins", "A pressure gauge"], answer: 2 },
 
-    // ---------- Part 4: Generators & Electrical Distribution ----------
-    { s: 3, q: "A generator is rated 125 kVA at 0.8 power factor. What is its kW rating?", options: ["80 kW", "100 kW", "125 kW", "156 kW"], answer: 1 },
-    { s: 3, q: "Before starting a multi-voltage rental generator, what must be confirmed?", options: ["The voltage selector switch matches the load, set with the engine stopped", "The voltage selector switch is turned slowly while the engine is running", "The main breaker is closed so that the load starts with the engine", "The neutral is disconnected so that the voltage can be adjusted"], answer: 0 },
-    { s: 3, q: "On a 277/480 V wye system, what is the voltage from any phase to neutral?", options: ["120 V", "240 V", "277 V", "480 V"], answer: 2 },
-    { s: 3, q: "Which cam-lock colors are commonly used for the three phases on a 480 V system?", options: ["Black, red, blue", "White, green, gray", "Red, white, blue", "Brown, orange, yellow"], answer: 3 },
-    { s: 3, q: "In what order should cam-lock cables be connected?", options: ["Phases first, then neutral, then ground", "Ground first, then neutral, then the phases", "Neutral first, then the phases, then ground", "Any order, as long as the breaker is off"], answer: 1 },
-    { s: 3, q: "A five-wire banded cable set carries which conductors?", options: ["Three phases, a neutral and a ground", "Five phases with no neutral or ground", "Two phases, two neutrals and a ground", "Four phases and a shared ground"], answer: 0 },
-    { s: 3, q: "Standard 1016-series cam-lock connectors are rated for up to how many amps?", options: ["100 A", "200 A", "400 A", "800 A"], answer: 2 },
-    { s: 3, q: "What makes an I-Line panel well suited to rental power distribution?", options: ["Breakers are welded in place, so they cannot work loose", "It uses fuses only, so there are no breakers to trip", "It needs no grounding, so setup takes less time", "Breakers plug onto the bus, so they can be changed quickly"], answer: 3 },
-    { s: 3, q: "About how many amps can a 75 kVA transformer supply at 208 V three-phase?", options: ["90 A", "208 A", "360 A", "625 A"], answer: 1 },
-    { s: 3, q: "What is the purpose of the equipment grounding conductor?", options: ["To carry the normal return current of the load", "To raise the voltage at the end of a long run", "To carry fault current so that the breaker trips", "To balance the load between the three phases"], answer: 2 },
-    { s: 3, q: "What must be done before connecting or disconnecting cables at a generator or panel?", options: ["Open and lock out the source, then prove it is dead with a meter", "Reduce the load to half, then pull the connectors one at a time", "Wear rubber boots, then connect with the breaker still closed", "Check the fuel level, then connect while the engine is idling"], answer: 0 },
-    { s: 3, q: "Why is phase rotation checked before a three-phase motor is connected?", options: ["Wrong rotation doubles the supply voltage", "Wrong rotation overloads the neutral conductor", "Wrong rotation trips the ground-fault protection", "Wrong rotation makes the motor run backward"], answer: 3 },
-    { s: 3, q: "What does a spider box do on a job site?", options: ["Steps 480 V power up to medium voltage", "Splits a 50 A feed into GFCI-protected receptacles", "Synchronizes two generators running in parallel", "Stores power for use when the generator is off"], answer: 1 },
-    { s: 3, q: "What does running a diesel generator at very light load for long periods cause?", options: ["Overspeed", "Vapor lock", "Wet stacking", "Reverse power"], answer: 2 },
-    { s: 3, q: "Why is a generator often sized larger than a motor's running load?", options: ["Starting current is several times the running current", "Running current is several times the starting current", "Motors draw more current as they get warmer", "Generators lose half their output when warm"], answer: 0 }
+    { s: 6, q: "A generator is rated 125 kVA at 0.8 power factor. What is its kW rating?", options: ["80 kW", "100 kW", "125 kW", "156 kW"], answer: 1 },
+    { s: 6, q: "Before starting a multi-voltage rental generator, what must be confirmed?", options: ["The voltage selector switch matches the load, set with the engine stopped", "The voltage selector switch is turned slowly while the engine is running", "The main breaker is closed so that the load starts with the engine", "The neutral is disconnected so that the voltage can be adjusted"], answer: 0 },
+    { s: 6, q: "On a 277/480 V wye system, what is the voltage from any phase to neutral?", options: ["120 V", "240 V", "277 V", "480 V"], answer: 2 },
+    { s: 7, q: "Which cam-lock colors are commonly used for the three phases on a 480 V system?", options: ["Black, red, blue", "White, green, gray", "Red, white, blue", "Brown, orange, yellow"], answer: 3 },
+    { s: 7, q: "In what order should cam-lock cables be connected?", options: ["Phases first, then neutral, then ground", "Ground first, then neutral, then the phases", "Neutral first, then the phases, then ground", "Any order, as long as the breaker is off"], answer: 1 },
+    { s: 7, q: "A five-wire banded cable set carries which conductors?", options: ["Three phases, a neutral and a ground", "Five phases with no neutral or ground", "Two phases, two neutrals and a ground", "Four phases and a shared ground"], answer: 0 },
+    { s: 7, q: "Standard 1016-series cam-lock connectors are rated for up to how many amps?", options: ["100 A", "200 A", "400 A", "800 A"], answer: 2 },
+    { s: 7, q: "What makes an I-Line panel well suited to rental power distribution?", options: ["Breakers are welded in place, so they cannot work loose", "It uses fuses only, so there are no breakers to trip", "It needs no grounding, so setup takes less time", "Breakers plug onto the bus, so they can be changed quickly"], answer: 3 },
+    { s: 7, q: "About how many amps can a 75 kVA transformer supply at 208 V three-phase?", options: ["90 A", "208 A", "360 A", "625 A"], answer: 1 },
+    { s: 7, q: "What is the purpose of the equipment grounding conductor?", options: ["To carry the normal return current of the load", "To raise the voltage at the end of a long run", "To carry fault current so that the breaker trips", "To balance the load between the three phases"], answer: 2 },
+    { s: 7, q: "What must be done before connecting or disconnecting cables at a generator or panel?", options: ["Open and lock out the source, then prove it is dead with a meter", "Reduce the load to half, then pull the connectors one at a time", "Wear rubber boots, then connect with the breaker still closed", "Check the fuel level, then connect while the engine is idling"], answer: 0 },
+    { s: 7, q: "Why is phase rotation checked before a three-phase motor is connected?", options: ["Wrong rotation doubles the supply voltage", "Wrong rotation overloads the neutral conductor", "Wrong rotation trips the ground-fault protection", "Wrong rotation makes the motor run backward"], answer: 3 },
+    { s: 7, q: "What does a spider box do on a job site?", options: ["Steps 480 V power up to medium voltage", "Splits a 50 A feed into GFCI-protected receptacles", "Synchronizes two generators running in parallel", "Stores power for use when the generator is off"], answer: 1 },
+    { s: 6, q: "What does running a diesel generator at very light load for long periods cause?", options: ["Overspeed", "Vapor lock", "Wet stacking", "Reverse power"], answer: 2 },
+    { s: 6, q: "Why is a generator often sized larger than a motor's running load?", options: ["Starting current is several times the running current", "Running current is several times the starting current", "Motors draw more current as they get warmer", "Generators lose half their output when warm"], answer: 0 },
+    // ---------- Added questions ----------
+    // Heating
+    { s: 0, q: "Why must a fuel-fired heater be shut down and allowed to cool before it is refueled?", options: ["Cold fuel can crack the warm fuel tank", "Fuel spilled on hot parts can ignite", "The fuel gauge only reads correctly when cold", "Warm fuel is too thick to pour properly"], answer: 1 },
+    { s: 0, q: "A diesel-fired heater is making heavy black smoke. What is the most likely cause?", options: ["Too much combustion air for the amount of fuel being burned", "A thermostat that has been set higher than the space needs", "Too little combustion air or a dirty burner", "A supply voltage that is a few volts high"], answer: 2 },
+
+    // Boilers
+    { s: 1, q: "What is the main difference between a steam boiler and a hot-water boiler?", options: ["A steam boiler boils the water; a hot-water boiler keeps it liquid", "A steam boiler burns only oil; a hot-water boiler burns only gas", "A steam boiler needs no relief valve; a hot-water boiler needs two", "A steam boiler has no burner; a hot-water boiler always has one"], answer: 0 },
+    { s: 1, q: "What does the sight (gauge) glass on a steam boiler show?", options: ["The fuel level in the tank", "The steam pressure", "The flue gas temperature", "The water level in the boiler"], answer: 3 },
+    { s: 1, q: "Why is boiler water treated and blown down?", options: ["To raise the boiling point of the water above 300 degrees", "To control scale, corrosion and dissolved solids", "To make the burner flame burn hotter and cleaner", "To keep the relief valve from ever having to open"], answer: 1 },
+    { s: 1, q: "What does a boiler's operating control (pressure control or aquastat) do?", options: ["Feeds makeup water whenever the level drops", "Measures how much fuel the burner has used", "Cycles the burner to hold the set pressure or temperature", "Vents the flue gas when the stack gets too hot"], answer: 2 },
+    { s: 1, q: "Before a boiler burner lights, the control runs a pre-purge. Why?", options: ["To clear unburned fuel vapor out of the firebox", "To warm the fuel line before the burner fires", "To fill the boiler with water to the right level", "To test that the relief valve opens properly"], answer: 0 },
+    { s: 1, q: "What does air trapped in a hot-water heating loop cause?", options: ["Higher boiler efficiency and lower fuel use", "A pump that moves more water than its rating", "Lower gas pressure at the burner", "Noise, poor circulation and cold spots"], answer: 3 },
+    { s: 1, q: "A boiler has run low on water and overheated. What is the correct first action?", options: ["Add cold water right away to bring the temperature down", "Shut off the burner and let it cool before adding water", "Open the relief valve by hand and keep the burner firing", "Raise the firing rate so that the pressure builds back up"], answer: 1 },
+
+    // Cooling & Air Conditioning
+    { s: 2, q: "What are the four main parts of a refrigeration circuit?", options: ["Compressor, condenser, receiver, thermostat", "Blower, filter, evaporator, drain pan", "Compressor, condenser, metering device, evaporator", "Pump, tower, chiller, expansion tank"], answer: 2 },
+    { s: 2, q: "Which coil absorbs heat from the space being cooled?", options: ["Evaporator", "Condenser", "Reheat coil", "Economizer"], answer: 0 },
+    { s: 2, q: "What does the compressor do to the refrigerant?", options: ["Lowers its pressure and temperature", "Turns it from a vapor into a liquid", "Removes moisture and acid from it", "Raises its pressure and temperature"], answer: 3 },
+    { s: 2, q: "A 5-ton spot cooler handles roughly how much heat load?", options: ["12,000 BTU/hr", "60,000 BTU/hr", "34,120 BTU/hr", "100,000 BTU/hr"], answer: 1 },
+    { s: 2, q: "Before plugging in an electric rental cooling unit, what must match the unit's nameplate?", options: ["The color and length of the supply duct", "The brand of refrigerant on the truck", "The voltage, phase and breaker size", "The size of the room's doorway"], answer: 2 },
+    { s: 2, q: "Where does the water that drains from a cooling coil come from?", options: ["Moisture condensed out of the air", "A leak in the refrigerant circuit", "The compressor's oil sump", "The building's sprinkler system"], answer: 0 },
+    { s: 2, q: "A three-phase scroll compressor is loud and not pumping right after hookup. What is the most likely cause?", options: ["A dirty air filter", "A thermostat set too low", "A low outdoor temperature", "Reversed phase rotation"], answer: 3 },
+
+    // Chillers & Cooling Towers
+    { s: 3, q: "For comfort cooling, chilled water usually leaves the chiller at about what temperature?", options: ["32 degrees F", "44 degrees F", "65 degrees F", "85 degrees F"], answer: 1 },
+    { s: 3, q: "What must be done to a chilled-water loop before the pump and chiller are started?", options: ["Drain it so the pump starts with no load", "Close every valve at the customer's equipment", "Fill it and bleed out the air", "Add refrigerant to the supply hose"], answer: 2 },
+    { s: 3, q: "What is the strainer on a chiller's water inlet for?", options: ["Keeping debris out of the evaporator", "Adding glycol to the loop automatically", "Measuring the flow rate in GPM", "Removing air from the return water"], answer: 0 },
+    { s: 3, q: "How does a water-cooled chiller differ from an air-cooled chiller?", options: ["A water-cooled chiller has no compressor at all", "A water-cooled chiller uses no refrigerant at all", "A water-cooled chiller can only make ice, not cold water", "A water-cooled chiller rejects heat to a cooling tower loop"], answer: 3 },
+    { s: 3, q: "Why is cooling tower water treated with biocide?", options: ["To raise the water temperature in winter", "To control bacteria such as Legionella", "To make the water evaporate faster", "To lubricate the pump seals and bearings"], answer: 1 },
+    { s: 3, q: "The pump is running but chilled-water flow is very low. What should be checked first?", options: ["The refrigerant charge in the chiller", "The speed of the condenser fans", "Closed valves, a plugged strainer or a kinked hose", "The setting on the room thermostat"], answer: 2 },
+
+    // Dehumidification
+    { s: 4, q: "How does a refrigerant dehumidifier remove moisture from the air?", options: ["It cools the air below its dew point so water condenses", "It heats the air until the water vapor burns away", "It filters water droplets out with a fine screen", "It pushes the damp air outdoors with a large fan"], answer: 0 },
+    { s: 4, q: "How does a desiccant dehumidifier remove moisture from the air?", options: ["A cold coil condenses the water into a drain pan", "A compressor squeezes the water out of the air", "An ultraviolet lamp breaks the water vapor down", "A desiccant wheel adsorbs it, then heat drives it off"], answer: 3 },
+    { s: 4, q: "What must be done with the wet reactivation air leaving a desiccant dehumidifier?", options: ["Duct it back into the space being dried", "Duct it outside the space being dried", "Mix it into the dry process air", "Aim it at the wettest materials"], answer: 1 },
+    { s: 4, q: "Why do refrigerant dehumidifiers lose capacity in cold rooms?", options: ["The fan speeds up and the air moves too fast", "The compressor oil gets too thin to seal", "The coil frosts and the unit must defrost", "The drain hose gets longer in the cold"], answer: 2 },
+    { s: 4, q: "When air is heated and no moisture is added, its relative humidity:", options: ["Drops", "Rises", "Stays the same", "Doubles"], answer: 0 },
+    { s: 4, q: "Refrigerant dehumidifier capacity is commonly rated in:", options: ["Tons per hour", "PSI at full load", "kVA at 60 Hz", "Pints per day"], answer: 3 },
+
+    // Generators
+    { s: 6, q: "What frequency should a generator in North America produce?", options: ["50 Hz", "60 Hz", "120 Hz", "400 Hz"], answer: 1 },
+    { s: 6, q: "What controls a generator's output frequency?", options: ["The voltage regulator", "The main breaker", "Engine speed, held by the governor", "The battery charger"], answer: 2 },
+    { s: 6, q: "What does the automatic voltage regulator (AVR) do?", options: ["Adjusts excitation to hold the output voltage steady", "Adjusts the fuel rack to hold the engine speed steady", "Opens the main breaker when the load is too high", "Charges the starting battery while the engine runs"], answer: 0 },
+    { s: 6, q: "What is diesel exhaust fluid (DEF) for on a Tier 4 Final engine?", options: ["Lubricating the fuel injectors", "Cooling the turbocharger", "Raising the fuel's cetane rating", "Reducing NOx in the exhaust"], answer: 3 },
+    { s: 6, q: "A diesel generator ran out of fuel and now cranks but will not start after refilling. What is most likely needed?", options: ["A new voltage regulator", "Bleeding or priming the fuel system", "A reset of the main breaker", "A different voltage selector setting"], answer: 1 },
+    { s: 6, q: "About how many amps does a 100 kW generator supply at 480 V three-phase and 0.8 power factor?", options: ["120 A", "208 A", "150 A", "260 A"], answer: 2 },
+    { s: 6, q: "How should single-phase loads be arranged on a three-phase generator?", options: ["Balanced as evenly as possible across the three phases", "All on one phase, to leave two phases free as spares", "All on the neutral, to keep the phase currents low", "On whichever phase has the shortest cable run"], answer: 0 },
+    { s: 6, q: "Where should a generator be set up?", options: ["Indoors near the load, to keep the cables short", "In a doorway, so that it stays dry in the rain", "Under an open window, for good air to the engine", "Outdoors, with the exhaust pointed away from buildings"], answer: 3 },
+
+    // Electrical Distribution
+    { s: 7, q: "A transformer steps 480 V down to 208 V. Compared with the primary, the current available on the secondary is:", options: ["Lower", "Higher", "The same", "Zero"], answer: 1 },
+    { s: 7, q: "Why is DLO cable popular for temporary power?", options: ["It is rigid enough to support its own weight", "It needs no insulation at low voltage", "It is very flexible, with fine strands and a tough jacket", "It is rated for control circuits of 24 V only"], answer: 2 },
+    { s: 7, q: "What happens when a cable is too small for its load or the run is too long?", options: ["Voltage drops at the load and the cable runs hot", "Voltage rises at the load and the cable runs cool", "Frequency drops and the generator speeds up", "Nothing, as long as the breaker stays closed"], answer: 0 },
+    { s: 7, q: "A breaker feeding a customer's load keeps tripping. What is the correct response?", options: ["Install a larger breaker in the same space", "Hold the breaker handle in the on position", "Move the load to a breaker with no ground", "Find the overload or fault before resetting"], answer: 3 }
 ];
 
 /* ===================== STATE ===================== */
