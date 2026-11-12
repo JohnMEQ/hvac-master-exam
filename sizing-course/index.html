@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1120" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Sizing Course" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>FleetSizer Pro Sizing Course</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) tailwind.config = { future: { hoverOnlyWhenSupported: true } };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { color-scheme: dark; }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; background: #0b1120; }
+    button, a, summary, [role="radio"] { touch-action: manipulation; }
+    button { -webkit-appearance: none; appearance: none; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b1120; color: #e2e8f0;
+      min-height: 100vh; min-height: 100dvh;
+      padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); padding-bottom: env(safe-area-inset-bottom);
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: radial-gradient(60rem 30rem at 85% -10%, rgba(34, 211, 238, 0.10), transparent 60%), radial-gradient(40rem 24rem at -10% 10%, rgba(59, 130, 246, 0.08), transparent 60%);
+    }
+    .display { font-family: 'Barlow Condensed', 'Inter', sans-serif; letter-spacing: 0.01em; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .tabular { font-variant-numeric: tabular-nums; }
+    input[type="text"] { font-size: 16px; }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.96) translateY(6px); } 100% { opacity: 1; transform: none; } }
+    .animate-pop-in { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+  </style>
+</head>
+<body class="antialiased selection:bg-cyan-400/30">
+
+  <div id="toast" class="hidden fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 translate-y-4" style="bottom: calc(1.5rem + env(safe-area-inset-bottom));">
+    <div class="bg-slate-100 text-slate-900 px-6 py-3.5 rounded-full shadow-2xl font-semibold flex items-center gap-3 w-max max-w-[90vw]">
+      <svg class="w-5 h-5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <span id="toast-message" class="text-sm sm:text-base">Saved</span>
+    </div>
+  </div>
+
+  <header id="app-bar" class="sticky top-0 z-30 bg-slate-950/85 backdrop-blur-md border-b border-slate-800" style="padding-top: env(safe-area-inset-top); -webkit-backdrop-filter: blur(12px);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <button type="button" onclick="goHome()" class="flex items-center gap-3 text-left cursor-pointer min-w-0">
+        <span class="w-10 h-10 rounded-xl bg-cyan-400 text-slate-950 flex items-center justify-center shrink-0" aria-hidden="true">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"></rect><path d="M8 6h8"></path><path d="M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"></path></svg>
+        </span>
+        <span class="min-w-0">
+          <span class="block display text-xl sm:text-2xl font-bold text-white leading-none truncate">FleetSizer Pro Sizing Course</span>
+          <span class="block text-xs sm:text-sm text-slate-400 mt-0.5">How to do the math behind every tool</span>
+        </span>
+      </button>
+      <span id="learner-pill" class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-200 text-sm font-semibold max-w-[14rem] truncate"></span>
+    </div>
+  </header>
+
+  <header id="test-bar" class="hidden sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b border-slate-800" style="padding-top: env(safe-area-inset-top); -webkit-backdrop-filter: blur(12px);">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p id="test-bar-title" class="text-sm sm:text-base font-bold text-white leading-tight truncate">Test</p>
+        <p id="test-bar-progress" class="text-xs sm:text-sm text-slate-400 tabular">Question 1 of 15 • 0 answered</p>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <div id="timer-badge" class="flex items-center gap-2 px-3.5 py-2 rounded-xl border font-bold text-sm sm:text-base tabular mono" role="timer">
+          <span id="timer-display">25:00</span>
+        </div>
+        <button type="button" onclick="attemptSubmit()" class="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-sm sm:text-base cursor-pointer">Submit</button>
+      </div>
+    </div>
+    <div class="h-1 bg-slate-800"><div id="test-bar-fill" class="h-1 bg-cyan-400 transition-all duration-300" style="width:0%"></div></div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+    <!-- HOME -->
+    <section id="view-home">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
+        <p class="inline-flex px-3 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-300 text-xs font-bold uppercase tracking-wider">9 modules · 27 lessons · 10 tests</p>
+        <h1 class="display text-4xl sm:text-5xl font-bold text-white mt-3 leading-none" style="text-wrap: balance;">Size it by hand, then trust the tool</h1>
+        <p class="text-slate-300 mt-3 max-w-2xl">Each module teaches the math behind one group of FleetSizer Pro tools, with formulas, worked examples and a quick check. Finish each module with a 15-question test, then take the 30-question final. You'll need a calculator.</p>
+
+        <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Your details</p>
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3" id="home-profile"></div>
+            <button type="button" onclick="saveProfileFrom('home')" class="mt-3 w-full px-4 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold cursor-pointer">Save my details</button>
+            <p class="mt-2 text-xs text-slate-400">Progress is saved on this device. Test results, with these details, are emailed to John Mitchell (john.mitchell@equipmentshare.com).</p>
+          </div>
+          <div class="grid grid-cols-3 gap-3" id="overall-progress"></div>
+        </div>
+      </div>
+
+      <div id="module-list" class="mt-6 space-y-4"></div>
+      <div id="final-card" class="mt-6"></div>
+    </section>
+
+    <!-- LESSON -->
+    <section id="view-lesson" class="hidden">
+      <button type="button" onclick="goHome()" class="mb-4 inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white cursor-pointer">&larr; All modules</button>
+      <article class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
+        <div class="flex flex-wrap items-center gap-2" id="lesson-chips"></div>
+        <h2 id="lesson-title" class="display text-4xl sm:text-5xl font-bold text-white mt-3 leading-none" style="text-wrap: balance;"></h2>
+        <div class="mt-5 rounded-2xl border border-cyan-400/30 bg-cyan-400/5 p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-cyan-300">Goal</p>
+          <p id="lesson-goal" class="mt-1 text-slate-100 font-medium"></p>
+        </div>
+
+        <h3 class="mt-7 text-lg font-extrabold text-white">Key ideas</h3>
+        <ul id="lesson-ideas" class="mt-3 space-y-2.5"></ul>
+
+        <h3 class="mt-7 text-lg font-extrabold text-white">Formulas</h3>
+        <div id="lesson-formula" class="mt-3 rounded-2xl border border-slate-700 bg-slate-950 p-4 overflow-x-auto mono text-sm text-cyan-200 space-y-1.5"></div>
+
+        <h3 class="mt-7 text-lg font-extrabold text-white">Worked example</h3>
+        <ol id="lesson-example" class="mt-3 space-y-2"></ol>
+
+        <h3 class="mt-7 text-lg font-extrabold text-white">Terms</h3>
+        <dl id="lesson-terms" class="mt-3 grid gap-3 sm:grid-cols-2"></dl>
+
+        <div class="mt-7 rounded-2xl border-2 border-dashed border-slate-700 p-4 sm:p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-cyan-300">Quick check</p>
+          <p id="try-question" class="mt-1 font-bold text-white"></p>
+          <div id="try-options" class="mt-3 grid gap-2 sm:grid-cols-2"></div>
+          <p id="try-feedback" class="hidden mt-3 text-sm font-semibold rounded-xl px-3 py-2"></p>
+        </div>
+
+        <div class="mt-7"><button type="button" id="lesson-done-btn" onclick="toggleLessonDone()" class="w-full px-6 py-3.5 rounded-2xl font-bold text-base cursor-pointer"></button></div>
+        <div class="mt-3 flex flex-col sm:flex-row gap-3" id="lesson-nav"></div>
+      </article>
+    </section>
+
+    <!-- BRIEF -->
+    <section id="view-brief" class="hidden">
+      <button type="button" onclick="goHome()" class="mb-4 inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white cursor-pointer">&larr; All modules</button>
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8 max-w-2xl">
+        <div id="brief-chips" class="flex flex-wrap gap-2"></div>
+        <h2 id="brief-title" class="display text-4xl font-bold text-white mt-3 leading-none"></h2>
+        <p id="brief-desc" class="text-slate-300 mt-3"></p>
+        <div class="mt-5 grid grid-cols-3 gap-3 text-center" id="brief-stats"></div>
+        <ul class="mt-5 space-y-1.5 text-sm text-slate-400">
+          <li>• A calculator is allowed and expected.</li>
+          <li>• Move between questions with Previous / Next or the numbered squares.</li>
+          <li>• When time runs out, the test is submitted automatically.</li>
+          <li>• After you submit, every question is explained.</li>
+        </ul>
+        <div class="mt-6">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Your details (all required)</p>
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3" id="brief-profile"></div>
+          <p id="brief-error" class="hidden mt-2 text-sm font-semibold text-rose-300">Fill in all four fields to start the test.</p>
+          <p class="mt-2 text-xs text-slate-400">Your details, score and answers are emailed to John Mitchell (john.mitchell@equipmentshare.com) when you finish.</p>
+        </div>
+        <button type="button" id="brief-start" onclick="startTest()" class="mt-6 w-full px-6 py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-lg cursor-pointer">Start test &rarr;</button>
+      </div>
+    </section>
+
+    <!-- TEST -->
+    <section id="view-test" class="hidden">
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] items-start">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span id="q-number" class="text-xs font-bold uppercase tracking-wider text-slate-400">Question 1 of 15</span>
+            <span id="q-module" class="text-xs px-3 py-1 rounded-full border border-slate-700 bg-slate-800 text-slate-200 font-bold"></span>
+          </div>
+          <h2 id="q-text" class="mt-3 text-xl sm:text-2xl font-bold text-white leading-snug"></h2>
+          <div id="q-options" class="mt-5 space-y-3" role="radiogroup"></div>
+          <div class="mt-7 pt-5 border-t border-slate-800 flex items-center justify-between gap-3">
+            <button type="button" id="prev-btn" onclick="prevQ()" class="px-5 py-3 rounded-2xl border border-slate-700 bg-slate-800 text-slate-100 font-bold disabled:opacity-40 cursor-pointer">&larr; Previous</button>
+            <button type="button" id="next-btn" onclick="nextQ()" class="px-6 py-3 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold cursor-pointer">Next &rarr;</button>
+            <button type="button" id="finish-btn" onclick="attemptSubmit()" class="hidden px-6 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold cursor-pointer">Submit test</button>
+          </div>
+        </div>
+        <aside class="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-extrabold text-white">Questions</p>
+            <p id="palette-count" class="text-xs font-bold text-slate-400 tabular">0 / 15 answered</p>
+          </div>
+          <div id="palette" class="mt-3 grid grid-cols-5 gap-2"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="view-results" class="hidden">
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8 text-center">
+        <div id="timeout-banner" class="hidden mb-5 rounded-2xl border border-amber-400/50 bg-amber-400/10 px-4 py-3 text-sm font-semibold text-amber-200">Time ran out, so the test was submitted automatically.</div>
+        <span id="result-pill" class="inline-flex px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider border"></span>
+        <h2 id="result-heading" class="display text-4xl sm:text-5xl font-bold text-white mt-3 leading-none"></h2>
+        <p id="result-sub" class="text-slate-400 mt-2"></p>
+        <div class="mt-6 grid grid-cols-3 gap-3 max-w-xl mx-auto">
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-3"><p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Score</p><p id="result-score" class="text-2xl font-black text-white tabular"></p></div>
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-3"><p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Percent</p><p id="result-percent" class="text-2xl font-black text-white tabular"></p></div>
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-3"><p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Time</p><p id="result-time" class="text-2xl font-black text-white tabular"></p></div>
+        </div>
+
+        <div id="email-status" class="mt-6 max-w-2xl mx-auto rounded-2xl border px-4 py-3 text-sm font-medium" role="status" aria-live="polite">Sending your results...</div>
+        <div id="email-actions" class="hidden mt-3 max-w-2xl mx-auto flex flex-col sm:flex-row gap-3">
+          <a id="mail-link" href="mailto:john.mitchell@equipmentshare.com" onclick="mailTapped()" class="flex-1 px-6 py-3.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-base text-center">Email my results to John Mitchell</a>
+          <button type="button" onclick="copyResults()" class="px-6 py-3.5 rounded-2xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-base cursor-pointer">Copy results</button>
+        </div>
+
+        <div class="mt-6 flex flex-col sm:flex-row flex-wrap justify-center gap-3">
+          <button type="button" onclick="goHome()" class="px-6 py-3.5 rounded-2xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold cursor-pointer">All modules</button>
+          <button type="button" onclick="retake()" class="px-6 py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold cursor-pointer">Retake test</button>
+          <a href="#review" class="px-6 py-3.5 rounded-2xl border border-slate-700 text-slate-200 font-bold">Review answers &darr;</a>
+        </div>
+      </div>
+
+      <div id="review" class="mt-6 rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
+        <h3 class="display text-3xl font-bold text-white">Answer review</h3>
+        <p class="text-sm text-slate-400 mt-1">The right answer and the math for every question.</p>
+        <div id="review-list" class="mt-5 space-y-4"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-700 animate-pop-in">
+      <h3 id="confirm-title" class="text-xl font-extrabold text-white">Some questions are not answered</h3>
+      <p id="confirm-message" class="text-slate-300 mt-2">Unanswered questions are marked wrong. Submit anyway?</p>
+      <div class="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3">
+        <button type="button" onclick="closeConfirm()" class="px-6 py-3.5 rounded-2xl border border-slate-700 bg-slate-800 text-slate-100 font-bold cursor-pointer">Keep working</button>
+        <button type="button" id="confirm-submit" onclick="submitTest(false)" class="px-6 py-3.5 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold cursor-pointer">Submit anyway</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MODULES = [];
+  </script>
+  <script>
+MODULES.push({
+  key: "basics",
+  name: "Sizing Basics",
+  tool: "All tools",
+  blurb: "The units, design conditions and step-by-step workflow every FleetSizer Pro tool is built on.",
+  lessons: [
+    {
+      t: "Units You Use Every Day",
+      goal: "Convert between BTU/h, tons, MBH, kW, therms, gallons and pounds without a calculator app.",
+      ideas: [
+        "Heat is counted per hour in BTU/h. Every tool works in BTU/h underneath, then shows tons for cooling or MBH for heating.",
+        "1 ton of cooling = 12,000 BTU/h. 1 MBH = 1,000 BTU/h.",
+        "1 kW of electric heat = 3,412 BTU/h, so 1 ton ≈ 3.5 kW of heat.",
+        "Moisture is counted in PPD, pounds of water per day. One pound of water is about one pint, and 8.345 PPD = 1 gallon per day.",
+        "7,000 grains of water = 1 pound. Humidity in the air is measured in grains per pound of dry air (GPP).",
+        "Gas: 1 therm = 100,000 BTU. Pipeline natural gas carries about 1,030 BTU per cubic foot.",
+        "Water: 1 gallon weighs about 8.33 lb, and 1 cubic foot holds 7.48 gallons. 1 psi of water pressure = 2.31 ft of head."
+      ],
+      formula: ["Tons = BTU/h ÷ 12,000", "MBH = BTU/h ÷ 1,000", "BTU/h = kW × 3,412", "Gallons/day = PPD ÷ 8.345"],
+      ex: ["A load is 360,000 BTU/h.", "Tons: 360,000 ÷ 12,000 = 30 tons.", "MBH: 360,000 ÷ 1,000 = 360 MBH.", "Electric equivalent: 360,000 ÷ 3,412 = 105.5 kW."],
+      terms: [["BTU/h", "British thermal units per hour: the rate heat is added or removed."], ["Ton", "12,000 BTU/h of cooling."], ["MBH", "Thousands of BTU per hour, used for heaters."], ["PPD", "Pounds (pints) of water removed per day."]],
+      tryIt: ["48,000 BTU/h is how many tons?", ["2", "4", "12", "48"], 1, "48,000 ÷ 12,000 = 4 tons."]
+    },
+    {
+      t: "Design Conditions & ΔT",
+      goal: "Pick the right outdoor and indoor conditions, because the temperature difference drives almost every load.",
+      ideas: [
+        "Size to the design day, not the average day. Design ambient is the hottest (or coldest) condition you are promising to hold setpoint at.",
+        "For cooling, use the ASHRAE 1% or 0.4% dry bulb for the city. For heating, use the 99% (or 99.6%) low.",
+        "ΔT (delta T) is the difference between outside and inside temperature. It is the single biggest lever on the load.",
+        "A 95°F → 72°F job (ΔT 23) and a 95°F → 65°F job (ΔT 30) are about 30% apart on envelope and air loads before anything else changes.",
+        "Outdoor humidity drives the latent (moisture) part of every air load.",
+        "Elevation changes air density: at 5,000 ft air is about 17% lighter, so the same CFM carries about 17% less heat.",
+        "Deep ground temperature is about 55°F, which matters for floors under cold rooms and heated spaces."
+      ],
+      formula: ["ΔT (cooling) = T outside − T inside", "ΔT (heating) = T inside − T outside", "Load ratio ≈ new ΔT ÷ old ΔT"],
+      ex: ["Customer wants 65°F instead of 72°F on a 95°F design day.", "Old ΔT = 95 − 72 = 23. New ΔT = 95 − 65 = 30.", "30 ÷ 23 = 1.30, so envelope and air loads rise about 30%."],
+      terms: [["Design day", "The extreme hot or cold condition the system must handle."], ["Dry bulb", "Ordinary air temperature."], ["ΔT", "Temperature difference."], ["Latent", "Heat tied to moisture in the air."]],
+      tryIt: ["Outdoor design is 100°F and the target is 70°F. What is the cooling ΔT?", ["30°F", "70°F", "100°F", "170°F"], 0, "100 − 70 = 30°F."]
+    },
+    {
+      t: "The Sizing Workflow",
+      goal: "Follow the same five steps every tool uses, and know which results are firm and which need checking.",
+      ideas: [
+        "Step 1, Load: how much heat, moisture, flow or power the job needs.",
+        "Step 2, Derate: turn the load into the nameplate size needed at the site's conditions (heat, altitude, glycol and so on).",
+        "Step 3, Fleet: pick units from the owned fleet that cover the derated size, with spares if needed.",
+        "Step 4, Power and distribution: size the generator, cable and panels to run the equipment.",
+        "Step 5, Layout and quote: draw the site and send the customer export.",
+        "Safety factors cover uncertain inputs: the HVAC/R engine defaults to 15%, the quick chiller tool to 10%.",
+        "The likely range re-runs the job with uncertain inputs flexed. A wide range tells you which input to confirm on site.",
+        "Input Checks flag risky combinations but never change the number. Confirm large or critical jobs with the DSM."
+      ],
+      formula: ["Load → Derate → Fleet → Power → Layout & quote", "Required = Load × (1 + safety factor)"],
+      ex: ["A tent needs 18 tons of cooling with a 10% safety factor.", "18 × 1.10 = 19.8 tons required.", "Next: derate for site heat and altitude, then pick AC units, then size the generator."],
+      terms: [["Derate", "A reduction in equipment capacity at real site conditions."], ["Nameplate", "The rated capacity printed on the unit."], ["Safety factor", "Extra capacity added for uncertainty."], ["DSM", "The district sales manager who confirms large or critical jobs."]],
+      tryIt: ["What comes right after finding the load?", ["Writing the quote", "Derating to nameplate at site conditions", "Choosing cable", "Drawing the layout"], 1, "The load must be converted to the nameplate size the site actually needs."]
+    }
+  ],
+  test: [
+    ["How many BTU/h is one ton of cooling?", ["3,412", "12,000", "1,000", "100,000"], 1, "1 ton = 12,000 BTU/h."],
+    ["A load is 360,000 BTU/h. How many tons is that?", ["3", "30", "36", "300"], 1, "360,000 ÷ 12,000 = 30 tons."],
+    ["1 kW of electric heat equals about how many BTU/h?", ["1,000", "3,412", "12,000", "7,000"], 1, "1 kW = 3,412 BTU/h."],
+    ["A 30 kW electric heater puts out about how many BTU/h?", ["10,236", "102,360", "360,000", "30,000"], 1, "30 × 3,412 = 102,360 BTU/h."],
+    ["MBH means:", ["1,000,000 BTU/h", "1,000 BTU/h", "Megawatt-hour", "100 BTU/h"], 1, "M is the Roman numeral for 1,000, so MBH = thousands of BTU/h."],
+    ["One therm of gas equals:", ["1,000 BTU", "12,000 BTU", "100,000 BTU", "1,000,000 BTU"], 2, "1 therm = 100,000 BTU."],
+    ["In dehumidification, PPD stands for:", ["Pounds of water per day", "Pressure per duct", "Parts per day", "Power per dehumidifier"], 0, "PPD is pounds (about pints) of water per day."],
+    ["How many grains of water make one pound?", ["1,000", "3,412", "7,000", "12,000"], 2, "7,000 grains = 1 lb."],
+    ["Which outdoor temperature should a cooling job be sized for?", ["The average summer day", "The design high (ASHRAE 1% or 0.4%)", "The overnight low", "The indoor setpoint"], 1, "Size to the design day you are promising to hold."],
+    ["Job A holds 72°F on a 95°F day. Job B holds 65°F on the same day. Compared with A, B's envelope and air loads are about:", ["The same", "30% higher", "Half", "10 times higher"], 1, "ΔT goes from 23 to 30: 30 ÷ 23 ≈ 1.30."],
+    ["At 5,000 ft, air is about how much lighter than at sea level?", ["2%", "17%", "50%", "It is the same"], 1, "About 17% lighter, so each CFM carries less heat."],
+    ["The likely range on a load is very wide. What should you do?", ["Ignore it", "Double the load", "Confirm the uncertain input on site", "Always quote the low end"], 2, "A wide range points to the input that most needs checking."],
+    ["What do Input Checks do to the calculated number?", ["Raise it 10%", "Nothing; they only flag risks", "Reset it", "Lower it"], 1, "Checks are warnings only. They never change the number."],
+    ["Which step comes FIRST in the sizing workflow?", ["Pick the generator", "Find the load", "Choose the cable", "Write the quote"], 1, "Everything starts from the load."],
+    ["Who should confirm large or critical jobs before quoting?", ["The customer", "The DSM", "The driver", "No one"], 1, "The tools are rules of thumb. Large or critical jobs go to the DSM."]
+  ]
+});
+
+MODULES.push({
+  key: "loads",
+  name: "Cooling & Heating Loads",
+  tool: "HVAC/R Sizing",
+  blurb: "Heat through walls and roofs, air leakage, people, lights and equipment, tall spaces and airflow.",
+  lessons: [
+    {
+      t: "Heat Through Walls, Roof & Floor",
+      goal: "Calculate conduction through the building shell with area, R-value (or U) and ΔT.",
+      ideas: [
+        "Heat flows through the shell in proportion to area, U-factor and temperature difference.",
+        "U is the inverse of R: U = 1 ÷ R. A higher R-value means less heat flow.",
+        "A 4-inch polyurethane cold-room panel is about R-30 (U 0.033). A vinyl tent is about R-1.2 (U 0.83), roughly 25 times worse per square foot.",
+        "Wall area of a rectangle building = 2 × L × H + 2 × W × H. Roof area ≈ L × W for a flat roof.",
+        "Sun adds heat to roofs and walls in the daytime. The engine adds a solar offset to the roof temperature of about 10°F (light roof), 20°F (medium) or 32°F (dark or clear tent); walls get 45% of that.",
+        "For heating, the floor loses heat to the ground (about 55°F). For a freezer, the slab is a big load and an uninsulated slab can heave."
+      ],
+      formula: ["Q = A × U × ΔT", "Q = A × ΔT ÷ R", "U = 1 ÷ R"],
+      ex: ["A wall is 1,000 ft², R-5, with a 30°F ΔT.", "Q = 1,000 × 30 ÷ 5 = 6,000 BTU/h.", "The same wall at R-10 would pass half: 3,000 BTU/h."],
+      terms: [["R-value", "Resistance to heat flow. Higher is better insulation."], ["U-factor", "Heat flow per ft² per °F. U = 1/R."], ["Envelope", "The walls, roof and floor of the space."], ["Sol-air offset", "Extra temperature added for sun hitting a surface."]],
+      tryIt: ["A roof is 2,000 ft², R-10, and ΔT is 40°F. How much heat flows through it?", ["800 BTU/h", "8,000 BTU/h", "80,000 BTU/h", "50 BTU/h"], 1, "2,000 × 40 ÷ 10 = 8,000 BTU/h."]
+    },
+    {
+      t: "Air Changes, People, Lights & Equipment",
+      goal: "Add the heat carried in by outside air and the heat given off inside the space.",
+      ideas: [
+        "Air changes per hour (ACH) is how many times the room's air is replaced by outside air each hour.",
+        "Leakage guide: tight commercial 0.3–0.6 ACH, metal buildings about 1, tents 2.5–3, poly enclosures 4 or more.",
+        "Convert ACH to airflow: CFM = volume (ft³) × ACH ÷ 60.",
+        "Sensible heat in that air at sea level: Q = 1.08 × CFM × ΔT. Humid outdoor air also brings a latent (moisture) load.",
+        "People (engine): seated 450, light work 550, moderate 850, heavy labor 1,450 BTU/h each. The quick tool uses 800 BTU/h × an activity factor (0.8 seated, 1.0 milling around, 1.2 active).",
+        "Lights: watts × 3.412. Equipment: nameplate kW × diversity (default 0.85) × 3,412.",
+        "In heating, internal gains help. The engine ignores them by default (the space may be empty on the coldest night) unless you credit 50% or 100%."
+      ],
+      formula: ["CFM = Volume × ACH ÷ 60", "Q sensible = 1.08 × CFM × ΔT", "Q lights = Watts × 3.412", "Q equipment = kW × diversity × 3,412"],
+      ex: ["A room is 50 × 40 × 12 ft = 24,000 ft³ at 1 ACH with a 30°F ΔT.", "CFM = 24,000 × 1 ÷ 60 = 400 CFM.", "Q = 1.08 × 400 × 30 = 12,960 BTU/h."],
+      terms: [["ACH", "Air changes per hour."], ["Infiltration", "Outside air leaking in through gaps."], ["Ventilation", "Outside air brought in on purpose for people."], ["Diversity", "The share of equipment actually running at peak."]],
+      tryIt: ["A 60,000 ft³ tent leaks at 3 ACH. What is the leakage airflow?", ["1,000 CFM", "3,000 CFM", "20,000 CFM", "180,000 CFM"], 1, "60,000 × 3 ÷ 60 = 3,000 CFM."]
+    },
+    {
+      t: "Tall Spaces, Airflow & Sensible vs Latent",
+      goal: "Handle stratification in tall spaces and check whether the air can actually carry the load.",
+      ideas: [
+        "Air stratifies. Above about 14–20 ft, cool air pools in the occupied zone and the upper volume stays warm.",
+        "For comfort cooling over 14 ft, the engine sizes air exchange and walls to the occupied zone (12 ft by default) and counts 60% of roof gain. Tick “condition full volume” only if the customer requires it or there is product or process load up high.",
+        "Heating is the opposite: warm air rises, so the full volume is always heated. Without destratification fans, the roof layer runs hotter by about 0.75°F per ft above 14 ft (capped at 20°F).",
+        "Quoting rule: tall-space cooling, size to the zone and say so on the quote. Tall-space heating, carry destrat or HVLS fans or add 15–30% to the heat.",
+        "Supply airflow: CFM = Q sensible ÷ (1.08 × supply ΔT). Comfort cooling runs about 400 CFM per ton (350–450).",
+        "Above about 450 CFM/ton the coil runs warm and won't dehumidify. Below about 300 the air is drafty cold and the coil may ice.",
+        "SHR (sensible heat ratio) = sensible ÷ total. Rental DX coils run about 0.70; a crowded shelter may be 0.57 and a data center 0.96."
+      ],
+      formula: ["CFM = Q sensible ÷ (1.08 × ΔT supply)", "Comfort cooling ≈ 400 CFM per ton", "Roof penalty = 0.75°F × (height − 14 ft), max 20°F", "SHR = sensible ÷ total"],
+      ex: ["A 10-ton comfort cooling job.", "10 × 400 = about 4,000 CFM of supply air.", "Check: 4,000 ÷ 10 = 400 CFM/ton, inside the 350–450 range."],
+      terms: [["Stratification", "Air layering by temperature, warm on top."], ["Occupied zone", "The lower part of the space where people are."], ["Destrat fan", "A ceiling fan that mixes warm air back down."], ["SHR", "Sensible heat ratio: sensible load divided by total load."]],
+      tryIt: ["About how much supply air does a 10-ton comfort cooling job need?", ["400 CFM", "1,200 CFM", "4,000 CFM", "12,000 CFM"], 2, "About 400 CFM per ton × 10 tons = 4,000 CFM."]
+    }
+  ],
+  test: [
+    ["If a wall is R-5, what is its U-value?", ["5", "0.2", "0.5", "2"], 1, "U = 1 ÷ R = 1 ÷ 5 = 0.2."],
+    ["Using Q = A × ΔT ÷ R: a 1,000 ft² wall, R-5, ΔT 30°F. What is Q?", ["150 BTU/h", "6,000 BTU/h", "30,000 BTU/h", "600 BTU/h"], 1, "1,000 × 30 ÷ 5 = 6,000 BTU/h."],
+    ["Which loses the most heat per square foot?", ["4\" PU panel (R-30)", "Insulated commercial wall (R-13)", "Vinyl tent (about R-1.2)", "Insulated floor (R-20)"], 2, "The lowest R-value loses the most heat."],
+    ["A room is 40 ft × 30 ft × 10 ft. What is its volume?", ["1,200 ft³", "12,000 ft³", "120,000 ft³", "80 ft³"], 1, "40 × 30 × 10 = 12,000 ft³."],
+    ["That 12,000 ft³ room has 2 air changes per hour. What is the airflow?", ["24,000 CFM", "400 CFM", "200 CFM", "6,000 CFM"], 1, "12,000 × 2 ÷ 60 = 400 CFM."],
+    ["Sensible heat in 400 CFM of air with a 25°F ΔT (1.08 × CFM × ΔT)?", ["10,800 BTU/h", "432 BTU/h", "1,000 BTU/h", "108,000 BTU/h"], 0, "1.08 × 400 × 25 = 10,800 BTU/h."],
+    ["5,000 W of lighting adds how many BTU/h?", ["5,000", "17,060", "1,465", "60,000"], 1, "5,000 × 3.412 = 17,060 BTU/h."],
+    ["20 kW of equipment nameplate at 85% diversity adds about how much heat?", ["58,004 BTU/h", "68,240 BTU/h", "17,000 BTU/h", "20,000 BTU/h"], 0, "20 × 0.85 × 3,412 = 58,004 BTU/h."],
+    ["In the engine, one person doing heavy labor adds about:", ["450 BTU/h", "850 BTU/h", "1,450 BTU/h", "3,412 BTU/h"], 2, "Heavy labor is 1,450 BTU/h per person."],
+    ["Why does the heating calc ignore people, lights and equipment by default?", ["They add moisture", "The space may be empty on the coldest night", "They don't make heat", "Codes forbid it"], 1, "Ignoring gains is the conservative choice for heating."],
+    ["A warehouse is 30 ft tall. For comfort cooling, the engine sizes air exchange and walls on:", ["The full 30 ft", "The occupied zone (about 12 ft)", "Half the height, 15 ft", "The roof only"], 1, "Cool air pools low, so cooling is sized to the occupied zone."],
+    ["Heating a 30 ft tall space with no destrat fans: using 0.75°F per ft above 14 ft, how much hotter does the roof layer run?", ["12°F", "22.5°F", "30°F", "0°F"], 0, "(30 − 14) × 0.75 = 12°F."],
+    ["The comfort cooling rule of thumb for supply air is about:", ["100 CFM per ton", "400 CFM per ton", "1,000 CFM per ton", "1,500 CFM per ton"], 1, "About 400 CFM per ton (350–450)."],
+    ["54,000 BTU/h of sensible load with a 20°F supply ΔT needs how much air (Q ÷ (1.08 × ΔT))?", ["2,500 CFM", "1,080 CFM", "5,400 CFM", "270 CFM"], 0, "54,000 ÷ (1.08 × 20) = 54,000 ÷ 21.6 = 2,500 CFM."],
+    ["A space has 70,000 BTU/h sensible and 30,000 BTU/h latent. What is the SHR?", ["0.30", "0.43", "0.70", "1.43"], 2, "70,000 ÷ 100,000 = 0.70."]
+  ]
+});
+
+MODULES.push({
+  key: "derate",
+  name: "Derates, Heaters & Cold Rooms",
+  tool: "HVAC/R Sizing",
+  blurb: "Turning a load into nameplate size, choosing the right heater, and the extra rules for refrigeration.",
+  lessons: [
+    {
+      t: "The Derate Stack",
+      goal: "Convert a load into the nameplate capacity needed at the site's real conditions.",
+      ideas: [
+        "A unit's nameplate is rated at one set of conditions (AHRI: 95°F outdoor, sea level). Rental jobs are rarely there.",
+        "Condenser ambient: capacity falls about 1.0–1.3% for every °F above 95°F. The tent tool uses 1% per °F.",
+        "Altitude: about 2.5% per 1,000 ft for AC. Gas heaters lose about 4% per 1,000 ft above 2,000 ft. Electric heat has no altitude derate.",
+        "SHR mismatch: a humid, crowded space needs more total tonnage to get the moisture out (×1.1 to 1.5).",
+        "Glycol in a chiller loop costs 3–8% of capacity. A field allowance of about 5% covers long duct runs, dirty coils and voltage sag.",
+        "Divide the load by each factor in turn. The running total shows the reasoning."
+      ],
+      formula: ["Nameplate = Load ÷ (factor 1 × factor 2 × …)", "Ambient factor ≈ 1 − 0.01 × (T ambient − 95)", "Altitude factor ≈ 1 − 0.025 × (feet ÷ 1,000)"],
+      ex: ["A 20-ton load on a 105°F site at sea level.", "Ambient factor = 1 − 0.01 × 10 = 0.90.", "Nameplate = 20 ÷ 0.90 = 22.2 tons."],
+      terms: [["AHRI rating", "The standard test conditions behind nameplate capacity."], ["Condenser ambient", "Air temperature entering the outdoor coil."], ["Field allowance", "A margin for real-world losses."], ["Derate factor", "The fraction of nameplate the unit really delivers."]],
+      tryIt: ["The load is 10 tons and the combined derate factor is 0.80. What nameplate is needed?", ["8 tons", "10.8 tons", "12.5 tons", "18 tons"], 2, "10 ÷ 0.80 = 12.5 tons."]
+    },
+    {
+      t: "Choosing & Sizing Heaters",
+      goal: "Know the heater types, what they deliver and where each one is safe to use.",
+      ideas: [
+        "Heater output = input × efficiency. Indirect-fired heaters deliver about 80–82% of input; direct-fired about 92%; electric 100%.",
+        "Indirect-fired heaters send combustion products out a flue, so the heated air is clean. They are the choice for occupied spaces and tents.",
+        "Direct-fired heaters put combustion products and water vapor into the space. They are not for occupied tents and work against drying jobs.",
+        "Flameless heaters (diesel-driven) and electric heaters are also suited to occupied tents.",
+        "Electric heat output: kW × 3,412 BTU/h. It needs generator or site power.",
+        "Burning propane makes about 1.6 lb of water for every pound of fuel. On winter drying jobs, venting the heaters can matter more than adding dehumidifiers.",
+        "Heating airflow runs about 15 CFM per MBH at a 60°F temperature rise."
+      ],
+      formula: ["Output = Input × efficiency", "Electric BTU/h = kW × 3,412", "Heater input needed = Load ÷ efficiency"],
+      ex: ["A 400,000 BTU/h indirect-fired heater at 82% efficiency.", "Output = 400,000 × 0.82 = 328,000 BTU/h delivered.", "To deliver 500,000 BTU/h you need 500,000 ÷ 0.82 ≈ 610,000 BTU/h of input."],
+      terms: [["Indirect-fired", "Heater that keeps combustion gases out of the heated air."], ["Direct-fired", "Heater that burns fuel in the airstream."], ["Flameless heater", "Heater that makes heat without an open flame."], ["Input vs output", "Fuel energy burned vs heat delivered."]],
+      tryIt: ["Which heater type is best for an occupied event tent?", ["Direct-fired propane", "Indirect-fired", "Open-flame salamander", "Propane torpedo"], 1, "Indirect-fired heaters keep combustion products out of the tent."]
+    },
+    {
+      t: "Cold Rooms & Refrigeration",
+      goal: "Apply the refrigeration rules for rooms below 36°F: run time, fans, defrost, product and doors.",
+      ideas: [
+        "Below 36°F the compressor needs defrost time, so it runs only 16–18 hours a day. The 24-hour load must be removed in those hours.",
+        "Run-time multiplier = 24 ÷ run hours: 18 hours (coolers) = ×1.33, 16 hours (freezers) = ×1.5.",
+        "Evaporator fans sit inside the box and add about 7% of the load. Defrost adds about 10%.",
+        "Product pull-down = pounds per day × specific heat × temperature drop ÷ pull-down hours. Freezing product also adds latent heat of fusion.",
+        "Living produce gives off respiration heat all the time; berries and broccoli are high, grain and nuts are near zero.",
+        "On a busy freezer, door openings are often the largest single load. A strip curtain stops about 60% of it; an air curtain or vestibule about 80%.",
+        "The engine's default safety factor is 15% (Heatcraft's manual uses 10%)."
+      ],
+      formula: ["Hourly capacity = (Load + fans + defrost) × (1 + safety) × 24 ÷ run hours", "Q product = lb/day × cp × ΔT ÷ pull-down hours"],
+      ex: ["5,000 lb/day of produce (cp 0.9) cooled 40°F over 24 hours.", "5,000 × 0.9 × 40 = 180,000 BTU per day.", "180,000 ÷ 24 = 7,500 BTU/h of product load."],
+      terms: [["Pull-down", "Cooling product from its entering temperature to room temperature."], ["Defrost", "Melting frost off the evaporator coil."], ["Respiration", "Heat given off by living produce."], ["Strip curtain", "Plastic strips in a doorway that cut infiltration."]],
+      tryIt: ["A cooler's 24-hour load is 360,000 BTU and it runs 18 hours a day. What hourly capacity is needed (before safety)?", ["15,000 BTU/h", "20,000 BTU/h", "360,000 BTU/h", "6,480 BTU/h"], 1, "360,000 ÷ 18 = 20,000 BTU/h."]
+    }
+  ],
+  test: [
+    ["AHRI nameplate ratings for air-cooled units are at what outdoor temperature?", ["75°F", "85°F", "95°F", "105°F"], 2, "AHRI rates at 95°F outdoor."],
+    ["At 1% per °F above 95°F, a unit on a 110°F site loses about:", ["5%", "10%", "15%", "20%"], 2, "110 − 95 = 15°F × 1% = 15%."],
+    ["A 20-ton load on a 105°F site (1% per °F above 95). What nameplate is needed?", ["18 tons", "20 tons", "22.2 tons", "30 tons"], 2, "Factor 0.90; 20 ÷ 0.90 = 22.2 tons."],
+    ["At about 2.5% per 1,000 ft, an AC unit at 4,000 ft loses about:", ["2.5%", "4%", "10%", "25%"], 2, "4 × 2.5% = 10%."],
+    ["Which heater has no altitude derate?", ["Indirect-fired propane", "Direct-fired natural gas", "Electric", "Indirect-fired diesel"], 2, "Electric heat output doesn't depend on air density for combustion."],
+    ["A 500,000 BTU/h input indirect-fired heater delivers about 82%. What is its output?", ["410,000 BTU/h", "500,000 BTU/h", "82,000 BTU/h", "610,000 BTU/h"], 0, "500,000 × 0.82 = 410,000 BTU/h."],
+    ["Why are direct-fired heaters not used in occupied tents?", ["They are too small", "They put combustion products and moisture into the space", "They need electricity", "They only cool"], 1, "Direct-fired heaters vent their exhaust into the heated space."],
+    ["A direct-fired heater on a drying job works against you because:", ["It is too quiet", "Burning fuel adds water vapor to the space", "It uses electricity", "It has no fan"], 1, "Combustion makes water, adding to the moisture load."],
+    ["A 60 kW electric heater delivers about how many BTU/h?", ["60,000", "204,720", "720,000", "17,580"], 1, "60 × 3,412 = 204,720 BTU/h."],
+    ["A cooler compressor runs 18 hours a day. What multiplier is applied to the 24-hour load?", ["0.75", "1.00", "1.33", "1.50"], 2, "24 ÷ 18 = 1.33."],
+    ["A freezer compressor runs 16 hours a day. What multiplier is applied?", ["1.33", "1.50", "2.00", "16"], 1, "24 ÷ 16 = 1.5."],
+    ["Default allowances for evaporator fans and defrost are:", ["7% and 10%", "1% and 2%", "25% and 50%", "None"], 0, "Fans about 7%, defrost about 10%."],
+    ["5,000 lb/day of produce (cp 0.9) is cooled 40°F over 24 hours. What is the product load?", ["7,500 BTU/h", "180,000 BTU/h", "750 BTU/h", "22,500 BTU/h"], 0, "5,000 × 0.9 × 40 ÷ 24 = 7,500 BTU/h."],
+    ["On a busy freezer, which load is often the largest single item?", ["Lights", "Door openings", "People", "Floor"], 1, "Door traffic lets in large amounts of warm, moist air."],
+    ["A strip curtain blocks about what share of door infiltration?", ["10%", "30%", "60%", "100%"], 2, "Strip curtains are about 60% effective; air curtains about 80%."]
+  ]
+});
+
+MODULES.push({
+  key: "moisture",
+  name: "Moisture & Dehumidification",
+  tool: "Moisture Load",
+  blurb: "Pounds of water per day, where the water comes from, and choosing desiccant or LGR units.",
+  lessons: [
+    {
+      t: "PPD, Grains & the One Equation",
+      goal: "Understand how the moisture calculator turns every source into pounds of water per day.",
+      ideas: [
+        "The moisture tool answers one question: how many pounds of water per day must come out to reach and hold the target temperature and RH?",
+        "One pound of water ≈ one pint, so pounds per day is PPD. 8.345 PPD = 1 gallon per day. PPD ÷ 24 = pounds per hour.",
+        "Humidity in air is measured in grains per pound of dry air (GPP). 7,000 grains = 1 lb.",
+        "Steady-state load = outdoor air + materials + slab + people + pool + heaters.",
+        "Pull-down is the one-time water that must come out to get from today's conditions to the target. It is spread over the window you choose and added to day one only.",
+        "Safety factor: 1.2–1.5 is typical for restoration; 1.1 for a well-known permanent install. It applies to both numbers.",
+        "PPD is the load. Choosing equipment that can remove it at the target conditions is a separate step."
+      ],
+      formula: ["Day-one load = (Steady-state + Pull-down) × Safety factor", "Ongoing load = Steady-state × Safety factor", "Gallons/day = PPD ÷ 8.345"],
+      ex: ["Steady-state 400 PPD, pull-down 200 PPD, safety factor 1.25.", "Day one = (400 + 200) × 1.25 = 750 PPD.", "Ongoing = 400 × 1.25 = 500 PPD (about 60 gallons a day)."],
+      terms: [["PPD", "Pounds (pints) of water per day."], ["GPP", "Grains of water per pound of dry air."], ["Pull-down", "One-time drying to reach the target."], ["Steady state", "The load to hold the target once reached."]],
+      tryIt: ["500 PPD is about how many gallons per day?", ["About 60", "About 500", "About 4,170", "About 8"], 0, "500 ÷ 8.345 ≈ 60 gallons per day."]
+    },
+    {
+      t: "Where the Water Comes From",
+      goal: "Estimate the biggest moisture sources and spot the cheap fixes.",
+      ideas: [
+        "Outdoor air carries water in with it. Industry shorthand: lb/h = CFM × 4.5 × (outdoor grains − target grains) ÷ 7,000. Multiply by 24 for PPD.",
+        "Three air streams use that formula: infiltration (24 h/day, CFM = volume × ACH ÷ 60), ventilation (occupied hours only) and exhaust makeup air.",
+        "On containment jobs, negative air machines and dust collectors push air out and the same CFM comes back in from outdoors. That is often the biggest load.",
+        "If outdoor air is drier than the target, the tool counts that stream as zero. Ventilating with dry air removes moisture for free.",
+        "Wet materials (drywall, framing, concrete) are entered per 1,000 ft² of floor and drop as the job dries.",
+        "Slab vapor is measured with a calcium chloride test (ASTM F1869). 3 lb per 1,000 ft² per day is the common flooring limit.",
+        "Direct-fired heaters add water: propane makes about 1.6 lb of water per pound burned. Venting the heaters is often the best fix."
+      ],
+      formula: ["lb/h ≈ CFM × 4.5 × Δgrains ÷ 7,000", "PPD = lb/h × 24", "Infiltration CFM = Volume × ACH ÷ 60"],
+      ex: ["1,000 CFM of outdoor air at 100 grains; target 60 grains.", "1,000 × 4.5 × 40 ÷ 7,000 = 25.7 lb/h.", "25.7 × 24 = about 617 PPD."],
+      terms: [["Infiltration", "Air leaking in through the building envelope."], ["Exhaust makeup", "Outdoor air that replaces air blown out by exhaust fans."], ["Negative air machine", "A fan that keeps a work area under negative pressure."], ["Calcium chloride test", "A test that measures water vapor coming through a slab."]],
+      tryIt: ["Which air stream is charged 24 hours a day?", ["Infiltration", "Ventilation for occupants", "Exhaust makeup during work hours", "People's breath"], 0, "Leakage happens all day and night."]
+    },
+    {
+      t: "Picking Desiccant or LGR Units",
+      goal: "Match dehumidifier type and airflow to the space and conditions.",
+      ideas: [
+        "LGR (refrigerant) dehumidifiers are rated by AHAM at 80°F and 60% RH. At a drying target like 80°F / 35% RH they remove roughly half their rating.",
+        "Below about a 45°F dew point, refrigerant coils frost. Cold or very dry targets call for desiccant units.",
+        "Desiccant units work in the cold and at low humidity. Their wet reactivation air must be ducted outside.",
+        "Airflow can also be sized by air changes: CFM = volume × ACH ÷ 60.",
+        "For tanks (cylinders), volume = π × r² × h. Gallons = ft³ × 7.48.",
+        "Save each room as a zone to get a job total.",
+        "If day one is much higher than ongoing, plan extra units for the first 24 hours only."
+      ],
+      formula: ["CFM = Volume × ACH ÷ 60", "Tank volume = π × r² × h", "Gallons = ft³ × 7.48"],
+      ex: ["A building 200 × 100 × 30 ft needs 3 air changes per hour.", "Volume = 200 × 100 × 30 = 600,000 ft³.", "CFM = 600,000 × 3 ÷ 60 = 30,000 CFM."],
+      terms: [["LGR", "Low-grain refrigerant dehumidifier."], ["Desiccant", "A material that absorbs moisture, dried again with heat."], ["Reactivation air", "Hot air that dries the desiccant and carries the water away."], ["Dew point", "The temperature where moisture condenses."]],
+      tryIt: ["A round tank is 50 ft in radius and 10 ft tall. At 4 air changes per hour, what airflow is needed?", ["About 5,236 CFM", "About 78,540 CFM", "About 1,309 CFM", "About 314,160 CFM"], 0, "π × 50² × 10 = 78,540 ft³; × 4 ÷ 60 = 5,236 CFM."]
+    }
+  ],
+  test: [
+    ["One pound of water is about one:", ["Gallon", "Quart", "Pint", "Cup"], 2, "A pint's a pound, so PPD ≈ pints per day."],
+    ["How many PPD equal 1 gallon per day?", ["1", "4", "8.345", "128"], 2, "1 gallon of water weighs 8.345 lb."],
+    ["The day-one design load equals:", ["Steady-state × safety factor", "(Steady-state + pull-down) × safety factor", "Pull-down only", "Steady-state ÷ safety factor"], 1, "Pull-down is added to day one only."],
+    ["A typical safety factor for restoration drying is:", ["0.5–0.8", "Exactly 1.0", "1.2–1.5", "3–4"], 2, "1.2–1.5 covers uncertain material and leakage inputs."],
+    ["Using lb/h ≈ CFM × 4.5 × Δgrains ÷ 7,000: 500 CFM, outdoor 110 grains, target 60 grains. About how many PPD?", ["About 16", "About 386", "About 1,125", "About 9,000"], 1, "500 × 4.5 × 50 ÷ 7,000 = 16.1 lb/h × 24 ≈ 386 PPD."],
+    ["If outdoor air is drier than the target, the tool counts that air stream as:", ["A big load", "Zero", "Double", "Negative"], 1, "It is counted as zero; dry outdoor air helps."],
+    ["On containment jobs, what is often the biggest moisture load?", ["People", "Exhaust makeup air", "A pool", "The slab"], 1, "Air pushed out by negative air machines is replaced by outdoor air."],
+    ["What test measures moisture vapor coming up through a concrete slab?", ["Blower door test", "Calcium chloride test (ASTM F1869)", "Smoke pencil", "Megger test"], 1, "The calcium chloride test reports lb per 1,000 ft² per day."],
+    ["Burning propane produces about how much water per pound of fuel?", ["None", "0.1 lb", "1.6 lb", "10 lb"], 2, "About 1.6 lb of water per lb of propane."],
+    ["Unvented heaters are adding a lot of moisture. What is the best fix?", ["Add dehumidifiers only", "Vent them or switch to indirect-fired", "Raise the temperature", "Close the doors"], 1, "Remove the source: vent or swap the heaters."],
+    ["AHAM ratings on refrigerant (LGR) dehumidifiers are measured at:", ["70°F / 50% RH", "80°F / 60% RH", "95°F / 40% RH", "60°F / 30% RH"], 1, "AHAM rating point is 80°F / 60% RH."],
+    ["At a drying target of 80°F / 35% RH, an LGR removes about:", ["Twice its rating", "Its full rating", "Half its rating", "Nothing"], 2, "Drier air means less water to condense: roughly half."],
+    ["Below about what dew point do refrigerant coils start to frost?", ["80°F", "60°F", "45°F", "0°F"], 2, "Below about a 45°F dew point, switch to desiccant."],
+    ["A building 300 × 100 × 20 ft at 4 air changes per hour needs how much airflow?", ["10,000 CFM", "40,000 CFM", "2,400,000 CFM", "4,000 CFM"], 1, "600,000 ft³ × 4 ÷ 60 = 40,000 CFM."],
+    ["With a desiccant dehumidifier, the wet reactivation air must be:", ["Ducted outside", "Ducted back into the space", "Filtered and reused", "Left alone"], 0, "It carries the removed water, so it goes outside."]
+  ]
+});
+
+MODULES.push({
+  key: "chillers",
+  name: "Chillers & Water Loops",
+  tool: "Chiller · Chiller loop flush",
+  blurb: "Tons from flow and temperature drop, leaving temperature and glycol derates, hose and loop flushing.",
+  lessons: [
+    {
+      t: "Tons from Flow & ΔT",
+      goal: "Turn a process flow and temperature drop into chiller tons, and back again.",
+      ideas: [
+        "Water carries heat: BTU/h = GPM × 500 × ΔT. The 500 comes from 8.33 lb per gallon × 60 minutes.",
+        "Divide by 12,000 for tons: tons = GPM × ΔT ÷ 24.",
+        "Design rule: 2.4 GPM per ton at a 10°F ΔT.",
+        "ΔT is return temperature minus supply temperature. 10°F is typical.",
+        "The quick chiller tool adds a 10% safety factor by default.",
+        "Rearranged: GPM = tons × 24 ÷ ΔT."
+      ],
+      formula: ["BTU/h = GPM × 500 × ΔT", "Tons = GPM × ΔT ÷ 24", "GPM = Tons × 24 ÷ ΔT"],
+      ex: ["A process returns 100°F water, needs 95°F supply, at 400 GPM.", "ΔT = 5°F. Tons = 400 × 5 ÷ 24 = 83.3 tons.", "Add 10% safety: 83.3 × 1.10 = 91.7 tons."],
+      terms: [["Supply (leaving) temperature", "Fluid temperature the chiller sends out."], ["Return temperature", "Warm fluid coming back to the chiller."], ["GPM", "Gallons per minute of flow."], ["Loop", "The closed piping circuit between chiller and load."]],
+      tryIt: ["100 tons at a 10°F ΔT needs how many GPM?", ["100", "240", "1,000", "41.7"], 1, "100 × 24 ÷ 10 = 240 GPM."]
+    },
+    {
+      t: "Leaving Temperature, Glycol & Derates",
+      goal: "Correct nominal chiller tons for cold leaving temperatures, glycol, heat and altitude.",
+      ideas: [
+        "Nominal tons are rated at 44°F leaving fluid and 95°F ambient.",
+        "Capacity drops about 2% for every °F of leaving temperature below 44°F.",
+        "Below 45°F, effective tonnage falls below nominal. Below 40°F, glycol is required.",
+        "Propylene glycol is food safe and preferred. Ethylene glycol transfers heat better but is toxic.",
+        "Glycol costs about 3–8% of capacity and needs about 8–18% more flow.",
+        "Outdoor piping must survive the winter low or be drained or heat-traced.",
+        "When a heat exchanger separates the chiller from the customer loop, the chiller must run colder than the customer loop by the approach temperature.",
+        "N+1 means one extra chiller beyond what the load needs, used on critical jobs like data centers."
+      ],
+      formula: ["Leaving-temp factor ≈ 1 − 0.02 × (44 − T leaving)", "Effective tons = Nominal × all factors"],
+      ex: ["A chiller must make 40°F fluid.", "44 − 40 = 4°F below rating × 2% = 8% capacity loss.", "A 100-ton nominal unit delivers about 92 tons before glycol and ambient derates."],
+      terms: [["Nominal tons", "Rated capacity at 44°F leaving and 95°F ambient."], ["Glycol", "Antifreeze added to the loop."], ["Approach", "How much colder the chiller side runs than the customer side of a heat exchanger."], ["N+1", "Redundancy: one unit more than needed."]],
+      tryIt: ["A chiller leaving 40°F instead of 44°F loses roughly:", ["2%", "8%", "40%", "Nothing"], 1, "4°F × 2% per °F = 8%."]
+    },
+    {
+      t: "Air Handlers, Hose & Loop Flushing",
+      goal: "Size hose by velocity and plan a loop flush package.",
+      ideas: [
+        "Temporary air handlers turn chilled water into cold air. A 0.75 sensible heat ratio is typical for comfort; 0.9 for a dry process.",
+        "Hose is sized so velocity stays at or under the maximum you set.",
+        "Flow from velocity: GPM = velocity (ft/s) × ID² (inches) ÷ 0.4085.",
+        "A flush is sized from the largest pipe in each section and a target velocity high enough to scour debris.",
+        "Filters are stepped down from coarse to fine (for example 400 µm down to 5 µm), with filter socks changed out as they load.",
+        "Acid, low-pH or chelant cleaning chemistry calls for stainless steel pumps, hose and fittings.",
+        "Turnover time = loop volume ÷ flow. A standby pump protects a long flush."
+      ],
+      formula: ["GPM = Velocity × ID² ÷ 0.4085", "Velocity = 0.4085 × GPM ÷ ID²", "Turnover (min) = Volume (gal) ÷ GPM"],
+      ex: ["Flush a 6-inch pipe at 6 ft/s.", "GPM = 6 × 6² ÷ 0.4085 = 6 × 36 ÷ 0.4085.", "= 216 ÷ 0.4085 ≈ 529 GPM."],
+      terms: [["Air handler (AHU)", "A fan and coil that cools air with chilled water."], ["Velocity", "How fast fluid moves in a pipe, in ft/s."], ["Micron (µm)", "One millionth of a meter; filter fineness."], ["Turnover", "Time to move the whole loop volume once."]],
+      tryIt: ["What is the flow in a 6-inch pipe at 6 ft/s?", ["About 88 GPM", "About 529 GPM", "About 216 GPM", "About 1,000 GPM"], 1, "6 × 36 ÷ 0.4085 ≈ 529 GPM."]
+    }
+  ],
+  test: [
+    ["In BTU/h = GPM × 500 × ΔT, the 500 comes from:", ["8.33 lb/gal × 60 min", "12,000 ÷ 24", "3,412 ÷ 7", "1.08 × 463"], 0, "8.33 × 60 ≈ 500."],
+    ["Tons = GPM × ΔT ÷ 24. What is 240 GPM at a 10°F ΔT?", ["24 tons", "100 tons", "240 tons", "2,400 tons"], 1, "240 × 10 ÷ 24 = 100 tons."],
+    ["How many GPM per ton at a 10°F ΔT?", ["1.0", "2.4", "4.0", "10"], 1, "24 ÷ 10 = 2.4 GPM per ton."],
+    ["400 GPM, return 100°F, supply 95°F. How many tons before safety?", ["41.7", "83.3", "166.7", "400"], 1, "400 × 5 ÷ 24 = 83.3 tons."],
+    ["Add 10% safety to 83.3 tons:", ["83.4 tons", "91.7 tons", "93.3 tons", "73.3 tons"], 1, "83.3 × 1.10 = 91.7 tons."],
+    ["A 150-ton load at a 12°F ΔT needs what flow?", ["150 GPM", "300 GPM", "360 GPM", "1,800 GPM"], 1, "150 × 24 ÷ 12 = 300 GPM."],
+    ["Chiller nominal tons are rated at what leaving fluid and ambient?", ["32°F / 75°F", "44°F / 95°F", "55°F / 105°F", "60°F / 100°F"], 1, "44°F leaving, 95°F ambient."],
+    ["About how much capacity is lost per °F of leaving temperature below 44°F?", ["0.5%", "2%", "10%", "25%"], 1, "About 2% per °F."],
+    ["Below what supply temperature is glycol required?", ["70°F", "55°F", "40°F", "0°F"], 2, "Below 40°F, use glycol and contact the DSM."],
+    ["Which glycol is food safe and preferred?", ["Ethylene", "Propylene", "Methanol", "Salt brine"], 1, "Propylene glycol is food safe."],
+    ["Adding glycol to a loop usually:", ["Raises capacity", "Lowers capacity and needs more flow", "Has no effect", "Removes the need for pumps"], 1, "Glycol carries less heat than water."],
+    ["N+1 redundancy means:", ["One extra chiller beyond what the load needs", "Exactly the load, no spare", "Units at half size", "One unit per floor"], 0, "N units cover the load; +1 is the spare."],
+    ["Through a heat exchanger, the chiller must run ___ than the customer loop.", ["Warmer", "Colder, by the approach", "At the same temperature", "Exactly 44°F"], 1, "Heat only flows from warm to cold, so the chiller side runs colder."],
+    ["Using GPM = velocity × ID² ÷ 0.4085: a 4-inch hose at 8 ft/s carries about:", ["78 GPM", "313 GPM", "1,253 GPM", "52 GPM"], 1, "8 × 16 ÷ 0.4085 ≈ 313 GPM."],
+    ["When flushing a loop, filters are typically:", ["Finest first", "Stepped down from coarse to fine", "Never changed", "Not needed"], 1, "Start coarse (like 400 µm) and step down."]
+  ]
+});
+
+MODULES.push({
+  key: "pumps",
+  name: "Pumps & Head",
+  tool: "Pump sizing",
+  blurb: "Total dynamic head, velocity and friction, and the horsepower needed to move water.",
+  lessons: [
+    {
+      t: "Total Dynamic Head (TDH)",
+      goal: "Add up everything the pump must push against.",
+      ideas: [
+        "TDH is the total height, in feet, the pump must lift the water plus the losses along the way.",
+        "TDH = suction lift + elevation change + friction loss + pressure head.",
+        "Suction lift is from the water surface up to the pump. The practical maximum is about 25 ft; beyond that use a submersible or move the pump closer.",
+        "Elevation change runs from the pump to the highest discharge point.",
+        "Pressure head converts required discharge pressure to feet: psi × 2.31 ÷ specific gravity.",
+        "In a closed loop, such as a chilled water loop, elevation cancels out: what goes up comes back down."
+      ],
+      formula: ["TDH = Suction lift + Elevation + Friction + Pressure head", "Pressure head (ft) = psi × 2.31 ÷ SG"],
+      ex: ["Suction lift 15 ft, elevation 50 ft, friction 20 ft, 10 psi needed at discharge.", "Pressure head = 10 × 2.31 = 23.1 ft.", "TDH = 15 + 50 + 20 + 23.1 = 108.1 ft."],
+      terms: [["TDH", "Total dynamic head: total resistance the pump works against, in feet."], ["Suction lift", "Height from water surface up to the pump inlet."], ["Pressure head", "Pressure expressed as feet of water."], ["Specific gravity (SG)", "Fluid density compared with water (water = 1.0)."]],
+      tryIt: ["Suction lift 15 ft, elevation 50 ft, friction 20 ft, 10 psi at discharge. TDH?", ["85 ft", "95 ft", "108.1 ft", "115 ft"], 2, "15 + 50 + 20 + (10 × 2.31) = 108.1 ft."]
+    },
+    {
+      t: "Velocity & Friction",
+      goal: "Check line velocity and understand what drives friction loss.",
+      ideas: [
+        "Velocity (ft/s) = 0.4085 × GPM ÷ ID² (ID in inches).",
+        "The pump tool treats 2–10 ft/s as normal. Above 10 ft/s, upsize the line. Below 2 ft/s, solids may settle.",
+        "Friction uses the Hazen-Williams formula. The roughness C factor: PVC/HDPE 150, new steel 140, lay-flat hose 130, old steel 100. Higher C means smoother and less friction.",
+        "Friction rises with flow to about the 1.85 power: double the flow and friction goes up about 3.6 times.",
+        "Friction falls very fast with bigger pipe (about diameter to the 4.87 power), so one size up makes a big difference.",
+        "Add a fittings allowance (15% by default) for elbows, valves and couplings. Glycol adds friction too."
+      ],
+      formula: ["Velocity = 0.4085 × GPM ÷ ID²", "Friction ∝ GPM^1.85 ÷ (C^1.85 × ID^4.87)", "Total friction = friction per 100 ft × equivalent length ÷ 100"],
+      ex: ["1,000 GPM in an 8-inch line.", "Velocity = 0.4085 × 1,000 ÷ 64 = 6.4 ft/s.", "That's inside the 2–10 ft/s range."],
+      terms: [["Hazen-Williams", "A standard formula for water friction loss in pipe."], ["C factor", "Pipe smoothness in Hazen-Williams. Higher is smoother."], ["Lay-flat hose", "Flexible discharge hose that flattens when empty."], ["Fittings allowance", "Extra length added for elbows and valves."]],
+      tryIt: ["What is the velocity of 1,000 GPM in an 8-inch pipe?", ["3.2 ft/s", "6.4 ft/s", "12.8 ft/s", "51 ft/s"], 1, "0.4085 × 1,000 ÷ 64 = 6.4 ft/s."]
+    },
+    {
+      t: "Horsepower & Pump Selection",
+      goal: "Find water and brake horsepower and match the duty point to a pump.",
+      ideas: [
+        "Water horsepower (WHP) is the power actually delivered to the water: GPM × TDH × SG ÷ 3,960.",
+        "Brake horsepower (BHP) is what the engine or motor must supply: WHP ÷ pump efficiency. The tool defaults to 70% efficiency.",
+        "The duty point is the flow and head the job needs. Read the pump curve to confirm the pump can deliver it, with selection margin.",
+        "Diesel or electric drive depends on site power. Silent diesel units and a standby pump are options.",
+        "Pump flow and head in the fleet table are estimated class maximums, not curves. Confirm with the manufacturer curve."
+      ],
+      formula: ["WHP = GPM × TDH × SG ÷ 3,960", "BHP = WHP ÷ efficiency"],
+      ex: ["3,000 GPM at 100 ft of TDH, water (SG 1.0), 70% efficient.", "WHP = 3,000 × 100 ÷ 3,960 = 75.8 hp.", "BHP = 75.8 ÷ 0.70 = 108 hp."],
+      terms: [["Water horsepower", "Power delivered to the water."], ["Brake horsepower", "Power the driver must supply."], ["Duty point", "The flow and head the job requires."], ["Pump curve", "A chart of flow versus head for a pump."]],
+      tryIt: ["3,000 GPM at 100 ft TDH, SG 1.0. What is the water horsepower?", ["30 hp", "75.8 hp", "300 hp", "3,960 hp"], 1, "3,000 × 100 ÷ 3,960 = 75.8 hp."]
+    }
+  ],
+  test: [
+    ["TDH includes:", ["Only elevation", "Suction lift + elevation + friction + pressure head", "Flow ÷ horsepower", "Pipe length only"], 1, "All four parts add up to TDH."],
+    ["How many feet of head is 1 psi of water?", ["1", "2.31", "3,960", "0.433"], 1, "1 psi = 2.31 ft of water."],
+    ["20 psi is needed at the discharge (water). What is the pressure head?", ["8.7 ft", "20 ft", "46.2 ft", "231 ft"], 2, "20 × 2.31 = 46.2 ft."],
+    ["The practical maximum suction lift for a surface pump is about:", ["5 ft", "25 ft", "100 ft", "Unlimited"], 1, "About 25 ft; beyond that use a submersible."],
+    ["Suction lift 10 ft, elevation 40 ft, friction 25 ft, no discharge pressure. TDH?", ["50 ft", "65 ft", "75 ft", "100 ft"], 2, "10 + 40 + 25 = 75 ft."],
+    ["Velocity = 0.4085 × GPM ÷ ID². 500 GPM in a 6-inch hose is about:", ["1.4 ft/s", "5.7 ft/s", "34 ft/s", "85 ft/s"], 1, "0.4085 × 500 ÷ 36 = 5.7 ft/s."],
+    ["What velocity range does the pump tool treat as normal?", ["0.1–1 ft/s", "2–10 ft/s", "20–40 ft/s", "Any velocity"], 1, "2–10 ft/s."],
+    ["Below 2 ft/s, what can happen?", ["The pipe bursts", "Solids settle out", "The pump overheats instantly", "Nothing"], 1, "Slow water drops its solids."],
+    ["Which has the lowest friction (highest C factor)?", ["Old steel (C 100)", "Lay-flat hose (C 130)", "New steel (C 140)", "PVC / HDPE (C 150)"], 3, "Smoother pipe, higher C, less friction."],
+    ["If flow doubles in the same hose, friction loss rises by about:", ["Nothing", "2 times", "3.6 times", "10 times"], 2, "2^1.85 ≈ 3.6."],
+    ["Water HP = GPM × TDH × SG ÷ 3,960. What is 1,000 GPM at 79.2 ft of head?", ["20 hp", "79 hp", "1,000 hp", "3.96 hp"], 0, "1,000 × 79.2 ÷ 3,960 = 20 hp."],
+    ["20 water HP at 70% pump efficiency needs how much brake HP?", ["14 hp", "20 hp", "28.6 hp", "70 hp"], 2, "20 ÷ 0.70 = 28.6 hp."],
+    ["In a closed chilled water loop, the elevation part of head:", ["Doubles", "Cancels out", "Equals the pressure head", "Only counts on suction"], 1, "Water going up returns down, so elevation cancels."],
+    ["Pumping 30% glycol instead of water, friction loss usually:", ["Decreases", "Increases", "Stays the same", "Disappears"], 1, "Glycol is thicker, so friction goes up."],
+    ["Where do you confirm a pump can deliver the duty point?", ["The nameplate voltage", "The pump curve", "The hose label", "The fuel gauge"], 1, "The curve shows flow versus head."]
+  ]
+});
+
+MODULES.push({
+  key: "power",
+  name: "Generators, Fuel & Batteries",
+  tool: "Generator · NG fuel burn · Hybrid trailers · BESS",
+  blurb: "Amps to kW, generator loading, motor starting, fuel burn, natural gas, hybrid trailers and battery storage.",
+  lessons: [
+    {
+      t: "From Amps to kW to Generator Size",
+      goal: "Turn measured or nameplate amps into kW and choose a set with the right headroom.",
+      ideas: [
+        "3-phase: kVA = volts × amps × 1.732 ÷ 1,000. 1-phase: kVA = volts × amps ÷ 1,000.",
+        "kW = kVA × power factor. 0.8 is typical for mixed loads; 1.0 for heaters and other resistive loads.",
+        "Minimum generator kW = load kW ÷ target loading. The tool defaults to 80%.",
+        "Above about 85% loading, there's little room for motor starts or spikes.",
+        "Below about 30% for long periods, diesel sets wet stack (unburned fuel builds up in the exhaust).",
+        "Generators derate about 3% per 1,000 ft of altitude.",
+        "Medium voltage (2,400 V and up) needs step-up transformers and switchgear: coordinate with the DSM."
+      ],
+      formula: ["kVA (3-phase) = V × A × 1.732 ÷ 1,000", "kW = kVA × PF", "Generator kW = Load kW ÷ target loading"],
+      ex: ["Measured 275 A at 480 V, 3-phase, PF 0.8.", "kVA = 480 × 275 × 1.732 ÷ 1,000 = 228.6 kVA; kW = 228.6 × 0.8 = 182.9 kW.", "At 80% target loading: 182.9 ÷ 0.8 = 228.6 kW minimum set."],
+      terms: [["kVA", "Apparent power: volts × amps."], ["kW", "Real power that does work."], ["Power factor", "kW ÷ kVA; 1.0 for resistive loads."], ["Wet stacking", "Unburned fuel buildup from running a diesel too lightly loaded."]],
+      tryIt: ["480 V, 3-phase, 275 A, PF 0.8. What is the load in kW?", ["132 kW", "182.9 kW", "228.6 kW", "228,000 kW"], 1, "480 × 275 × 1.732 ÷ 1,000 × 0.8 = 182.9 kW."]
+    },
+    {
+      t: "Motor Starting & Fuel Burn",
+      goal: "Check that a set can start the largest motor and plan fuel for the job.",
+      ideas: [
+        "Motors draw far more when starting than when running. The generator tool uses about 2.5 kVA per HP across-the-line (DOL), 2 kVA/HP star-delta and 1.25 kVA/HP for soft start or VFD.",
+        "Soft starters and VFDs cut the starting surge, but VFDs may need a bigger alternator for harmonics.",
+        "Diesel burn comes from a chart by set size and load. Example, 100 kW set: 2.6 gal/h at ¼ load, 4.1 at ½, 5.8 at ¾ and 7.4 at full load.",
+        "Hours per tank = tank gallons ÷ gallons per hour. Gallons per day = gph × 24.",
+        "Natural gas: 1 therm = 100,000 BTU, and pipeline gas has about 1,030 BTU per ft³. A diesel gallon equivalent (DGE) is about 137,381 BTU.",
+        "Gas engines burn more energy per kWh than diesel, and still burn about 25% of full-load fuel at idle.",
+        "A diesel set burns roughly 0.07 gal per kWh near full load."
+      ],
+      formula: ["Starting kVA = HP × kVA/HP (2.5 DOL, 2 star-delta, 1.25 soft/VFD)", "Run time = Tank gal ÷ gal/h", "ft³ of gas per therm = 100,000 ÷ 1,030 ≈ 97"],
+      ex: ["A 100 kW set at ¾ load burns 5.8 gal/h with a 200-gallon tank.", "200 ÷ 5.8 = 34.5 hours per tank.", "Per day: 5.8 × 24 = 139 gallons."],
+      terms: [["DOL", "Direct-on-line (across-the-line) motor starting."], ["VFD", "Variable frequency drive; ramps a motor up gently."], ["Therm", "100,000 BTU of gas."], ["DGE", "Diesel gallon equivalent, about 137,381 BTU."]],
+      tryIt: ["A 200-gallon tank and a burn of 5 gal/h. How many hours?", ["4", "40", "195", "1,000"], 1, "200 ÷ 5 = 40 hours."]
+    },
+    {
+      t: "Hybrid Trailers & Battery Storage",
+      goal: "Size battery-hybrid units for office trailers and battery storage for run time.",
+      ideas: [
+        "Hybrid tool basis: 208 V 3-phase, 12 kW per standard office trailer.",
+        "Hybrid units drop to derated capacity in high heat (at or above 104°F). EBOSS units are assumed at 80% of base; the Atlas Copco EPH 75-60 is 22 kW instead of 24.",
+        "Units needed = total load ÷ unit capacity, rounded up. Watch for less than 5% spare.",
+        "BESS power (kW) is how fast energy can flow; energy (kWh) is how much is stored. You need both.",
+        "Energy needed: load kWh = average kW × hours; divide by inverter efficiency (95%); add margin (10%); divide by usable depth of discharge (90%).",
+        "Peak load should include the largest motor running. Starting surges: about 6× across-the-line, 3× soft starter, 1.5× VFD.",
+        "Plan recharge: the charging generator, recharge window and cycles per day."
+      ],
+      formula: ["Trailer load = trailers × 12 kW", "Nameplate kWh = (kW × hours ÷ inverter eff) × (1 + margin) ÷ DoD"],
+      ex: ["100 kW average load for 4 hours.", "400 kWh ÷ 0.95 = 421 kWh drawn; × 1.10 margin = 463 kWh usable.", "÷ 0.90 depth of discharge = about 515 kWh of battery nameplate."],
+      terms: [["BESS", "Battery energy storage system."], ["Depth of discharge (DoD)", "Share of the battery's energy you can actually use."], ["Peak shaving", "Batteries covering short peaks so a smaller generator can run."], ["Derate", "Lower output at high temperature."]],
+      tryIt: ["An EBOSS unit has a 33 kW base rating and derates to 80% in heat. What is its derated capacity?", ["26.4 kW", "33 kW", "41 kW", "8 kW"], 0, "33 × 0.80 = 26.4 kW."]
+    }
+  ],
+  test: [
+    ["3-phase kVA = V × A × 1.732 ÷ 1,000. What is 480 V at 100 A?", ["48 kVA", "83.1 kVA", "166 kVA", "831 kVA"], 1, "480 × 100 × 1.732 ÷ 1,000 = 83.1 kVA."],
+    ["kW = kVA × PF. 100 kVA at 0.8 PF is:", ["80 kW", "100 kW", "125 kW", "0.8 kW"], 0, "100 × 0.8 = 80 kW."],
+    ["What power factor is typical for a mixed load?", ["0.2", "0.5", "0.8", "1.5"], 2, "0.8 is the usual assumption; 1.0 for heaters."],
+    ["A 160 kW load at an 80% target loading needs a generator of at least:", ["128 kW", "160 kW", "200 kW", "240 kW"], 2, "160 ÷ 0.8 = 200 kW."],
+    ["Running a diesel set below about 30% load for long periods causes:", ["Overspeed", "Wet stacking", "Overload", "Phase loss"], 1, "Light loading leaves unburned fuel in the exhaust."],
+    ["Why keep generator loading under about 85%?", ["To save fuel", "To leave room for motor starts and spikes", "Because of codes", "It runs louder"], 1, "Headroom handles starting surges."],
+    ["The generator tool uses about how many kVA per HP to start a motor across-the-line?", ["0.75", "1.25", "2.5", "10"], 2, "About 2.5 kVA per HP for DOL."],
+    ["Starting a 40 HP motor across-the-line (2.5 kVA/HP) needs about:", ["40 kVA", "80 kVA", "100 kVA", "400 kVA"], 2, "40 × 2.5 = 100 kVA."],
+    ["Which starting method needs the smallest generator?", ["Across-the-line", "Star-delta", "Soft start / VFD", "They are all equal"], 2, "Soft starts and VFDs cut the surge."],
+    ["A 100 kW set at ¾ load burns 5.8 gal/h. A 200-gallon tank lasts about:", ["5.8 hours", "17.2 hours", "34.5 hours", "116 hours"], 2, "200 ÷ 5.8 = 34.5 hours."],
+    ["Generators derate about how much per 1,000 ft of altitude?", ["0.3%", "3%", "13%", "30%"], 1, "About 3% per 1,000 ft."],
+    ["1 therm = 100,000 BTU, and pipeline gas is about 1,030 BTU/ft³. About how many ft³ in one therm?", ["10.3", "97", "1,030", "103,000"], 1, "100,000 ÷ 1,030 ≈ 97 ft³."],
+    ["10 office trailers at 12 kW each. What is the total load?", ["12 kW", "22 kW", "120 kW", "1,200 kW"], 2, "10 × 12 = 120 kW."],
+    ["What is the difference between kW and kWh for a battery?", ["They are the same", "kW is power (rate); kWh is energy (amount over time)", "kWh is power; kW is fuel", "kW is only for generators"], 1, "Size a BESS for both power and energy."],
+    ["50 kW for 4 hours, 95% inverter efficiency, 10% margin, 90% DoD. About how much battery nameplate?", ["200 kWh", "About 222 kWh", "About 257 kWh", "About 400 kWh"], 2, "200 ÷ 0.95 = 210.5; × 1.10 = 231.6; ÷ 0.90 ≈ 257 kWh."]
+  ]
+});
+
+MODULES.push({
+  key: "distro",
+  name: "Amps, Cable & Load Banks",
+  tool: "Amp chart · Cable & distro · Load banks",
+  blurb: "Amps at every voltage, cam-lock cable sets per phase, neutrals, and load bank packages.",
+  lessons: [
+    {
+      t: "The Amp Chart",
+      goal: "Find the current for a load at any common voltage.",
+      ideas: [
+        "3-phase amps = kW × 1,000 ÷ (1.732 × V × PF). Or, with kVA: amps = kVA × 1,000 ÷ (1.732 × V).",
+        "1-phase amps for resistive loads = watts ÷ volts.",
+        "kVA = kW ÷ PF. A 150 kW load at 0.8 PF is 187.5 kVA.",
+        "Lower voltage means more amps for the same power, which means more cable.",
+        "The same 150 kW at 0.8 PF is about 226 A at 480 V but about 520 A at 208 V.",
+        "Medium voltage (4,160 V, 12,470 V, 13,200 V) carries the same power with very few amps."
+      ],
+      formula: ["Amps (3-phase) = kW × 1,000 ÷ (1.732 × V × PF)", "Amps (1-phase resistive) = W ÷ V", "kVA = kW ÷ PF"],
+      ex: ["150 kW at 0.8 PF on 480 V 3-phase.", "kVA = 150 ÷ 0.8 = 187.5.", "Amps = 187,500 ÷ (1.732 × 480) = 225.5 A."],
+      terms: [["Amp", "Unit of electric current."], ["3-phase", "Power on three hot conductors, used for most rental gear."], ["Resistive load", "A load like a heater with PF 1.0."], ["Voltage", "Electrical pressure; higher voltage, fewer amps."]],
+      tryIt: ["A 150 kW load at 0.8 PF. What is the kVA?", ["120", "150", "187.5", "225"], 2, "150 ÷ 0.8 = 187.5 kVA."]
+    },
+    {
+      t: "Cable Sets, Neutrals & Distribution",
+      goal: "Choose cam-lock cable sets per phase and lay out distribution safely.",
+      ideas: [
+        "Company standard ratings: 4/0 single conductor = 400 A per conductor; 2/5 banded cable = 180 A.",
+        "Sets per phase = amps ÷ 400, rounded up. Three-phase hots = 3 × sets per phase, plus grounds.",
+        "Single-phase loads on 208Y/120 or 480Y/277 need a full-size neutral per set. Neutrals aren't included in the kit by default.",
+        "Apply a heat derate of 10–15% for a Texas summer, bundled cables or cables in the sun.",
+        "Cables come in 50 ft lengths. More than about 90% loaded? Add another set for headroom.",
+        "A 50 A spider box provides six 20 A GFCI circuits. A 20 A circuit should carry no more than 80%, or 16 A, continuously.",
+        "If a unit's listed amps are well below theoretical, confirm its real output before trusting a smaller kit."
+      ],
+      formula: ["Sets per phase = ceiling(Amps ÷ 400)", "Capacity = sets × 400 A", "Continuous circuit limit = breaker A × 0.8"],
+      ex: ["A 1,000 kVA set at 480 V 3-phase.", "Amps = 1,000,000 ÷ (1.732 × 480) = 1,203 A.", "1,203 ÷ 400 = 3.01 → 4 sets per phase (1,600 A capacity, 75% loaded)."],
+      terms: [["Cam-lock", "Single-pole connectors used on temporary power cable."], ["4/0", "A large single-conductor cable, 400 A per conductor here."], ["2/5 banded", "Five conductors banded together, 180 A."], ["Spider box", "A portable panel that splits a 50 A feed into smaller GFCI circuits."]],
+      tryIt: ["1,203 A on 4/0 cable at 400 A each. How many sets per phase?", ["3", "4", "5", "12"], 1, "1,203 ÷ 400 = 3.01, so round up to 4."]
+    },
+    {
+      t: "Load Banks",
+      goal: "Size a load bank package and, for data centers, the heat it puts into the cooling loop.",
+      ideas: [
+        "Load banks put an artificial load on a generator, UPS or switchgear to test it: commissioning, annual load tests and UPS tests.",
+        "Bank kW = source rating × test load %, plus headroom. Several paralleled sources can be tested at once.",
+        "Resistive banks test at PF 1.0. Resistive/reactive banks can test at 0.8.",
+        "Bus current = kW × 1,000 ÷ (1.732 × V × PF). Each bank feed gets its own cable sets (400 A per set), before any NEC derating.",
+        "A step load plan raises the load in stages, such as 25%, 50%, 75% and 100%.",
+        "Fuel for the test ≈ kW × hours × 0.07 gal/kWh near full load.",
+        "Liquid-cooled banks put real heat into a data center loop. Tons to reject = kW × 3,412 ÷ 12,000. Flow = BTU/h ÷ (500 × ΔT) for water; glycol needs more flow."
+      ],
+      formula: ["Bus amps = kW × 1,000 ÷ (1.732 × V × PF)", "Tons = kW × 3,412 ÷ 12,000", "GPM = BTU/h ÷ (500 × ΔT)", "Fuel = kW × hours × 0.07"],
+      ex: ["A 500 kW liquid-cooled load at a 10°F loop ΔT.", "500 × 3,412 = 1,706,000 BTU/h = about 142 tons to reject.", "GPM = 1,706,000 ÷ (500 × 10) = 341 GPM."],
+      terms: [["Load bank", "Equipment that applies a controlled electrical load for testing."], ["UPS", "Uninterruptible power supply."], ["CDU", "Coolant distribution unit in a liquid-cooled data center."], ["Step load", "Applying load in stages during a test."]],
+      tryIt: ["A 4-hour test at 500 kW, using 0.07 gal/kWh. How much fuel?", ["35 gal", "140 gal", "2,000 gal", "28 gal"], 1, "500 × 4 × 0.07 = 140 gallons."]
+    }
+  ],
+  test: [
+    ["Amps (3-phase) = kW × 1,000 ÷ (1.732 × V × PF). What is 100 kW at 480 V, PF 0.8?", ["120 A", "150 A", "208 A", "300 A"], 1, "100,000 ÷ (1.732 × 480 × 0.8) ≈ 150 A."],
+    ["The same 100 kW at 208 V, PF 0.8 is about:", ["150 A", "240 A", "347 A", "481 A"], 2, "100,000 ÷ (1.732 × 208 × 0.8) ≈ 347 A."],
+    ["A 12 kW resistive load on 240 V single-phase draws:", ["20 A", "50 A", "100 A", "2,880 A"], 1, "12,000 ÷ 240 = 50 A."],
+    ["Why does a lower voltage need more cable?", ["Less heat", "More amps for the same power", "Different power factor", "Shorter cables"], 1, "Power = volts × amps, so lower volts means more amps."],
+    ["What is the company standard rating for one 4/0 single conductor?", ["180 A", "250 A", "400 A", "1,000 A"], 2, "4/0 = 400 A per conductor."],
+    ["What is the company standard rating for 2/5 banded cable?", ["100 A", "180 A", "400 A", "600 A"], 1, "2/5 banded = 180 A."],
+    ["A 900 A load on 4/0 (400 A each). How many sets per phase?", ["2", "3", "4", "9"], 1, "900 ÷ 400 = 2.25, round up to 3."],
+    ["3 sets per phase on a 3-phase system means how many hot conductors?", ["3", "6", "9", "12"], 2, "3 phases × 3 sets = 9 hots."],
+    ["When do you need a full-size neutral?", ["Never", "With single-phase loads on 208Y/120 or 480Y/277", "Only on delta systems", "Only for heaters"], 1, "Single-phase loads return current on the neutral."],
+    ["What heat derate is suggested for a Texas summer, bundled cable or cable in the sun?", ["0%", "1–2%", "10–15%", "50%"], 2, "10–15%."],
+    ["A 20 A circuit loaded to 80% carries:", ["10 A", "16 A", "20 A", "25 A"], 1, "20 × 0.8 = 16 A."],
+    ["A 50 A spider box typically provides:", ["One 50 A outlet", "Six 20 A GFCI circuits", "Two 100 A circuits", "Twelve 15 A circuits"], 1, "Six 20 A GFCI circuits."],
+    ["Resistive-only load banks test at a power factor of:", ["0.5", "0.8", "1.0", "1.5"], 2, "Pure resistance is PF 1.0."],
+    ["A liquid-cooled bank puts 352 kW into the loop. About how many tons must be rejected (kW × 3,412 ÷ 12,000)?", ["About 29", "About 100", "About 352", "About 1,201"], 1, "352 × 3,412 ÷ 12,000 ≈ 100 tons."],
+    ["Flow for 500 kW of liquid load at a 10°F ΔT on water (GPM = BTU/h ÷ (500 × ΔT))?", ["About 34 GPM", "About 341 GPM", "About 1,706 GPM", "About 3,412 GPM"], 1, "1,706,000 ÷ 5,000 ≈ 341 GPM."]
+  ]
+});
+
+MODULES.push({
+  key: "tents",
+  name: "Tent HVAC & Power",
+  tool: "Tent HVAC & power",
+  blurb: "Putting it all together: tent loads, AC units with heat, supplemental heaters, lights and the generator.",
+  lessons: [
+    {
+      t: "Tent Loads",
+      goal: "Set up a tent's design weather, structure and occupancy.",
+      ideas: [
+        "Design weather: winter uses the 99.6% heating dry bulb; summer uses the 0.4% cooling dry bulb. Summer wet bulb drives the latent load.",
+        "Tent types set leakage and how much heat the fabric passes. Frame or pole tent with vinyl sidewalls: about 3.0 ACH, U 1.1. Clearspan with vinyl walls: 1.5 ACH. Inflatable double wall: 1.0 ACH, U 0.55. Insulated clearspan with thermo roof: 0.5 ACH, walls U 0.25, roof U 0.35.",
+        "A roof liner cuts roof loss and sun. White fabric reflects the most sun; dark fabric absorbs it.",
+        "Door traffic adds air changes on top of the tent's own leakage. Wind exposure raises leakage too.",
+        "People: about 15 ft² per person as a rule of thumb. Fresh air per person is used when it's higher than infiltration.",
+        "In winter, internal heat is usually ignored (the tent may be empty at night) unless you credit it."
+      ],
+      formula: ["People = floor area ÷ 15 ft²", "Leakage CFM = tent volume × ACH ÷ 60", "Q = U × A × ΔT"],
+      ex: ["A 60 × 100 ft tent.", "Floor area = 6,000 ft².", "6,000 ÷ 15 = 400 people at the rule of thumb."],
+      terms: [["Clearspan", "A tent with no center poles."], ["Roof liner", "An inner liner that adds an air gap under the roof."], ["Wet bulb", "Temperature that reflects humidity; drives latent load."], ["99.6% design", "A winter temperature colder than all but 0.4% of hours."]],
+      tryIt: ["A 60 × 100 ft tent at 15 ft² per person holds about how many people?", ["150", "400", "900", "6,000"], 1, "6,000 ÷ 15 = 400."]
+    },
+    {
+      t: "AC Units, Supplemental Heat & Penetrations",
+      goal: "Pick AC units with built-in heat and add the right supplemental heaters.",
+      ideas: [
+        "AC unit cooling is rated at 95°F and derated 1% for each °F above 95°F.",
+        "Built-in heat is the unit's electric strip or heat pump output. If it falls short of the winter load, the tool adds supplemental heat.",
+        "Only heaters suited to occupied tents are listed: indirect-fired, flameless and electric. Direct-fired heaters vent combustion products and moisture into the space.",
+        "Indirect-fired heater output is about 82% of input. Self-powered units run on an onboard generator and add no site power.",
+        "Fuel is pro-rated to the heat actually needed and the run hours per day.",
+        "Each supply and return duct crossing the tent wall needs a penetration: fabric duct wall panels or steel plenums (12\" or 20\" openings) that fit 24\" tall hardwall or door panels.",
+        "Spare units are standby only: not counted in capacity or power."
+      ],
+      formula: ["Delivered cooling = rating × (1 − 0.01 × (T − 95))", "Supplemental heat = winter load − built-in heat"],
+      ex: ["A 5-ton (60,000 BTU/h) unit on a 105°F day.", "Derate = 1% × 10 = 10%.", "Delivered = 60,000 × 0.90 = 54,000 BTU/h."],
+      terms: [["Built-in heat", "Electric strip or heat pump heat inside the AC unit."], ["Supplemental heat", "Extra heaters added when built-in heat isn't enough."], ["Plenum", "A box that connects ducts through a wall panel."], ["Standby unit", "A spare on site, not counted in capacity."]],
+      tryIt: ["Built-in heat falls short of the winter load. What does the tool add?", ["More AC units", "Supplemental heat", "Bigger cable", "A roof liner"], 1, "It adds supplemental heaters to cover the gap."]
+    },
+    {
+      t: "Tent Power & Lighting",
+      goal: "Size the generator for the larger season and lay out lighting circuits.",
+      ideas: [
+        "Summer runs AC compressors and fans. Winter runs heat strips and fans plus any electric or site-powered supplemental heat. The generator is sized for the larger season.",
+        "Compressor starting is not modeled. When one AC unit is a large share of the set, stagger starts or upsize.",
+        "Example fixture: a 150 W UFO high bay at 120 V and 0.9 PF draws about 1.39 A.",
+        "Lights per 20 A circuit at 80% (16 A): 16 ÷ 1.39 ≈ 11 lights.",
+        "Lights are daisy-chained with 12/3 SJTW cords (20 A), one circuit per run, from a 50 A spider box with six 20 A GFCI circuits.",
+        "Cord lengths are rounded up to 25, 50 or 100 ft, covering the run plus slack.",
+        "The customer PDF includes the plan-view layout, load breakdown and fuel estimates."
+      ],
+      formula: ["Light amps = W ÷ PF ÷ V", "Lights per circuit = (20 A × 0.8) ÷ light amps, rounded down"],
+      ex: ["150 W ÷ 0.9 = 167 VA.", "167 ÷ 120 V = 1.39 A per light.", "16 A ÷ 1.39 = 11.5 → 11 lights per circuit."],
+      terms: [["SJTW", "A flexible, weather-resistant cord type."], ["GFCI", "Ground-fault protection that trips on leakage current."], ["Daisy chain", "Connecting fixtures one after another on a run."], ["Season sizing", "Sizing power for whichever season needs more."]],
+      tryIt: ["How many 150 W, 0.9 PF lights fit on a 20 A, 120 V circuit at 80%?", ["8", "11", "13", "16"], 1, "Each draws 1.39 A; 16 ÷ 1.39 = 11.5, round down to 11."]
+    }
+  ],
+  test: [
+    ["Which tent type leaks the most air?", ["Frame or pole tent with vinyl sidewalls", "Insulated clearspan with thermo roof", "Inflatable double-wall shelter", "Clearspan with hard walls"], 0, "About 3.0 ACH."],
+    ["An insulated clearspan with a thermo roof leaks about:", ["0.5 ACH", "1.5 ACH", "3 ACH", "10 ACH"], 0, "0.5 ACH."],
+    ["What does a roof liner do?", ["Adds people", "Cuts roof heat loss and sun", "Adds power", "Blocks doors"], 1, "It adds an air gap under the roof."],
+    ["The rule of thumb for floor area per person in a tent is:", ["5 ft²", "15 ft²", "50 ft²", "100 ft²"], 1, "About 15 ft² per person."],
+    ["A 40 × 60 ft tent at 15 ft² per person holds about:", ["40", "160", "240", "2,400"], 1, "2,400 ÷ 15 = 160."],
+    ["Which design temperature is used for tent winter heating?", ["Average January temperature", "99.6% heating dry bulb", "Record low", "The indoor setpoint"], 1, "99.6% heating dry bulb."],
+    ["What drives the summer latent load in a tent?", ["Winter dry bulb", "Summer wet bulb", "Ground temperature", "Fabric color"], 1, "Wet bulb reflects outdoor humidity."],
+    ["Why is internal heat often ignored in winter?", ["It is negative", "The tent may be empty at night", "Codes forbid it", "Lights are off"], 1, "Size for the coldest, emptiest night."],
+    ["Which heaters are listed for occupied tents?", ["Direct-fired", "Indirect-fired, flameless and electric", "Salamanders", "Open-flame torpedoes"], 1, "These keep combustion products out of the tent."],
+    ["Tent AC cooling is rated at 95°F and derated how much above that?", ["0.1% per °F", "1% per °F", "5% per °F", "10% per °F"], 1, "1% per °F."],
+    ["A 5-ton (60,000 BTU/h) tent AC unit on a 105°F day delivers about:", ["48,000 BTU/h", "54,000 BTU/h", "60,000 BTU/h", "66,000 BTU/h"], 1, "60,000 × 0.90 = 54,000 BTU/h."],
+    ["The generator for a year-round tent is sized for:", ["Summer only", "The larger of summer or winter", "Winter only", "The average"], 1, "Whichever season draws more."],
+    ["Why stagger compressor starts?", ["To save fuel", "Starting surges can overload the generator", "To reduce noise", "It's required by law"], 1, "Compressor starting isn't modeled, so stagger or upsize."],
+    ["A 150 W light at 0.9 PF on 120 V draws about:", ["0.8 A", "1.25 A", "1.39 A", "18 A"], 2, "150 ÷ 0.9 ÷ 120 = 1.39 A."],
+    ["Are spare (standby) units counted in capacity and power?", ["Yes, both", "No, neither", "Only power", "Only capacity"], 1, "Spares are standby only."]
+  ]
+});
+
+  </script>
+  <script>
+// ===================== SETTINGS =====================
+const RESULTS_EMAIL = 'john.mitchell@equipmentshare.com';
+const RESULTS_NAME = 'John Mitchell';
+const FORM_ENDPOINT = 'https://formsubmit.co/ajax/' + RESULTS_EMAIL;
+const PASS_FRACTION = 0.8;                 // 80% to pass
+const MODULE_TEST_MINUTES = 25;            // 15 questions
+const FINAL_QUESTIONS = 30;
+const FINAL_TEST_MINUTES = 45;
+const MAILTO_MAX_LENGTH = 1900;
+const STORE_KEY = 'fsp_sizing_course_v1';
+const FIELDS = [
+  ['name', 'Full name', 'Jane Doe', 'name'],
+  ['title', 'Job title', 'Sales rep', 'organization-title'],
+  ['branch', 'Branch', 'Dallas, TX', 'off'],
+  ['empId', 'Employee ID', 'EMP-12345', 'off']
+];
+
+// ===================== HELPERS =====================
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function fmt(sec) { sec = Math.max(0, sec); return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
+function clean(s) { return (s || '').trim().replace(/\s+/g, ' '); }
+function mod(key) { return MODULES.find(m => m.key === key); }
+function modIndex(key) { return MODULES.findIndex(m => m.key === key); }
+function lessonId(key, li) { return `${key}-l${li}`; }
+function testId(key) { return key === 'final' ? 'final' : `${key}-test`; }
+function passMark(n) { return Math.ceil(n * PASS_FRACTION); }
+function showToast(msg) {
+  const t = $('toast'); $('toast-message').textContent = msg; t.classList.remove('hidden');
+  setTimeout(() => { t.classList.remove('opacity-0', 'translate-y-4'); t.classList.add('opacity-100', 'translate-y-0'); }, 10);
+  setTimeout(() => { t.classList.remove('opacity-100', 'translate-y-0'); t.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => t.classList.add('hidden'), 300); }, 2500);
+}
+const CHIP = 'text-xs font-bold px-3 py-1 rounded-full border border-slate-700 bg-slate-800 text-slate-200';
+const CHIP_ACCENT = 'text-xs font-bold px-3 py-1 rounded-full border border-cyan-400/40 bg-cyan-400/10 text-cyan-200';
+
+// ===================== SAVED PROGRESS (this device only) =====================
+let store = { profile: { name: '', title: '', branch: '', empId: '' }, done: {}, best: {} };
+try { const raw = localStorage.getItem(STORE_KEY); if (raw) { const s = JSON.parse(raw); store = Object.assign(store, s); store.profile = Object.assign({ name: '', title: '', branch: '', empId: '' }, s.profile || {}); } } catch (e) {}
+function saveStore() { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {} }
+function isDone(id) { return !!store.done[id]; }
+function bestOf(id) { return store.best[id] || null; }
+function profileComplete(p) { return FIELDS.every(([k]) => clean(p[k])); }
+
+function renderProfileFields(container, prefix) {
+  const box = $(container); box.innerHTML = '';
+  FIELDS.forEach(([k, label, ph, ac]) => {
+    const wrap = el('div', 'min-w-0');
+    const lab = el('label', 'block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1', label);
+    lab.htmlFor = `${prefix}-f-${k}`;
+    const inp = el('input', 'w-full px-3.5 py-3 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 placeholder-slate-600 focus:border-cyan-400 focus:outline-none');
+    inp.type = 'text'; inp.id = `${prefix}-f-${k}`; inp.placeholder = ph; inp.maxLength = 60; inp.autocomplete = ac;
+    if (k === 'name') inp.autocapitalize = 'words';
+    inp.value = store.profile[k] || '';
+    wrap.appendChild(lab); wrap.appendChild(inp); box.appendChild(wrap);
+  });
+}
+function readProfile(prefix) { const p = {}; FIELDS.forEach(([k]) => { p[k] = clean(($(`${prefix}-f-${k}`) || {}).value); }); return p; }
+function applyProfile(p) {
+  store.profile = p; saveStore();
+  const pill = $('learner-pill');
+  pill.textContent = p.name ? p.name : '';
+  pill.classList.toggle('sm:inline-flex', !!p.name);
+}
+function saveProfileFrom(where) {
+  const p = readProfile(where);
+  if (!p.name) { $(`${where}-f-name`).focus(); return; }
+  applyProfile(p);
+  showToast(profileComplete(p) ? 'Details saved' : 'Saved. Fill in all four fields before a test.');
+}
+
+// ===================== VIEWS =====================
+const VIEWS = ['view-home', 'view-lesson', 'view-brief', 'view-test', 'view-results'];
+function show(view) {
+  VIEWS.forEach(v => $(v).classList.toggle('hidden', v !== view));
+  const testing = view === 'view-test';
+  $('test-bar').classList.toggle('hidden', !testing);
+  $('app-bar').classList.toggle('hidden', testing);
+  window.scrollTo({ top: 0 });
+}
+function goHome() {
+  if (test && !test.submitted && !$('view-test').classList.contains('hidden')) return;
+  renderHome(); show('view-home');
+}
+
+// ===================== HOME =====================
+function stat(label, value, sub) {
+  const box = el('div', 'rounded-2xl border border-slate-800 bg-slate-950/60 p-3 text-center');
+  box.appendChild(el('p', 'text-[11px] font-bold uppercase tracking-wider text-slate-400', label));
+  box.appendChild(el('p', 'text-2xl font-black text-white tabular mt-0.5', value));
+  if (sub) box.appendChild(el('p', 'text-[11px] text-slate-500', sub));
+  return box;
+}
+function bestBadge(id) {
+  const b = bestOf(id);
+  if (!b) return el('span', 'text-xs font-semibold text-slate-500', 'Not taken');
+  return el('span', 'text-xs font-bold px-2 py-0.5 rounded-full tabular ' + (b.p ? 'bg-emerald-400/15 text-emerald-300' : 'bg-rose-400/15 text-rose-300'), `Best ${b.c}/${b.t}${b.p ? ' ✓ passed' : ''}`);
+}
+function testRow(key, label) {
+  const id = testId(key);
+  const row = el('div', 'flex items-center justify-between gap-3 px-3 py-3 rounded-xl border border-cyan-400/25 bg-cyan-400/5');
+  const left = el('div', 'min-w-0');
+  left.appendChild(el('p', 'text-sm font-bold text-white', label));
+  left.appendChild(bestBadge(id));
+  row.appendChild(left);
+  const go = el('button', 'shrink-0 px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-sm font-bold cursor-pointer', bestOf(id) ? 'Retake' : 'Start');
+  go.type = 'button'; go.onclick = () => openBrief(key);
+  go.setAttribute('aria-label', (bestOf(id) ? 'Retake ' : 'Start ') + label);
+  row.appendChild(go);
+  return row;
+}
+
+function renderHome() {
+  renderProfileFields('home-profile', 'home');
+  let lessons = 0, passed = 0;
+  MODULES.forEach(m => { m.lessons.forEach((l, li) => { if (isDone(lessonId(m.key, li))) lessons++; }); const b = bestOf(testId(m.key)); if (b && b.p) passed++; });
+  const fin = bestOf('final');
+  const op = $('overall-progress'); op.innerHTML = '';
+  op.appendChild(stat('Lessons', `${lessons}/${MODULES.length * 3}`, 'completed'));
+  op.appendChild(stat('Module tests', `${passed}/${MODULES.length}`, 'passed'));
+  op.appendChild(stat('Final', fin ? `${fin.c}/${fin.t}` : '—', fin ? (fin.p ? 'passed' : 'not passed') : 'not taken'));
+
+  const list = $('module-list'); list.innerHTML = '';
+  MODULES.forEach((m, mi) => {
+    const card = el('div', 'rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6');
+    const head = el('div', 'flex items-start gap-4');
+    const num = el('span', 'w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center display text-2xl font-bold ' + ((bestOf(testId(m.key)) || {}).p ? 'bg-emerald-400 text-slate-950' : 'bg-slate-800 text-cyan-300 border border-slate-700'), String(mi + 1));
+    num.setAttribute('aria-hidden', 'true');
+    head.appendChild(num);
+    const ht = el('div', 'min-w-0');
+    ht.appendChild(el('p', 'text-[11px] font-bold uppercase tracking-wider text-cyan-300', `Module ${mi + 1} · ${m.tool}`));
+    ht.appendChild(el('h2', 'display text-3xl font-bold text-white leading-none mt-1', m.name));
+    ht.appendChild(el('p', 'text-sm text-slate-400 mt-1.5', m.blurb));
+    head.appendChild(ht);
+    card.appendChild(head);
+    const rows = el('div', 'mt-4 space-y-1');
+    m.lessons.forEach((l, li) => {
+      const done = isDone(lessonId(m.key, li));
+      const b = el('button', 'w-full flex items-center gap-3 text-left px-3 py-2.5 rounded-xl hover:bg-slate-800/70 cursor-pointer');
+      b.type = 'button'; b.onclick = () => openLesson(m.key, li);
+      b.setAttribute('aria-label', `Lesson ${mi + 1}.${li + 1}: ${l.t}${done ? ' (done)' : ''}`);
+      const check = el('span', 'w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs font-black ' + (done ? 'bg-emerald-400 text-slate-950' : 'border-2 border-slate-600 text-transparent'), '✓');
+      check.setAttribute('aria-hidden', 'true');
+      b.appendChild(check);
+      b.appendChild(el('span', 'text-xs font-bold text-slate-500 tabular w-8', `${mi + 1}.${li + 1}`));
+      b.appendChild(el('span', 'font-semibold text-slate-100', l.t));
+      rows.appendChild(b);
+    });
+    rows.appendChild(testRow(m.key, `Module ${mi + 1} test · 15 questions`));
+    card.appendChild(rows);
+    list.appendChild(card);
+  });
+
+  const fc = $('final-card'); fc.innerHTML = '';
+  const card = el('div', 'rounded-3xl border border-cyan-400/40 bg-gradient-to-br from-cyan-400/10 to-slate-900/70 p-5 sm:p-6');
+  card.appendChild(el('p', 'text-[11px] font-bold uppercase tracking-wider text-cyan-300', 'All modules'));
+  card.appendChild(el('h2', 'display text-3xl font-bold text-white leading-none mt-1', 'Final exam'));
+  card.appendChild(el('p', 'text-sm text-slate-300 mt-1.5 mb-4', `${FINAL_QUESTIONS} questions drawn at random from all nine modules · ${FINAL_TEST_MINUTES} minutes · ${passMark(FINAL_QUESTIONS)} correct to pass.`));
+  card.appendChild(testRow('final', 'Final exam · 30 questions'));
+  fc.appendChild(card);
+}
+
+// ===================== LESSON =====================
+let lessonCtx = null;
+function openLesson(key, li) {
+  const m = mod(key), mi = modIndex(key), l = m.lessons[li];
+  lessonCtx = { key, li };
+  const chips = $('lesson-chips'); chips.innerHTML = '';
+  chips.appendChild(el('span', CHIP_ACCENT, `Module ${mi + 1}: ${m.name}`));
+  chips.appendChild(el('span', CHIP, `Lesson ${mi + 1}.${li + 1}`));
+  chips.appendChild(el('span', CHIP, `Tool: ${m.tool}`));
+  $('lesson-title').textContent = l.t;
+  $('lesson-goal').textContent = l.goal;
+  const ideas = $('lesson-ideas'); ideas.innerHTML = '';
+  l.ideas.forEach(t => { const r = el('li', 'flex gap-3'); r.appendChild(el('span', 'mt-2 w-1.5 h-1.5 rounded-full shrink-0 bg-cyan-400')); r.appendChild(el('span', 'text-slate-300 leading-relaxed', t)); ideas.appendChild(r); });
+  const f = $('lesson-formula'); f.innerHTML = ''; l.formula.forEach(t => f.appendChild(el('p', 'whitespace-pre-wrap', t)));
+  const ex = $('lesson-example'); ex.innerHTML = '';
+  l.ex.forEach((t, i) => { const r = el('li', 'flex gap-3'); r.appendChild(el('span', 'w-6 h-6 rounded-lg shrink-0 bg-slate-800 border border-slate-700 text-cyan-300 text-xs font-bold flex items-center justify-center tabular', String(i + 1))); r.appendChild(el('span', 'text-slate-200 leading-relaxed', t)); ex.appendChild(r); });
+  const terms = $('lesson-terms'); terms.innerHTML = '';
+  l.terms.forEach(([w, d]) => { const b = el('div', 'rounded-2xl border border-slate-800 bg-slate-950/60 p-3'); b.appendChild(el('dt', 'font-extrabold text-white', w)); b.appendChild(el('dd', 'text-sm text-slate-400 mt-0.5', d)); terms.appendChild(b); });
+  // quick check
+  const [q, opts, ans, why] = l.tryIt;
+  $('try-question').textContent = q;
+  const to = $('try-options'); to.innerHTML = '';
+  const fb = $('try-feedback'); fb.classList.add('hidden');
+  const base = 'text-left px-4 py-3 rounded-xl border font-medium cursor-pointer ';
+  shuffle(opts.map((o, i) => i)).forEach(i => {
+    const b = el('button', base + 'border-slate-700 bg-slate-900 hover:border-cyan-400/60 text-slate-100', opts[i]); b.type = 'button';
+    b.onclick = () => {
+      to.querySelectorAll('button').forEach(x => { x.className = base + 'border-slate-700 bg-slate-900 hover:border-cyan-400/60 text-slate-100'; });
+      const right = i === ans;
+      b.className = base + (right ? 'border-emerald-400 bg-emerald-400/10 text-emerald-100' : 'border-rose-400 bg-rose-400/10 text-rose-100');
+      fb.className = 'mt-3 text-sm font-semibold rounded-xl px-3 py-2 ' + (right ? 'bg-emerald-400/15 text-emerald-200' : 'bg-amber-400/15 text-amber-200');
+      fb.textContent = right ? 'Correct! ' + why : 'Not quite. Try another answer.';
+    };
+    to.appendChild(b);
+  });
+  renderLessonDone();
+  // nav
+  const nav = $('lesson-nav'); nav.innerHTML = '';
+  const prev = li > 0 ? [key, li - 1] : mi > 0 ? [MODULES[mi - 1].key, 2] : null;
+  const next = li < 2 ? [key, li + 1] : mi < MODULES.length - 1 ? [MODULES[mi + 1].key, 0] : null;
+  const btn = (cls, text, fn) => { const b = el('button', 'flex-1 px-5 py-3 rounded-2xl font-bold cursor-pointer ' + cls, text); b.type = 'button'; b.onclick = fn; nav.appendChild(b); };
+  if (prev) btn('border border-slate-700 bg-slate-800 text-slate-100', '← Previous lesson', () => openLesson(prev[0], prev[1]));
+  if (li === 2) btn('bg-cyan-400 hover:bg-cyan-300 text-slate-950', `Take the Module ${mi + 1} test →`, () => openBrief(key));
+  if (next) btn('border border-slate-700 bg-slate-800 text-slate-100', 'Next lesson →', () => openLesson(next[0], next[1]));
+  else btn('border border-cyan-400/50 bg-cyan-400/10 text-cyan-200', 'Take the final exam →', () => openBrief('final'));
+  show('view-lesson');
+}
+function renderLessonDone() {
+  const done = isDone(lessonId(lessonCtx.key, lessonCtx.li));
+  const b = $('lesson-done-btn');
+  b.textContent = done ? '✓ Lesson complete (tap to undo)' : 'Mark lesson complete';
+  b.className = 'w-full px-6 py-3.5 rounded-2xl font-bold text-base cursor-pointer ' + (done ? 'bg-emerald-400/15 text-emerald-200 border border-emerald-400/50' : 'bg-emerald-400 hover:bg-emerald-300 text-slate-950');
+}
+function toggleLessonDone() {
+  const id = lessonId(lessonCtx.key, lessonCtx.li);
+  if (store.done[id]) delete store.done[id]; else { store.done[id] = Date.now(); showToast('Lesson complete'); }
+  saveStore(); renderLessonDone();
+}
+
+// ===================== TESTS =====================
+let test = null, timer = null, lastBrief = null;
+
+function buildTest(key) {
+  let pool, title, minutes;
+  if (key === 'final') {
+    pool = shuffle(MODULES.flatMap((m, mi) => m.test.map(q => ({ q, mi })))).slice(0, FINAL_QUESTIONS);
+    title = 'Final Exam'; minutes = FINAL_TEST_MINUTES;
+  } else {
+    const mi = modIndex(key);
+    pool = shuffle(MODULES[mi].test.map(q => ({ q, mi })));
+    title = `Module ${mi + 1} Test: ${MODULES[mi].name}`; minutes = MODULE_TEST_MINUTES;
+  }
+  const questions = pool.map(({ q, mi }) => { const order = shuffle([0, 1, 2, 3]); return { q: q[0], options: order.map(i => q[1][i]), answer: order.indexOf(q[2]), why: q[3], mi }; });
+  return { id: testId(key), key, title, minutes, questions, answers: new Array(questions.length).fill(null), index: 0, submitted: false, timedOut: false };
+}
+
+function openBrief(key) {
+  lastBrief = key;
+  const final = key === 'final', mi = modIndex(key);
+  const n = final ? FINAL_QUESTIONS : 15, mins = final ? FINAL_TEST_MINUTES : MODULE_TEST_MINUTES;
+  const chips = $('brief-chips'); chips.innerHTML = '';
+  chips.appendChild(el('span', CHIP_ACCENT, final ? 'All 9 modules' : `Module ${mi + 1}`));
+  if (!final) chips.appendChild(el('span', CHIP, `Tool: ${MODULES[mi].tool}`));
+  $('brief-title').textContent = final ? 'Final Exam' : `Module ${mi + 1} Test: ${MODULES[mi].name}`;
+  $('brief-desc').textContent = final ? `${n} questions picked at random from every module.` : `Covers: ${MODULES[mi].lessons.map(l => l.t).join(', ')}.`;
+  const st = $('brief-stats'); st.innerHTML = '';
+  st.appendChild(stat('Questions', String(n)));
+  st.appendChild(stat('Time', `${mins} min`));
+  st.appendChild(stat('To pass', `${passMark(n)}/${n}`, '80%'));
+  renderProfileFields('brief-profile', 'brief');
+  $('brief-error').classList.add('hidden');
+  show('view-brief');
+}
+
+function startTest() {
+  const p = readProfile('brief');
+  if (!profileComplete(p)) {
+    $('brief-error').classList.remove('hidden');
+    const missing = FIELDS.find(([k]) => !p[k]); if (missing) $(`brief-f-${missing[0]}`).focus();
+    return;
+  }
+  applyProfile(p);
+  test = buildTest(lastBrief);
+  test.deadline = Date.now() + test.minutes * 60 * 1000;
+  test.started = Date.now();
+  $('test-bar-title').textContent = test.title;
+  buildPalette(); renderQ();
+  clearInterval(timer); timer = setInterval(tick, 1000); tick();
+  show('view-test');
+}
+function retake() { if (lastBrief) openBrief(lastBrief); }
+
+function secondsLeft() { return Math.max(0, Math.ceil((test.deadline - Date.now()) / 1000)); }
+function tick() {
+  if (!test || test.submitted) return;
+  const left = secondsLeft();
+  $('timer-display').textContent = fmt(left);
+  $('timer-badge').className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl border font-bold text-sm sm:text-base tabular mono ' +
+    (left < 60 ? 'border-rose-400 bg-rose-400/15 text-rose-200 animate-pulse' : left < 300 ? 'border-amber-400 bg-amber-400/15 text-amber-200' : 'border-slate-700 bg-slate-900 text-cyan-200');
+  if (left <= 0) { closeConfirm(); submitTest(true); }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(); });
+window.addEventListener('pageshow', () => { if (test) tick(); });
+window.addEventListener('beforeunload', e => { if (test && !test.submitted && !$('view-test').classList.contains('hidden')) { e.preventDefault(); e.returnValue = ''; } });
+
+function buildPalette() {
+  const p = $('palette'); p.innerHTML = '';
+  test.questions.forEach((_, i) => { const b = el('button', '', String(i + 1)); b.type = 'button'; b.id = 'pal-' + i; b.setAttribute('aria-label', 'Go to question ' + (i + 1)); b.onclick = () => { test.index = i; renderQ(); }; p.appendChild(b); });
+}
+function renderQ() {
+  const q = test.questions[test.index], n = test.questions.length;
+  $('q-number').textContent = `Question ${test.index + 1} of ${n}`;
+  $('q-module').textContent = `Module ${q.mi + 1}: ${MODULES[q.mi].name}`;
+  $('q-text').textContent = q.q;
+  const box = $('q-options'); box.innerHTML = '';
+  q.options.forEach((o, i) => {
+    const sel = test.answers[test.index] === i;
+    const b = el('button', 'w-full text-left p-4 rounded-2xl border flex items-center gap-3.5 cursor-pointer ' + (sel ? 'border-cyan-400 bg-cyan-400/10 text-white font-semibold' : 'border-slate-700 bg-slate-900 hover:border-cyan-400/60 text-slate-200 font-medium'));
+    b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', sel);
+    b.appendChild(el('span', 'w-8 h-8 rounded-xl font-bold text-sm flex items-center justify-center shrink-0 ' + (sel ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-300'), 'ABCD'[i]));
+    b.appendChild(el('span', 'text-base leading-snug', o));
+    b.onclick = () => { test.answers[test.index] = i; renderQ(); };
+    box.appendChild(b);
+  });
+  $('prev-btn').disabled = test.index === 0;
+  const last = test.index === n - 1;
+  $('next-btn').classList.toggle('hidden', last);
+  $('finish-btn').classList.toggle('hidden', !last);
+  const answered = test.answers.filter(a => a !== null).length;
+  $('test-bar-progress').textContent = `Question ${test.index + 1} of ${n} • ${answered} answered`;
+  $('test-bar-fill').style.width = (answered / n * 100) + '%';
+  $('palette-count').textContent = `${answered} / ${n} answered`;
+  test.questions.forEach((_, i) => {
+    const b = $('pal-' + i), a = test.answers[i] !== null, cur = i === test.index;
+    b.className = 'h-11 rounded-xl font-bold text-sm flex items-center justify-center cursor-pointer tabular ' + (a ? 'bg-cyan-400 text-slate-950 ' : 'bg-slate-800 text-slate-300 border border-slate-700 ') + (cur ? 'ring-2 ring-offset-2 ring-offset-slate-900 ring-cyan-300' : '');
+  });
+}
+function prevQ() { if (test.index > 0) { test.index--; renderQ(); } }
+function nextQ() { if (test.index < test.questions.length - 1) { test.index++; renderQ(); } }
+document.addEventListener('keydown', e => {
+  if (!test || test.submitted || $('view-test').classList.contains('hidden') || !$('confirm-modal').classList.contains('hidden')) return;
+  if (e.target && e.target.tagName === 'INPUT') return;
+  const k = e.key.toLowerCase(), map = { a: 0, b: 1, c: 2, d: 3, '1': 0, '2': 1, '3': 2, '4': 3 };
+  if (k in map) { test.answers[test.index] = map[k]; renderQ(); }
+  else if (e.key === 'ArrowLeft') prevQ();
+  else if (e.key === 'ArrowRight') nextQ();
+});
+
+function attemptSubmit() {
+  if (!test || test.submitted) return;
+  const left = test.answers.filter(a => a === null).length;
+  if (left) { $('confirm-message').textContent = `You have ${left} unanswered question${left === 1 ? '' : 's'} out of ${test.questions.length}. Unanswered questions are marked wrong. Submit anyway?`; $('confirm-modal').classList.remove('hidden'); }
+  else submitTest(false);
+}
+function closeConfirm() { $('confirm-modal').classList.add('hidden'); }
+
+function submitTest(timedOut) {
+  if (!test || test.submitted) return;
+  closeConfirm();
+  test.submitted = true; test.timedOut = !!timedOut;
+  clearInterval(timer);
+  const n = test.questions.length;
+  const correct = test.questions.filter((q, i) => test.answers[i] === q.answer).length;
+  const need = passMark(n), passed = correct >= need, pct = Math.round(correct / n * 100);
+  const used = Math.min(test.minutes * 60, Math.round((Date.now() - test.started) / 1000));
+  test.result = { correct, n, passed, pct, used };
+  const prev = store.best[test.id];
+  if (!prev || correct > prev.c) store.best[test.id] = { c: correct, t: n, p: passed, at: Date.now() };
+  saveStore();
+
+  $('timeout-banner').classList.toggle('hidden', !test.timedOut);
+  const pill = $('result-pill');
+  pill.textContent = passed ? 'Passed' : 'Not passed yet';
+  pill.className = 'inline-flex px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider border ' + (passed ? 'bg-emerald-400/15 text-emerald-200 border-emerald-400/50' : 'bg-rose-400/15 text-rose-200 border-rose-400/50');
+  $('result-heading').textContent = passed ? 'Nice work' : 'Review and try again';
+  $('result-sub').textContent = `${test.title} · ${need} of ${n} needed to pass`;
+  $('result-score').textContent = `${correct}/${n}`;
+  $('result-percent').textContent = pct + '%';
+  $('result-time').textContent = fmt(used);
+  buildReview();
+  show('view-results');
+  sendResults(buildEmail());
+}
+
+function buildReview() {
+  const list = $('review-list'); list.innerHTML = '';
+  test.questions.forEach((q, i) => {
+    const a = test.answers[i], ok = a === q.answer;
+    const card = el('div', 'text-left p-4 sm:p-5 rounded-2xl border ' + (ok ? 'border-emerald-400/40 bg-emerald-400/5' : 'border-rose-400/40 bg-rose-400/5'));
+    const top = el('div', 'flex flex-wrap items-center justify-between gap-2');
+    top.appendChild(el('span', 'text-xs font-bold uppercase tracking-wider text-slate-400', `Question ${i + 1} · Module ${q.mi + 1}`));
+    top.appendChild(el('span', 'text-xs font-bold px-3 py-1 rounded-full ' + (ok ? 'bg-emerald-400/15 text-emerald-200' : a === null ? 'bg-amber-400/15 text-amber-200' : 'bg-rose-400/15 text-rose-200'), ok ? '✓ Correct' : a === null ? 'Not answered' : '✗ Incorrect'));
+    card.appendChild(top);
+    card.appendChild(el('p', 'mt-2 font-bold text-white', q.q));
+    const g = el('div', 'mt-3 grid gap-2 sm:grid-cols-2 text-sm');
+    const yours = el('div', 'p-3 rounded-xl bg-slate-950/60 border ' + (ok ? 'border-emerald-400/40' : 'border-rose-400/40'));
+    yours.appendChild(el('p', 'text-[11px] font-bold uppercase tracking-wider text-slate-400', 'Your answer'));
+    yours.appendChild(el('p', 'font-semibold text-slate-100', a === null ? 'Not answered' : `${'ABCD'[a]}. ${q.options[a]}`));
+    const right = el('div', 'p-3 rounded-xl bg-slate-950/60 border border-emerald-400/40');
+    right.appendChild(el('p', 'text-[11px] font-bold uppercase tracking-wider text-emerald-300', 'Correct answer'));
+    right.appendChild(el('p', 'font-semibold text-slate-100', `${'ABCD'[q.answer]}. ${q.options[q.answer]}`));
+    g.appendChild(yours); g.appendChild(right); card.appendChild(g);
+    const ex = el('p', 'mt-3 text-sm text-slate-300'); ex.appendChild(el('strong', 'text-white', 'Why: ')); ex.appendChild(document.createTextNode(q.why));
+    card.appendChild(ex);
+    list.appendChild(card);
+  });
+}
+
+// ===================== RESULTS EMAIL =====================
+// Sent automatically through FormSubmit once john.mitchell@equipmentshare.com has clicked the one-time
+// activation link FormSubmit emails after the first submission. Until then (or if the page is opened as
+// a file or offline), the learner gets a button that opens a ready-to-send email in their mail app.
+let lastEmail = null;
+function mailEncode(t) { return encodeURIComponent(t.replace(/\r?\n/g, '\r\n')); }
+function buildEmail() {
+  const r = test.result, p = store.profile;
+  const final = test.key === 'final';
+  const lessonsDone = final
+    ? MODULES.reduce((n, m) => n + m.lessons.filter((l, li) => isDone(lessonId(m.key, li))).length, 0)
+    : mod(test.key).lessons.filter((l, li) => isDone(lessonId(test.key, li))).length;
+  const lessonsOf = final ? MODULES.length * 3 : 3;
+  const missed = [], missedShort = [];
+  test.questions.forEach((q, i) => {
+    if (test.answers[i] !== q.answer) {
+      const given = test.answers[i] === null ? '(not answered)' : `${'ABCD'[test.answers[i]]}. ${q.options[test.answers[i]]}`;
+      missed.push(`Q${i + 1} [M${q.mi + 1}]: ${q.q}\n   Answered: ${given}\n   Correct:  ${'ABCD'[q.answer]}. ${q.options[q.answer]}`);
+      missedShort.push(`- Q${i + 1} [M${q.mi + 1}]: ` + (q.q.length > 64 ? q.q.slice(0, 64) + '...' : q.q));
+    }
+  });
+  const byModule = final ? MODULES.map((m, mi) => {
+    const qs = test.questions.map((q, i) => ({ q, i })).filter(x => x.q.mi === mi);
+    return qs.length ? `  M${mi + 1} ${m.name}: ${qs.filter(x => test.answers[x.i] === x.q.answer).length}/${qs.length}` : null;
+  }).filter(Boolean) : [];
+  const status = r.passed ? 'PASS' : 'FAIL';
+  const when = new Date().toLocaleString();
+  const header =
+`FleetSizer Pro Sizing Course - Test Results
+
+Name:        ${p.name}
+Job title:   ${p.title}
+Branch:      ${p.branch}
+Employee ID: ${p.empId}
+Test:        ${test.title}
+Completed:   ${when}
+Score:       ${r.correct} / ${r.n} (${r.pct}%)
+Result:      ${status} (passing is ${passMark(r.n)} / ${r.n})
+Time:        ${fmt(r.used)} of ${test.minutes}:00${test.timedOut ? '  [time ran out - submitted automatically]' : ''}
+Lessons completed${final ? '' : ' in this module'}: ${lessonsDone} of ${lessonsOf}
+${byModule.length ? '\nScore by module:\n' + byModule.join('\n') + '\n' : ''}`;
+  const subject = `Sizing Course ${status}: ${p.name} (${p.empId}) - ${final ? 'Final Exam' : 'Module ' + (modIndex(test.key) + 1)} - ${r.correct}/${r.n}`;
+  const fullBody = header + `\nMissed questions (${missed.length}):\n\n` + (missed.join('\n\n') || 'None - perfect score.');
+  const prefix = `mailto:${RESULTS_EMAIL}?subject=${mailEncode(subject)}&body=`;
+  let draft = header + `\nMissed questions (${missed.length}):\n`;
+  if (!missedShort.length) draft += 'None - perfect score.\n';
+  for (let i = 0; i < missedShort.length; i++) {
+    const next = draft + missedShort[i] + '\n';
+    if ((prefix + mailEncode(next)).length > MAILTO_MAX_LENGTH) { draft += `...and ${missedShort.length - i} more\n`; break; }
+    draft = next;
+  }
+  const payload = {
+    _subject: subject, _captcha: 'false', _template: 'table',
+    Name: p.name, Job_Title: p.title, Branch: p.branch, Employee_ID: p.empId,
+    Test: test.title, Completed: when, Score: `${r.correct} / ${r.n} (${r.pct}%)`, Result: status,
+    Time_Taken: fmt(r.used), Time_Ran_Out: test.timedOut ? 'Yes' : 'No',
+    Lessons_Completed: `${lessonsDone} of ${lessonsOf}`
+  };
+  if (byModule.length) payload.Score_By_Module = byModule.map(s => s.trim()).join('\n');
+  payload.Missed_Questions = missed.join('\n\n') || 'None - perfect score.';
+  return { subject, fullBody, mailto: prefix + mailEncode(draft), payload };
+}
+function setEmailStatus(kind, text, showButtons) {
+  const styles = { pending: 'border-slate-700 bg-slate-950/60 text-slate-300', ok: 'border-emerald-400/50 bg-emerald-400/10 text-emerald-200', fail: 'border-amber-400/50 bg-amber-400/10 text-amber-200' };
+  const b = $('email-status');
+  b.className = 'mt-6 max-w-2xl mx-auto rounded-2xl border px-4 py-3 text-sm font-medium ' + styles[kind];
+  b.textContent = text;
+  $('email-actions').classList.toggle('hidden', !showButtons);
+}
+async function sendResults(mail) {
+  lastEmail = mail;
+  $('mail-link').href = mail.mailto;
+  setEmailStatus('pending', `Sending your results to ${RESULTS_NAME}...`, false);
+  const fail = () => { if (lastEmail === mail) setEmailStatus('fail', `Your results could not be sent automatically. Tap "Email my results to ${RESULTS_NAME}" below, then tap Send in your mail app.`, true); };
+  if (location.protocol === 'file:') return fail();
+  try {
+    const res = await fetch(FORM_ENDPOINT, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(mail.payload) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || String(data.success) !== 'true') throw new Error(data.message || 'error ' + res.status);
+    if (lastEmail === mail) setEmailStatus('ok', `Your results were sent to ${RESULTS_NAME} automatically. Nothing else to do.`, false);
+  } catch (e) { fail(); }
+}
+function mailTapped() { setEmailStatus('pending', `Your mail app should now show an email to ${RESULTS_NAME} with your results filled in. Tap Send to deliver it. If nothing opened, use "Copy results" and paste them into an email.`, true); }
+function copyResults() {
+  if (!lastEmail) return;
+  const text = `To: ${RESULTS_EMAIL}\nSubject: ${lastEmail.subject}\n\n${lastEmail.fullBody}`;
+  const fallback = () => { try { const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px;'; document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, text.length); document.execCommand('copy'); document.body.removeChild(ta); showToast('Results copied'); } catch (e) {} };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => showToast('Results copied')).catch(fallback); else fallback();
+}
+
+// ===================== START =====================
+applyProfile(store.profile);
+renderHome();
+show('view-home');
+
+  </script>
+</body>
+</html>
