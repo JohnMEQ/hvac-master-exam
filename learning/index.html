@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#7dd3fc" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Jerzy's Adventure" />
+  <meta name="apple-mobile-web-app-title" content="Mikey's Lessons" />
   <meta name="format-detection" content="telephone=no" />
-  <title>Jerzy's Learning Adventure</title>
+  <title>Mikey Mitchell's Lesson Plans</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     // Only apply hover styles on devices that truly hover, so taps on iPhone/iPad don't leave "stuck" hover colors
@@ -115,6 +115,67 @@
     .frac-cell { border-right: 2px solid var(--ink); }
     .frac-cell:last-child { border-right: 0; }
 
+    /* Lesson tools: read aloud and "explain it another way" */
+    .tool { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .8rem; border-radius: 999px; border: 2px solid var(--ink); background: #fff; font-weight: 800; font-size: .85rem; box-shadow: 0 3px 0 var(--ink); cursor: pointer; }
+    .tool:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+    .tool-on { background: var(--sun); }
+    .tool-sm { padding: .2rem .55rem; font-size: .8rem; box-shadow: 0 2px 0 var(--ink); }
+    .seg-lab:not(.seg-done):not(.seg-now) { background: repeating-linear-gradient(45deg, #a5f3fc 0 4px, #fff 4px 8px); }
+
+    /* Practice Lab activities */
+    .tile { display: flex; align-items: center; gap: .5rem; text-align: left; width: 100%; min-height: 48px; padding: .55rem .75rem; border-radius: 14px; border: 3px solid var(--ink); background: #fff; box-shadow: 0 3px 0 var(--ink); font-weight: 800; line-height: 1.25; cursor: pointer; transition: transform .08s ease, background-color .15s ease; }
+    .tile:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+    .tile:disabled { cursor: default; }
+    .tile-sel { background: var(--sun); transform: translateY(-2px); box-shadow: 0 5px 0 var(--ink); }
+    .tile-ok { background: #bbf7d0; }
+    .tile-bad { background: #fecdd3; animation: shake .35s ease; }
+    .tile-placed { background: #f8fafc; }
+    .bin { border: 3px dashed var(--ink); border-radius: 18px; padding: .6rem; min-height: 84px; background: rgba(255,255,255,.7); cursor: pointer; }
+    .bin-ready { background: #fef9c3; border-style: solid; }
+    .num-in { width: 6.5rem; max-width: 100%; padding: .6rem .7rem; border-radius: 14px; border: 3px solid var(--ink); background: #fff; font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 700; font-size: 1.25rem; text-align: center; }
+    .num-in:focus { outline: none; box-shadow: 0 0 0 4px #7dd3fc; }
+    .num-ok { background: #bbf7d0; } .num-bad { background: #fecdd3; }
+
+    /* Grown-ups section */
+    .ptable { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .875rem; }
+    .ptable th, .ptable td { padding: .5rem .6rem; border-bottom: 2px solid #e0e7ff; text-align: left; vertical-align: top; }
+    .ptable th { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 900; color: #4c4a7a; }
+
+    /* Lesson plans on screen */
+    .plan { font-size: .95rem; line-height: 1.5; }
+    .plan h4 { font-family: 'Fredoka', 'Nunito', sans-serif; font-weight: 700; font-size: 1.05rem; margin-top: .9rem; }
+    .plan p { margin-top: .2rem; }
+    .plan ul { list-style: disc; padding-left: 1.3rem; }
+    .plan ol { list-style: decimal; padding-left: 1.3rem; }
+    .plan ol[type="a"] { list-style: lower-alpha; }
+    .plan li { margin: .3rem 0; }
+    .plan .meta { font-size: .8rem; font-weight: 800; color: #4c4a7a; }
+    .plan .muted { color: #4c4a7a; font-size: .875rem; }
+    .plan .key { border: 3px dashed var(--ink); border-radius: 16px; padding: .5rem 1rem 1rem; margin-top: 1rem; background: #f8fafc; }
+
+    /* Printing: only the prepared print area is printed */
+    #print-area { display: none; }
+    @media print {
+      @page { margin: 14mm; }
+      body { background: #fff !important; padding: 0 !important; }
+      body > *:not(#print-area) { display: none !important; }
+      #print-area { display: block !important; color: #000; font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; }
+      #print-area h1 { font-size: 18pt; margin: 0 0 4pt; }
+      #print-area h2 { font-size: 14pt; margin: 14pt 0 4pt; border-bottom: 1.5pt solid #000; padding-bottom: 2pt; }
+      #print-area h3 { font-size: 11.5pt; margin: 9pt 0 3pt; }
+      #print-area h4 { font-size: 11pt; font-weight: bold; margin: 7pt 0 2pt; }
+      #print-area p, #print-area li { margin: 2pt 0; }
+      #print-area ul, #print-area ol { margin: 2pt 0 2pt 16pt; padding: 0; }
+      #print-area ul { list-style: disc; } #print-area ol { list-style: decimal; } #print-area ol[type="a"] { list-style: lower-alpha; }
+      #print-area .meta { font-size: 9.5pt; color: #333; }
+      #print-area table { width: 100%; border-collapse: collapse; margin: 6pt 0; }
+      #print-area th, #print-area td { border: 1pt solid #555; padding: 3pt 5pt; text-align: left; vertical-align: top; font-size: 10pt; }
+      #print-area .pb { break-before: page; page-break-before: always; }
+      #print-area .muted { color: #444; font-size: 9.5pt; }
+      #print-area .key { border: 1pt dashed #555; padding: 5pt 7pt; margin-top: 6pt; }
+      #print-area .avoid { break-inside: avoid; page-break-inside: avoid; }
+    }
+
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.96) translateY(6px); } 100% { opacity: 1; transform: none; } }
     .animate-pop-in { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -139,8 +200,8 @@
         <button type="button" onclick="goHome()" class="flex items-center gap-2.5 text-left cursor-pointer min-w-0">
           <span class="w-11 h-11 shrink-0" aria-hidden="true" data-mascot="head"></span>
           <span class="min-w-0">
-            <span class="block fun text-lg sm:text-xl font-bold leading-tight truncate"><span class="sm-up">Jerzy's Learning Adventure</span><span class="sm-down">Jerzy's Adventure</span></span>
-            <span class="block text-xs font-bold text-indigo-900/60 truncate">12 weeks · Grades 3–5</span>
+            <span class="block fun text-lg sm:text-xl font-bold leading-tight truncate"><span class="sm-up">Mikey Mitchell's Lesson Plans</span><span class="sm-down">Mikey's Lesson Plans</span></span>
+            <span class="block text-xs font-bold text-indigo-900/60 truncate">Homeschool · 12 weeks · Grades 3–5</span>
           </span>
         </button>
         <div class="flex items-center gap-2 shrink-0">
@@ -180,7 +241,7 @@
         <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
           <div class="w-28 h-28 sm:w-36 sm:h-36 shrink-0 bob mx-auto sm:mx-0" aria-hidden="true" data-mascot="full"></div>
           <div class="min-w-0 flex-1 w-full">
-            <p class="chip" style="background:#e0f2fe;">🗺️ Grades 3–5 · 12-week quest</p>
+            <p class="chip" style="background:#e0f2fe;">🗺️ Homeschool · Grades 3–5 · 12 weeks</p>
             <h1 id="hello" class="fun text-3xl sm:text-5xl font-bold mt-2 leading-none" style="text-wrap: balance;">Hi, explorer!</h1>
             <div class="bubble mt-4 ml-4 sm:ml-5">
               <p id="mascot-say" class="font-bold text-base sm:text-lg leading-snug">I'm Scout the Owl, your guide. Every week we'll explore 5 subjects together!</p>
@@ -205,6 +266,7 @@
         <button type="button" id="tab-map" onclick="setTab('map')" class="btn px-4 py-2 text-sm" role="tab">🗺️ Adventure map</button>
         <button type="button" id="tab-subjects" onclick="setTab('subjects')" class="btn px-4 py-2 text-sm" role="tab">📚 Subjects</button>
         <button type="button" id="tab-badges" onclick="setTab('badges')" class="btn px-4 py-2 text-sm" role="tab">🏅 Badges</button>
+        <button type="button" id="tab-parents" onclick="setTab('parents')" class="btn px-4 py-2 text-sm" role="tab">👪 Grown-ups</button>
       </div>
 
       <div id="map-view" class="mt-5">
@@ -217,6 +279,7 @@
       </div>
       <div id="subjects-view" class="hidden mt-5 grid gap-5 md:grid-cols-2"></div>
       <div id="badges-view" class="hidden mt-5"></div>
+      <div id="parents-view" class="hidden mt-5 space-y-5"></div>
     </section>
 
     <!-- ============================== LESSON ============================== -->
@@ -349,9 +412,13 @@
     </div>
   </div>
 
+  <!-- Filled just before printing a lesson plan or progress report -->
+  <div id="print-area" aria-hidden="true"></div>
+
   <script>
     const SUBJECTS = [];
     const TEACH = {};
+    const EXTRA = {};
   </script>
   <script>
 SUBJECTS.push({
@@ -2965,6 +3032,681 @@ Object.assign(TEACH, {
   }
 });
 
+// Extra explanations and a hands-on activity for Math. Practice problems are generated fresh by MATHGEN in app.js.
+Object.assign(EXTRA, {
+  "math-u0-l0": {
+    more: ["Picture base-ten blocks: a little cube is 1, a stick of ten cubes is 10, a flat of ten sticks is 100, and a big block of ten flats is 1,000. Each place is ten times bigger than the place to its right.",
+      "To write expanded form, read the number one digit at a time and say its value: 4,372 → “four thousand, three hundred, seventy, two” → 4,000 + 300 + 70 + 2. Skip any zeros.",
+      "Rounding is like a ball on a hill. Find the digit to the right of the place you're rounding to. 0–4 rolls the ball back down (round down). 5–9 rolls it over the top (round up).",
+      "Comparing numbers is like a race: first count the digits (more digits = bigger). If they tie, start at the left and compare place by place until one digit wins. The alligator mouth (> or <) always eats the bigger number."],
+    act: { k: "order", prompt: "Put these numbers in order from least to greatest.", items: ["3,098", "3,890", "3,908", "30,089", "30,980"] },
+  },
+  "math-u0-l1": {
+    more: ["Lining up places is like parking cars in the right spots: ones under ones, tens under tens. Start at the right edge (the ones) and work left, every time.",
+      "Regrouping when you add is a trade: 10 ones are swapped for 1 ten, and the extra ten gets carried to the top of the next column. 8 + 5 = 13, so write 3 and carry the 1 ten.",
+      "When you subtract and the top digit is too small, borrow from your neighbor: trade 1 ten for 10 ones. Check your answer by adding it back: the difference + the number you took away should equal the number you started with."],
+    act: { k: "match", prompt: "Match each problem to its answer.", pairs: [["1,250 + 340", "1,590"], ["2,000 − 1", "1,999"], ["4,506 + 1,494", "6,000"], ["800 − 275", "525"], ["9,000 − 2,999", "6,001"]] },
+  },
+  "math-u0-l2": {
+    more: ["Multiplication is a shortcut for adding the same number over and over. 4 × 3 means 4 groups of 3: 3 + 3 + 3 + 3 = 12. Think of 4 bags with 3 apples in each.",
+      "Turn an array on its side and the total doesn't change: 3 rows of 5 = 5 rows of 3 = 15. So if you know 3 × 8, you already know 8 × 3. That cuts the facts to learn almost in half!",
+      "Tricks: × 2 means double it. × 5 ends in 0 or 5. × 10 adds a zero. For × 9, hold up 10 fingers and fold down the one you're multiplying by: the fingers on the left are the tens and on the right are the ones (9 × 4: fold the 4th finger → 3 and 6 = 36)."],
+    act: { k: "match", prompt: "Match each fact to its product.", pairs: [["6 × 7", "42"], ["8 × 4", "32"], ["9 × 9", "81"], ["7 × 8", "56"], ["12 × 3", "36"]] },
+  },
+  "math-u1-l0": {
+    more: ["Break the big number into friendly pieces, multiply each piece, then add them up. 34 × 5 = (30 × 5) + (4 × 5) = 150 + 20 = 170. It's like paying with bills and coins separately.",
+      "In the standard method, multiply the ones first. If you get a two-digit answer, write the ones and carry the tens to the top of the next column. Then multiply the tens and add what you carried.",
+      "For two digits × two digits, do two smaller problems. 23 × 14: first 23 × 4 = 92, then 23 × 10 = 230 (put a zero placeholder first!), then add: 92 + 230 = 322."],
+    act: { k: "match", prompt: "Match each problem to its product.", pairs: [["23 × 4", "92"], ["15 × 6", "90"], ["12 × 12", "144"], ["14 × 11", "154"], ["40 × 5", "200"]] },
+  },
+  "math-u1-l1": {
+    more: ["Division is fair sharing. 12 ÷ 3 means 12 cookies shared fairly among 3 friends: deal them out one at a time like cards until they're gone. Each friend gets 4.",
+      "Division and multiplication are a family. If 6 × 4 = 24, then 24 ÷ 4 = 6 and 24 ÷ 6 = 4. To divide, ask: “What times the divisor gives me this number?”",
+      "Sometimes things don't share evenly. 14 ÷ 4: each person gets 3 (that uses 12), and 2 are left over. That leftover is the remainder: 3 R2. A remainder must always be smaller than the number you're dividing by."],
+    act: { k: "match", prompt: "Match each division to its quotient.", pairs: [["17 ÷ 5", "3 R2"], ["20 ÷ 4", "5"], ["29 ÷ 6", "4 R5"], ["48 ÷ 8", "6"], ["50 ÷ 7", "7 R1"]] },
+  },
+  "math-u1-l2": {
+    more: ["Read the problem like a detective. Circle the question, underline the numbers you need, and cross out extra information. Then picture the story: are things joining, separating, being grouped or being shared?",
+      "A two-step problem is like a staircase: you can't jump to the top. Solve the first step, write the answer down, then use it in the second step. Always check that your final answer answers the question asked.",
+      "Remember: Parentheses first, then Multiply and Divide from left to right, then Add and Subtract from left to right. Silly phrase: “Please Mind Dad's Apple Sauce.” 10 − 2 × 3 = 10 − 6 = 4."],
+    act: { k: "sort", prompt: "Which operation does each clue usually point to?", bins: ["Add", "Subtract", "Multiply", "Divide"], items: [["altogether", 0], ["sum", 0], ["how many are left", 1], ["difference", 1], ["groups of", 2], ["times as many", 2], ["shared equally", 3], ["split into", 3]] },
+  },
+  "math-u2-l0": {
+    more: ["A fraction is a pizza story. The bottom number (denominator) tells how many equal slices the pizza is cut into. The top number (numerator) tells how many slices you have. 3/8 = 3 of 8 equal slices.",
+      "Equivalent fractions are the same amount cut differently. Cut a half-pizza's slice in two and you have 2/4, still the same amount. Multiply (or divide) the top and bottom by the same number to find them.",
+      "Same bottoms? Bigger top wins (3/8 > 2/8). Same tops? Smaller bottom wins, because fewer slices means bigger slices (1/3 > 1/5). Not sure? Compare each one to 1/2."],
+    act: { k: "sort", prompt: "Is each fraction equal to one half?", bins: ["Equals 1/2", "Not 1/2"], items: [["2/4", 0], ["3/6", 0], ["1/3", 1], ["5/10", 0], ["2/5", 1], ["3/4", 1]] },
+  },
+  "math-u2-l1": {
+    more: ["Adding fractions with the same denominator is like adding apples: 2 apples + 3 apples = 5 apples. 2 eighths + 3 eighths = 5 eighths. The denominator is the name, so it stays the same.",
+      "To change an improper fraction to a mixed number, divide the top by the bottom. 11/4: 11 ÷ 4 = 2 R3, so it's 2 wholes and 3/4 left: 2 3/4. Going back: 2 × 4 + 3 = 11, so 11/4.",
+      "Simplifying is giving a fraction its shortest name. Find a number that divides both the top and bottom evenly: 6/9 → divide by 3 → 2/3. Multiplying by a whole number just counts groups: 4 × 2/5 = 8/5."],
+    act: { k: "match", prompt: "Match each improper fraction to its mixed number.", pairs: [["7/4", "1 3/4"], ["5/2", "2 1/2"], ["11/3", "3 2/3"], ["9/4", "2 1/4"], ["8/5", "1 3/5"]] },
+  },
+  "math-u2-l2": {
+    more: ["Decimals are fractions in disguise. One tenth = 0.1 = 1/10 (one of ten equal parts). One hundredth = 0.01 = 1/100. The decimal point is the fence between wholes and parts.",
+      "Money is the easiest way to see decimals: $1.00 is a whole dollar, a dime is $0.10 (one tenth of a dollar), and a penny is $0.01 (one hundredth). $3.45 = 3 dollars, 4 dimes, 5 pennies.",
+      "To compare decimals, line up the decimal points and add zeros so they're the same length: 0.5 vs 0.45 → 0.50 vs 0.45 → 50 hundredths beats 45 hundredths. To add, line up the points first, then add like whole numbers."],
+    act: { k: "order", prompt: "Put these decimals in order from least to greatest.", items: ["0.05", "0.3", "0.35", "0.5", "0.53"] },
+  },
+  "math-u3-l0": {
+    more: ["Use your body as a ruler: the top of your thumb is about 1 inch, your foot is about 1 foot, and a big step is about 1 yard. A paper clip weighs about 1 gram; a loaf of bread is about 1 pound.",
+      "Metric is all about tens: kilo- means 1,000, centi- means hundredth, milli- means thousandth. 1 kilometer = 1,000 meters, 1 meter = 100 centimeters, 1 liter = 1,000 milliliters.",
+      "Big to small: multiply (you need MORE of the little ones: 3 feet = 36 inches). Small to big: divide (you need FEWER of the big ones: 24 inches = 2 feet). Ask: should my answer be a bigger or smaller number?",
+      "For elapsed time, jump along a number line: hop by whole hours first, then by minutes. 9:30 to 11:45 → hop 2 hours to 11:30, then 15 minutes to 11:45. Total: 2 hours 15 minutes."],
+    act: { k: "match", prompt: "Match each unit to its equal amount.", pairs: [["1 foot", "12 inches"], ["1 yard", "3 feet"], ["1 pound", "16 ounces"], ["1 gallon", "4 quarts"], ["1 hour", "60 minutes"], ["1 meter", "100 centimeters"]] },
+  },
+  "math-u3-l1": {
+    more: ["A polygon is a closed shape with straight sides, like a fence with no gaps. Count the sides to name it: tri = 3, quad = 4, penta = 5, hexa = 6, octa = 8 (like an octopus's 8 arms!).",
+      "Make angles with your arms! A right angle is a square corner like the letter L. Acute is smaller (a-CUTE little angle). Obtuse is wider than a right angle. Parallel lines never meet, like train tracks.",
+      "Perimeter is the distance around, like walking along a fence: add up every side. For a rectangle, add length + width and double it: a 5 × 3 rectangle has perimeter 5 + 3 + 5 + 3 = 16.",
+      "Area is the space inside, like counting floor tiles that cover a room. For a rectangle, multiply length × width: 5 × 3 = 15 square units. Perimeter is a fence (units); area is a carpet (square units)."],
+    act: { k: "match", prompt: "Match each shape to its number of sides.", pairs: [["Triangle", "3 sides"], ["Quadrilateral", "4 sides"], ["Pentagon", "5 sides"], ["Hexagon", "6 sides"], ["Octagon", "8 sides"]] },
+  },
+  "math-u3-l2": {
+    more: ["Graphs are pictures of numbers. On a bar graph, find the top of each bar and read straight across to the scale. On a picture graph, check the key: if one ☺ = 2 kids, then 4 ☺ = 8 kids.",
+      "Tally marks are counted in bundles of five: four lines and a slash across them. Count by fives, then add the extras. A line plot puts an X above a number line for each data point, so tall stacks are the most common.",
+      "Think “walk, then climb.” Start at (0, 0). The first number tells how far to walk right along the x-axis; the second tells how far to climb up. Remember: you have to walk to the ladder before you can climb it!"],
+    act: { k: "order", prompt: "Put the steps for plotting the point (4, 2) in order.", items: ["Start at the origin (0, 0)", "Move right 4 along the x-axis", "Move up 2", "Draw a dot and label it"] },
+  }
+});
+
+// Extra explanations ("Explain it another way"), a hands-on activity and practice questions for Reading & Writing.
+// more[i] goes with teaching step i. act: sort | order | match. practice: [question, options, answer index, why].
+Object.assign(EXTRA, {
+  "ela-u0-l0": {
+    more: ["Think of a story like a play. The characters are the actors, and the setting is the stage plus the time on the clock. If you moved a story from a sunny beach to a dark cave, the whole story would feel different!",
+      "A plot is like a roller coaster: it starts slow (beginning), climbs as the problem gets bigger (middle), then zooms down to the solution (end). Ask yourself: what goes wrong, and how does it get fixed?",
+      "To find a trait, be a detective. Look for clues in what the character does, says and thinks, then pick one word that describes them on the inside, not how they look. Tall is not a trait; helpful is!"],
+    act: { k: "sort", prompt: "Sort each story part into the right box.", bins: ["Character", "Setting", "Problem"], items: [["A shy dragon named Ember", 0], ["A castle on a cloudy mountain", 1], ["Ember loses her fire before the big festival", 2], ["Long ago, in winter", 1], ["Her best friend, a talking mouse", 0], ["A storm blocks the only road home", 2]] },
+    practice: [
+      ["“Max couldn't find his lucky soccer ball the morning of the big game.” What is the problem?", ["The game is today", "Max lost his lucky ball", "Max loves soccer", "It is morning"], 1, "The problem is what goes wrong: Max can't find his ball."],
+      ["Which detail tells WHEN a story happens?", ["in a dusty barn", "on the first day of summer", "a grumpy cat", "the cat was hungry"], 1, "“On the first day of summer” tells the time, which is part of the setting."],
+      ["Which sequence word shows the LAST event?", ["First", "Next", "Then", "Finally"], 3, "“Finally” signals the last event."],
+      ["Mia practices piano every day, even when it's hard. Which trait fits her?", ["Lazy", "Determined", "Silly", "Rude"], 1, "Practicing even when it's hard shows she is determined."],
+      ["Who is the main character?", ["Any character who talks", "The character the story is mostly about", "Always the villain", "The narrator's pet"], 1, "The main character is the one the story is mostly about."]]
+  },
+  "ela-u0-l1": {
+    more: ["The topic is what a story is about in one or two words (a race, a pet). The theme is a whole sentence of advice, like “Don't give up” or “Be kind to others.” If you could put it on a poster, it's probably a theme!",
+      "Morals are often said right at the end of a fable. Animals in fables stand for kinds of people: a sly fox, a proud lion, a hard-working ant. When you read one, ask what mistake a character made.",
+      "A summary is like a movie trailer: short, with only the biggest moments. If a detail could be left out without changing what happened, leave it out. Aim for three to five sentences."],
+    act: { k: "order", prompt: "Put this summary of The Tortoise and the Hare in order.", items: ["The Hare brags that he is the fastest.", "The Tortoise challenges him to a race.", "The Hare races ahead and takes a nap.", "The Tortoise keeps going and wins."] },
+    practice: [
+      ["Which is a THEME rather than a topic?", ["Dogs", "A camping trip", "Working together makes hard jobs easier", "Winter"], 2, "A theme is a lesson or message, written as a full idea."],
+      ["In a fable, what is the moral?", ["The title", "The lesson the story teaches", "The main character's name", "The setting"], 1, "The moral is the lesson a fable teaches."],
+      ["Which sentence does NOT belong in a summary of Cinderella?", ["Cinderella went to the ball.", "The prince found her with the glass slipper.", "My favorite color is the blue of her dress.", "She lost a slipper at midnight."], 2, "Opinions and personal details don't belong in a summary."],
+      ["In Somebody–Wanted–But–So–Then, what does “But” tell?", ["The main character", "What they wanted", "The problem that got in the way", "How it ended"], 2, "“But” tells the problem that got in the character's way."],
+      ["A lion spares a mouse, and later the mouse frees the lion from a net. What's the moral?", ["Lions are strong", "Even small friends can be a big help", "Nets are dangerous", "Mice are fast"], 1, "The tiny mouse saves the mighty lion: little friends can matter a lot."]]
+  },
+  "ela-u0-l2": {
+    more: ["Look at the pronouns in the narration, not inside the quotation marks. Lots of I and my means first person. Only he, she and they means third person, like a reporter telling about someone else.",
+      "Similes and metaphors both compare two different things that share something. To tell them apart, hunt for the words like or as. Found one? Simile. No like or as? Metaphor.",
+      "Figurative language means the words don't mean exactly what they say. Picture it literally and laugh (cats and dogs falling from the sky!), then think about what the writer really means."],
+    act: { k: "sort", prompt: "Sort each phrase by the kind of figurative language.", bins: ["Simile", "Metaphor", "Personification"], items: [["as quiet as a mouse", 0], ["The sun smiled down on us.", 2], ["Her voice was music.", 1], ["He eats like a bird.", 0], ["The leaves danced in the wind.", 2], ["My room is a disaster zone.", 1]] },
+    practice: [
+      ["“She climbed the tree, and then she waved to her friends.” What point of view is this?", ["First person", "Third person", "Second person", "No point of view"], 1, "The narrator uses “she” and isn't in the story: third person."],
+      ["“The car's engine coughed and sneezed.” This is an example of...", ["A simile", "Hyperbole", "Personification", "An idiom"], 2, "Cars can't really cough or sneeze. Giving human actions to a thing is personification."],
+      ["What does the idiom “a piece of cake” mean?", ["A dessert", "Something very easy", "Something broken", "A small amount"], 1, "“It was a piece of cake” means it was very easy."],
+      ["Which sentence is a metaphor?", ["The baby is as cute as a button.", "The baby is a little angel.", "The baby cried loudly.", "The baby sleeps like a log."], 1, "It says the baby IS an angel, with no like or as: a metaphor."],
+      ["“I'm so hungry I could eat a horse!” is an example of...", ["Hyperbole", "A simile", "First person", "A fact"], 0, "Nobody could eat a horse. It's a huge exaggeration: hyperbole."]]
+  },
+  "ela-u1-l0": {
+    more: ["Try this trick: cover the paragraph and say what it was about in under 10 words. That short sentence is usually the main idea. If your sentence only covers one fact, it's a detail, not the main idea.",
+      "Details answer questions about the main idea: how, why, what kind, or for example. If a sentence doesn't answer any of those questions, it's off topic.",
+      "Before reading, turn each heading into a question. “Bird Nests” becomes “What are bird nests like?” Then read to answer it. This keeps your brain hunting for the main idea."],
+    act: { k: "sort", prompt: "Sort the sentences from a paragraph about honeybees.", bins: ["Main idea", "Supporting detail", "Doesn't belong"], items: [["Honeybees are hard workers.", 0], ["They visit many flowers on each trip.", 1], ["They build wax combs to store honey.", 1], ["My uncle likes pancakes.", 2], ["They fly miles to find food.", 1]] },
+    practice: [
+      ["“Penguins can't fly, but they are excellent swimmers. Their wings work like flippers, and they dive deep for fish.” What's the main idea?", ["Penguins can't fly", "Penguins are excellent swimmers", "Penguins eat fish", "Wings are flippers"], 1, "Every other sentence explains how penguins swim so well."],
+      ["Where is the main idea most often found in a paragraph?", ["Only in the middle sentence", "In the first or last sentence", "In the glossary", "In a different book"], 1, "Authors often put the main idea in the first or last sentence, but not always."],
+      ["Main idea: “Recycling helps the Earth.” Which is a supporting detail?", ["Recycling saves trees and energy", "Pizza is delicious", "My bike is red", "It rained yesterday"], 0, "Saving trees and energy explains how recycling helps."],
+      ["A book is titled “Life in the Desert.” Which heading would most likely be in it?", ["How Camels Survive", "Ocean Waves", "Snowboarding Tips", "City Buses"], 0, "Camels live in deserts, so that heading fits the title."],
+      ["What do supporting details do?", ["Change the topic", "Tell more about the main idea", "Give the author's name", "List page numbers"], 1, "Details are facts, examples and reasons that support the main idea."]]
+  },
+  "ela-u1-l1": {
+    more: ["Text features are like signs in a museum: they point you to the good stuff. Before reading, take a picture walk: look at every heading, photo, caption and bold word and predict what you'll learn.",
+      "Remember them by place. The table of contents is the front door (what's inside, in order). The glossary and index live in the back: glossary = meanings, index = where to find things, A to Z.",
+      "Ask what job the author is doing. Telling steps? Sequence. Explaining why? Cause and effect. Showing same and different? Compare and contrast. Fixing something? Problem and solution."],
+    act: { k: "match", prompt: "Match each text feature to its job.", pairs: [["Caption", "Explains a picture"], ["Glossary", "Gives word meanings"], ["Index", "Lists topics A to Z with pages"], ["Table of contents", "Lists chapters in order"], ["Heading", "Tells what a section is about"]] },
+    practice: [
+      ["You want every page that mentions “volcanoes.” Where do you look?", ["Glossary", "Index", "Caption", "Title"], 1, "The index lists topics in ABC order with their page numbers."],
+      ["Where is the table of contents?", ["At the front of the book", "At the back of the book", "In the middle", "On the spine"], 0, "The table of contents is at the front."],
+      ["“First, crack the eggs. Next, stir in the flour. Finally, bake for 20 minutes.” What structure is this?", ["Compare and contrast", "Sequence", "Cause and effect", "Problem and solution"], 1, "First, next and finally show steps in order: sequence."],
+      ["“Frogs and toads both lay eggs, but toads have drier, bumpier skin.” What structure is this?", ["Compare and contrast", "Sequence", "Problem and solution", "Cause and effect"], 0, "“Both” and “but” show how they are alike and different."],
+      ["Why are some words printed in bold?", ["They are spelled wrong", "They are important vocabulary", "They are names", "They are jokes"], 1, "Bold words are important, and their meanings are often in the glossary."]]
+  },
+  "ela-u1-l2": {
+    more: ["Ask yourself: could I prove this with a ruler, a calendar, a scale or a trusted book? If yes, it's a fact. If people could argue about it, it's an opinion.",
+      "Feeling and judging words (great, awful, best, should, cute, scary) are red flags for opinions. Numbers, dates and measurements are clues for facts.",
+      "Think about how the author wants you to feel at the end. Wanting you to buy or do something = persuade. Feeling smarter = inform. Laughing or on the edge of your seat = entertain."],
+    act: { k: "sort", prompt: "Sort each sentence: fact or opinion?", bins: ["Fact", "Opinion"], items: [["A week has seven days.", 0], ["Saturday is the best day of the week.", 1], ["Water freezes at 32°F.", 0], ["Winter is too cold.", 1], ["George Washington was the first President.", 0], ["Broccoli tastes gross.", 1]] },
+    practice: [
+      ["Which sentence is an opinion?", ["The Sun is a star", "Soccer is the most exciting sport", "A triangle has three sides", "Texas is a state"], 1, "Not everyone agrees soccer is the most exciting, so it's an opinion."],
+      ["A book explains how volcanoes form. What is the author's purpose?", ["To persuade", "To inform", "To entertain", "To complain"], 1, "Teaching facts is informing."],
+      ["A comic about a dog who becomes a superhero is mostly written to...", ["persuade", "inform", "entertain", "test you"], 2, "A fun, made-up story is written to entertain."],
+      ["Which of these sentences is a fact you could check?", ["Cats are the best pets", "A spider has eight legs", "Spring is the prettiest season", "Math is fun"], 1, "You can check that a spider has eight legs, so it's a fact."],
+      ["“Kids should drink more water because it keeps their bodies healthy.” The author is trying to...", ["entertain", "persuade", "tell a story", "list dates"], 1, "“Should” plus a reason means the author wants you to do something: persuade."]]
+  },
+  "ela-u2-l0": {
+    more: ["Noun test: can you put a, an or the in front of it? (a dog, the park, an idea.) Then it's probably a noun. If a word replaces a name you already said (Maria → she), it's a pronoun.",
+      "Verb test: can it go after “I will”? (I will jump.) Adjective test: does it answer what kind or how many about a noun? (red, three.) Adverb test: does it answer how, when or where about a verb?",
+      "Prepositions are position words: think of everywhere a cat could go with a box: in, on, under, beside, behind, through. Conjunctions are connector words: and, but, or, so."],
+    act: { k: "sort", prompt: "Sort each word by its part of speech.", bins: ["Noun", "Verb", "Adjective"], items: [["mountain", 0], ["sprint", 1], ["purple", 2], ["teacher", 0], ["whisper", 1], ["gigantic", 2]] },
+    practice: [
+      ["Which word is a verb?", ["happy", "swim", "table", "slowly"], 1, "“Swim” is an action you can do."],
+      ["In “The fluffy kitten slept,” which word is an adjective?", ["The", "fluffy", "kitten", "slept"], 1, "“Fluffy” describes the kitten."],
+      ["Which word could replace “Sam and Lee” in a sentence?", ["he", "she", "they", "it"], 2, "“They” is the pronoun for more than one person."],
+      ["Which word is a conjunction?", ["under", "but", "quickly", "green"], 1, "“But” joins two ideas."],
+      ["In “She sang loudly,” what kind of word is “loudly”?", ["Noun", "Adjective", "Adverb", "Pronoun"], 2, "“Loudly” tells how she sang, so it's an adverb."]]
+  },
+  "ela-u2-l1": {
+    more: ["Ask two questions: Who or what is this about? What did they do, or what are they? If you can answer both, you have a subject and a predicate. If one is missing, it's a fragment.",
+      "Read your sentence out loud. If you run out of breath, or two ideas crash together, it might be a run-on. Put a period where your voice naturally stops.",
+      "Apostrophe trick: in a contraction, the apostrophe sits where letters went missing (do not → don't: the o left). For ownership, add 's to the owner: the dog's bone."],
+    act: { k: "sort", prompt: "Sort each example.", bins: ["Complete sentence", "Fragment", "Run-on"], items: [["The bus stopped at the corner.", 0], ["After the long game.", 1], ["I love tacos they are my favorite.", 2], ["Running through the park.", 1], ["My cat naps in the sun.", 0], ["We went home it was late.", 2]] },
+    practice: [
+      ["Which sentence needs a question mark?", ["I like apples", "Where is my backpack", "Close the door", "We won the game"], 1, "“Where is my backpack” asks a question."],
+      ["Which date is written correctly?", ["July 4 1776", "July, 4 1776", "July 4, 1776", "july 4, 1776"], 2, "Put a comma between the day and the year, and capitalize the month."],
+      ["Which shows that one girl owns the book?", ["the girls book", "the girl's book", "the girls' book", "the girl book's"], 1, "For one owner, add 's: the girl's book."],
+      ["What is the contraction for “can not”?", ["cant", "can't", "ca'nt", "cann't"], 1, "The apostrophe replaces the missing letters: can't."],
+      ["Which is a fragment?", ["The dog barked.", "Jumped over the fence.", "We ate lunch.", "She smiled."], 1, "“Jumped over the fence” has no subject. Who jumped?"]]
+  },
+  "ela-u2-l2": {
+    more: ["Break a long word into parts like building bricks: prefix + root + suffix. Figure out each brick's meaning, then snap them together. Re + play = play again. Care + less = without care.",
+      "Homophones are sound-alike tricksters. Their = belongs to them. There = a place (it has “here” inside it!). They're = they are. To = toward, too = also, two = the number 2.",
+      "Context clues can be a definition right in the sentence, a synonym nearby, an opposite (but, unlike) or an example. Read the whole sentence, and even the next one, before you guess."],
+    act: { k: "match", prompt: "Match each word part to its meaning.", pairs: [["un-", "not"], ["re-", "again"], ["pre-", "before"], ["-less", "without"], ["-ful", "full of"]] },
+    practice: [
+      ["What does “misplace” mean?", ["Place again", "Place in the wrong spot", "Place before", "Full of places"], 1, "mis- means wrongly, so misplace means put something in the wrong spot."],
+      ["Which word is a synonym for “tiny”?", ["huge", "small", "loud", "fast"], 1, "Tiny and small mean almost the same thing."],
+      ["Which word is an antonym for “brave”?", ["bold", "fearful", "strong", "proud"], 1, "Fearful means the opposite of brave."],
+      ["Choose the right word: “I want to go, ___!”", ["to", "too", "two", "tow"], 1, "“Too” means also."],
+      ["“The trail was so steep that we had to climb slowly.” What does steep mean?", ["Flat and easy", "Rising sharply", "Wet and muddy", "Very short"], 1, "Having to climb slowly is the clue that the trail rose sharply."]]
+  },
+  "ela-u3-l0": {
+    more: ["Writing is like baking: prewriting is planning the recipe, drafting is mixing, revising is tasting and adding flavor, editing is cleaning up, and publishing is serving it to others!",
+      "A paragraph is like a hamburger: the top bun is the topic sentence, the fillings are the details, and the bottom bun is the concluding sentence. No buns, no burger!",
+      "Transition words are road signs for readers. They show where your writing is going next: in order (first, then), adding more (also) or giving an example (for example)."],
+    act: { k: "order", prompt: "Put the five steps of the writing process in order.", items: ["Prewrite", "Draft", "Revise", "Edit", "Publish"] },
+    practice: [
+      ["You fix spelling mistakes and add missing periods. Which step is this?", ["Prewrite", "Draft", "Edit", "Publish"], 2, "Fixing spelling and punctuation is editing."],
+      ["What comes at the END of a paragraph?", ["Topic sentence", "Concluding sentence", "Title", "Heading"], 1, "A concluding sentence wraps up the paragraph."],
+      ["Which is a good way to prewrite?", ["Make a list or a web of ideas", "Print the final copy", "Fix commas", "Read it to the class"], 0, "Brainstorming with a list or web is prewriting."],
+      ["Which transition word shows the last step?", ["First", "Also", "Finally", "For example"], 2, "“Finally” signals the last step."],
+      ["How many detail sentences should a strong paragraph usually have?", ["None", "One", "Three or more", "Twenty"], 2, "A strong paragraph usually has three or more detail sentences."]]
+  },
+  "ela-u3-l1": {
+    more: ["Pretend you're a lawyer in court. Your opinion is what you want the judge to decide, your reasons are your arguments, and your examples are the evidence that proves each reason.",
+      "Use “because” to give a reason, “for example” to give proof, “also” to add another reason, and “therefore” or “that is why” to wrap it all up.",
+      "Informative writing is like being a tour guide for a topic. Start with a hook and an introduction, visit one group of facts at a time, then finish with a conclusion that sums it up."],
+    act: { k: "order", prompt: "Build an O.R.E.O. opinion piece in the right order.", items: ["Opinion: We should have a class pet.", "Reason: A pet teaches responsibility.", "Example: We could take turns feeding it and cleaning its cage.", "Opinion again: A class pet would help us all grow!"] },
+    practice: [
+      ["What should the FIRST sentence of an opinion piece do?", ["Tell a joke", "Clearly state your opinion", "List your sources", "Say goodbye"], 1, "Start by clearly stating your opinion."],
+      ["Which is an example that supports “Dogs make great pets”?", ["My dog greets me at the door every day", "Cats are fluffy", "I like pizza", "Fish swim"], 0, "A real example shows why dogs are great pets."],
+      ["Which sentence is informative?", ["Sharks have been around for millions of years", "Sharks are the scariest animals", "You should love sharks", "Sharks are my favorite"], 0, "It gives a fact that teaches about sharks."],
+      ["Why use more than one source when you research?", ["To check that your facts are correct", "To copy more words", "To make it longer", "Because one is boring"], 0, "Checking several sources helps make sure your facts are right."],
+      ["Which linking word adds another reason?", ["also", "finally", "but", "once upon a time"], 0, "“Also” adds another reason."]]
+  },
+  "ela-u3-l2": {
+    more: ["Plan your story on your hand: thumb = characters, pointer = setting, middle finger = problem, ring finger = events, pinky = solution. If a finger is missing, your story is missing something!",
+      "Use your five senses like a camera crew. What does the character see, hear, smell, taste and feel? Sensory details put the reader right inside the story.",
+      "Dialogue pattern: open quote, the words, a comma (or ? or !), close quote, then who said it. Each new speaker starts a new line, so readers always know who is talking."],
+    act: { k: "order", prompt: "Put this story in order.", items: ["Lily finds a lost puppy in the rain.", "She searches the neighborhood for its owner.", "She spots a sign on a tree: “Lost dog!”", "Lily returns the puppy, and the owner hugs her."] },
+    practice: [
+      ["Which is a sensory detail?", ["It was a day.", "The popcorn smelled buttery and warm.", "He went home.", "She was nice."], 1, "“Smelled buttery and warm” uses the sense of smell."],
+      ["Where do quotation marks go?", ["Around the whole paragraph", "Around the exact words a character says", "Around the character's name", "At the end of every sentence"], 1, "Quotation marks go around the exact words spoken."],
+      ["What should happen at the END of a narrative?", ["Introduce the characters", "Show how the problem is solved", "Start a new problem", "List facts"], 1, "The end shows how the problem gets solved."],
+      ["Which sentence SHOWS that Leo is tired?", ["Leo was tired.", "Leo yawned and rubbed his heavy eyes.", "Leo is a boy.", "Leo had a day."], 1, "Yawning and rubbing his eyes show tiredness without saying it."],
+      ["Dad shouts a warning. Which way of writing it is correct?", ["“Watch out!” yelled Dad.", "“Watch out” ! yelled Dad.", "Watch out! “yelled Dad.”", "“Watch out!” yelled Dad"], 0, "The exclamation point goes inside the quotation marks, and the sentence ends with a period."]]
+  }
+});
+
+// Extra explanations, a hands-on activity and practice questions for Science.
+Object.assign(EXTRA, {
+  "science-u0-l0": {
+    more: ["Use the GREN test: does it Grow, Reproduce, need Energy and Notice (respond to) things around it? A dog passes all four. A rock passes none. A fire seems to grow, but it can't reproduce or respond, so it isn't alive.",
+      "Think of a plant like a building. Roots are the basement anchors and the water pipes, the stem is the elevator carrying water up, leaves are the kitchen where food is made, and flowers are the nursery where seeds start.",
+      "Photosynthesis is a recipe. Ingredients: sunlight, water and carbon dioxide (air). The leaf is the kitchen. What comes out of the oven: sugar for the plant to eat and fresh oxygen for us to breathe!",
+      "A life cycle is a circle, not a line: the last step (new seeds) leads right back to the first step. That's why it's called a cycle, like a bicycle wheel that keeps going around."],
+    act: { k: "match", prompt: "Match each plant part to its job.", pairs: [["Roots", "Soak up water and hold the plant in place"], ["Stem", "Carries water up and holds the plant up"], ["Leaves", "Make food from sunlight"], ["Flowers", "Make seeds"]] },
+    practice: [
+      ["Which of these is a living thing?", ["A cloud", "A mushroom", "A bicycle", "A river"], 1, "A mushroom grows, reproduces and needs energy, so it is alive."],
+      ["What gas do plants give off during photosynthesis?", ["Carbon dioxide", "Oxygen", "Smoke", "Steam"], 1, "Plants take in carbon dioxide and give off oxygen."],
+      ["A plant is kept in a dark closet for two weeks. What will most likely happen?", ["It grows faster", "It turns pale and weak", "It makes more flowers", "Nothing changes"], 1, "Without light, a plant can't make food, so it gets weak."],
+      ["What comes right after the seed in a plant's life cycle?", ["Flower", "Seedling", "Adult plant", "Fruit"], 1, "A seed sprouts into a seedling, a young plant."],
+      ["Which plant part takes in water from the soil?", ["Leaves", "Flower", "Roots", "Petals"], 2, "Roots soak up water and nutrients from the soil."]]
+  },
+  "science-u0-l1": {
+    more: ["A body adaptation is something an animal is born with, like a costume it can't take off: a duck's webbed feet, a polar bear's thick fur, a giraffe's long neck.",
+      "A behavior adaptation is something an animal does, like a plan it follows: birds flying south, bears sleeping through winter, wolves hunting together. Ask: is it a body part or an action?",
+      "Feel the bumpy bones running down the middle of your back. That's your backbone! Animals with one are vertebrates (fish, frogs, snakes, birds, mammals). Animals without one, like worms and insects, are invertebrates.",
+      "Metamorphosis means a big body makeover. A caterpillar doesn't just get bigger; it turns into a whole new shape. A frog goes from a swimming tadpole with a tail to a hopping frog with legs."],
+    act: { k: "sort", prompt: "Is each one a body adaptation or a behavior adaptation?", bins: ["Body", "Behavior"], items: [["A turtle's hard shell", 0], ["Birds flying south for winter", 1], ["A cactus's sharp spines", 0], ["A bear sleeping all winter", 1], ["A duck's webbed feet", 0], ["Wolves hunting in packs", 1]] },
+    practice: [
+      ["An arctic fox's fur turns white in winter. What does this help it do?", ["Swim faster", "Blend in with the snow", "Find water", "Fly"], 1, "White fur is camouflage that helps it hide in the snow."],
+      ["Which animal is an invertebrate?", ["Frog", "Snake", "Spider", "Eagle"], 2, "A spider has no backbone, so it is an invertebrate."],
+      ["What are the four stages of a butterfly's life cycle, in order?", ["Egg, larva, pupa, adult", "Egg, adult, pupa, larva", "Larva, egg, adult, pupa", "Pupa, egg, larva, adult"], 0, "Egg → larva (caterpillar) → pupa (chrysalis) → adult butterfly."],
+      ["Which is a behavior adaptation?", ["Sharp claws", "Thick fur", "Migrating to warmer places", "A long beak"], 2, "Migrating is something an animal does, so it's a behavior."],
+      ["Which group are ALL vertebrates?", ["Worms, snails, crabs", "Fish, birds, mammals", "Ants, bees, beetles", "Jellyfish, octopus, clams"], 1, "Fish, birds and mammals all have backbones."]]
+  },
+  "science-u0-l2": {
+    more: ["An ecosystem is like a neighborhood where everyone depends on everyone else, including the non-living neighbors: water, soil, air and sunlight.",
+      "Producers are the cooks (plants make their own food). Consumers are the diners (they eat other living things). Decomposers are the clean-up crew (they break down dead things and return nutrients to the soil).",
+      "In a food chain, the arrows point to the eater, like saying “gives its energy to.” Grass → rabbit means the grass's energy goes into the rabbit. A food web is lots of food chains tangled together."],
+    act: { k: "order", prompt: "Build the food chain, starting where the energy begins.", items: ["Sun", "Grass", "Grasshopper", "Frog", "Snake"] },
+    practice: [
+      ["Which living thing is a producer?", ["Rabbit", "Oak tree", "Hawk", "Mushroom"], 1, "Trees make their own food from sunlight, so they are producers."],
+      ["Mushrooms and worms break down dead leaves. They are...", ["Producers", "Decomposers", "Predators", "Herbivores"], 1, "Decomposers break down dead things and return nutrients to the soil."],
+      ["In a food chain, which way do the arrows point?", ["From the eater to the food", "From the food to the eater", "Toward the Sun", "In a circle"], 1, "Arrows show energy moving from the food to the eater."],
+      ["Where does the energy in almost every food chain start?", ["The Sun", "The soil", "Rain", "The top predator"], 0, "Producers capture energy from the Sun, and it moves up the chain."],
+      ["If all the grass in a meadow died, what would happen to the rabbits?", ["Nothing", "They would have less food", "They would grow bigger", "They would become producers"], 1, "Rabbits eat grass, so losing it hurts them and the animals that eat them."]]
+  },
+  "science-u1-l0": {
+    more: ["Minerals are like ingredients and rocks are like cookies. Different mixes of mineral ingredients make different kinds of rock, just like flour, sugar and chocolate chips make a cookie.",
+      "Remember them by how they're made: Igneous = fire (cooled lava or magma). Sedimentary = layers (bits pressed together like a sandwich). Metamorphic = makeover (squeezed and heated into something new).",
+      "Weathering breaks it, erosion takes it, deposition drops it. Picture a mountain: rain cracks a rock (weathering), a river carries the pieces away (erosion), and they settle at the river's mouth (deposition)."],
+    act: { k: "sort", prompt: "Sort each rock into its family.", bins: ["Igneous", "Sedimentary", "Metamorphic"], items: [["Obsidian (cooled lava glass)", 0], ["Sandstone (pressed sand)", 1], ["Marble (squeezed limestone)", 2], ["Granite (cooled magma)", 0], ["Limestone (shells pressed in layers)", 1], ["Slate (squeezed shale)", 2]] },
+    practice: [
+      ["Which rock forms when lava cools?", ["Sedimentary", "Igneous", "Metamorphic", "Fossil"], 1, "Igneous rock forms from cooled lava or magma."],
+      ["Which rock is most likely to have fossils?", ["Igneous", "Sedimentary", "Metamorphic", "Obsidian"], 1, "Sedimentary rock forms in layers that can trap plants and animals."],
+      ["A river carries sand downstream. This is...", ["Weathering", "Erosion", "Deposition", "Melting"], 1, "Moving rock and soil from one place to another is erosion."],
+      ["What turns a rock into metamorphic rock?", ["Wind and rain", "Heat and pressure", "Cooling lava", "Plant roots"], 1, "Heat and pressure deep underground change rocks into metamorphic rock."],
+      ["Sand piles up where a river meets the ocean. This is...", ["Deposition", "Weathering", "Erosion", "Evaporation"], 0, "Dropping sediment in a new place is deposition."]]
+  },
+  "science-u1-l1": {
+    more: ["The water cycle is a never-ending trip. The Sun heats water so it rises as invisible vapor, the vapor cools into cloud droplets, the drops fall as rain or snow, and the water collects to start again.",
+      "Weather is your mood today; climate is your personality. Weather changes from day to day (rainy Tuesday), while climate is the usual pattern over many years (hot, dry summers).",
+      "Each weather tool measures one thing: thermometer = temperature, rain gauge = rain, anemometer = wind speed, wind vane = wind direction, barometer = air pressure. Cloud clues: puffy cumulus = fair, flat stratus = gray, wispy cirrus = high and icy."],
+    act: { k: "order", prompt: "Put the water cycle in order, starting with water in a lake.", items: ["Evaporation: the Sun warms water into vapor", "Condensation: vapor cools into cloud droplets", "Precipitation: rain or snow falls", "Collection: water gathers in lakes, rivers and oceans"] },
+    practice: [
+      ["Water vapor cools and forms clouds. What is this step called?", ["Evaporation", "Condensation", "Precipitation", "Collection"], 1, "Vapor turning into tiny droplets is condensation."],
+      ["Which tool measures how much rain fell?", ["Thermometer", "Rain gauge", "Wind vane", "Barometer"], 1, "A rain gauge collects and measures rainfall."],
+      ["“It is sunny and 75°F today.” Is this weather or climate?", ["Weather", "Climate", "Both", "Neither"], 0, "It describes one day, so it is weather."],
+      ["Which clouds are thin, wispy and high in the sky?", ["Cumulus", "Stratus", "Cirrus", "Fog"], 2, "Cirrus clouds are high, thin and made of ice crystals."],
+      ["What powers the water cycle?", ["The Moon", "The Sun", "Wind only", "Fish"], 1, "The Sun's heat makes water evaporate and keeps the cycle going."]]
+  },
+  "science-u1-l2": {
+    more: ["Earth is like a peach: a thin skin (crust), a thick fruity layer (mantle) and a pit in the center (core). The crust is broken into giant puzzle pieces called plates that slowly drift.",
+      "Some changes happen in minutes (earthquakes, landslides, eruptions). Others take thousands of years (a river carving a canyon, wind wearing down a mountain). Ask: could I watch it happen in one day?",
+      "A fossil is a nature photo taken in rock. When a plant or animal is buried in mud that hardens into rock, its shape can be saved for millions of years, telling us what lived long ago."],
+    act: { k: "sort", prompt: "Does each change happen fast or slow?", bins: ["Fast", "Slow"], items: [["An earthquake", 0], ["A river carving a canyon", 1], ["A volcano erupting", 0], ["A glacier moving across land", 1], ["A landslide", 0], ["Wind wearing down a mountain", 1]] },
+    practice: [
+      ["What is Earth's outermost layer called?", ["Core", "Mantle", "Crust", "Plate"], 2, "We live on the crust, Earth's thin outer layer."],
+      ["Which change happens very slowly?", ["An earthquake", "A canyon forming", "A volcano erupting", "A landslide"], 1, "Rivers carve canyons over thousands or millions of years."],
+      ["What causes most earthquakes?", ["The Moon", "Moving plates", "Heavy rain", "Strong wind"], 1, "Earthquakes happen when plates of crust slip and move."],
+      ["A fossil of a fish is found on top of a mountain. What does that tell us?", ["Fish can climb", "The area was once under water", "Someone dropped it", "Fish live in mountains"], 1, "The rock must have formed under water long ago."],
+      ["Which layer is in the very center of Earth?", ["Crust", "Mantle", "Core", "Ocean"], 2, "The core is at Earth's center and is extremely hot."]]
+  },
+  "science-u2-l0": {
+    more: ["Try it with a flashlight and a ball. Shine the light on the ball and slowly spin it. The lit side has day and the dark side has night. Earth spins once every 24 hours, so every place gets both.",
+      "Earth is tipped like a leaning top. When your half leans toward the Sun, sunlight hits more directly and days are long: summer. When it leans away, the light is spread out: winter.",
+      "Shadows are longest when the Sun is low (morning and evening) and shortest at noon when it's high. The Moon makes no light of its own; it shines because it reflects sunlight, like a mirror."],
+    act: { k: "match", prompt: "Match each word or time to what it means.", pairs: [["Rotate", "Spin on an axis"], ["Revolve", "Travel around something"], ["1 day", "One full spin of Earth"], ["1 year", "One trip of Earth around the Sun"], ["About 1 month", "One trip of the Moon around Earth"]] },
+    practice: [
+      ["What causes day and night?", ["Earth revolving around the Sun", "Earth spinning on its axis", "The Moon blocking the Sun", "Clouds"], 1, "As Earth rotates, each side takes turns facing the Sun."],
+      ["How long does Earth take to travel once around the Sun?", ["1 day", "1 week", "1 month", "1 year"], 3, "One revolution around the Sun takes about 365 days: one year."],
+      ["What causes the seasons?", ["Earth's distance from the Moon", "The tilt of Earth's axis", "Clouds", "The Sun getting bigger"], 1, "Earth's tilt changes how directly sunlight hits each half."],
+      ["When is your shadow the shortest?", ["Early morning", "Around noon", "Evening", "At night"], 1, "At noon the Sun is highest, so shadows are shortest."],
+      ["Why does the Moon shine?", ["It is on fire", "It reflects sunlight", "It has lights", "It is a star"], 1, "The Moon reflects light from the Sun."]]
+  },
+  "science-u2-l1": {
+    more: ["Half of the Moon is always lit by the Sun. As the Moon travels around Earth, we see different amounts of that lit half. New moon: we see none of it. Full moon: we see all of it.",
+      "Memory sentence: My Very Educated Mother Just Served Us Noodles = Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune.",
+      "The inner four are small and rocky, like pebbles close to a campfire. The outer four are giant balls of gas and ice, far out in the cold. The asteroid belt sits between Mars and Jupiter."],
+    act: { k: "order", prompt: "Put the planets in order from the Sun outward.", items: ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"] },
+    practice: [
+      ["Which planet is closest to the Sun?", ["Venus", "Earth", "Mercury", "Mars"], 2, "Mercury is the first planet from the Sun."],
+      ["Which planet is the largest?", ["Saturn", "Jupiter", "Neptune", "Earth"], 1, "Jupiter is the biggest planet in our solar system."],
+      ["What is it called when we can't see the Moon's lit side at all?", ["Full moon", "New moon", "Half moon", "Crescent"], 1, "During a new moon, the lit side faces away from Earth."],
+      ["Which planet is an inner, rocky planet?", ["Mars", "Saturn", "Uranus", "Neptune"], 0, "Mars is one of the four rocky inner planets."],
+      ["What is the Moon phase called when we see its whole lit side?", ["New moon", "Crescent", "Full moon", "First quarter"], 2, "During a full moon, the whole lit side faces Earth."]]
+  },
+  "science-u2-l2": {
+    more: ["Stars are giant balls of glowing hot gas, like faraway campfires. Our Sun is a star too. It only looks bigger and brighter because it's much, much closer than the others.",
+      "A constellation is a dot-to-dot picture people imagined in the stars. Stars seem to move across the sky at night because Earth is spinning, not because the stars are racing around.",
+      "Gravity is an invisible pull between objects. Bigger objects pull harder. Earth's gravity keeps your feet on the ground and holds the Moon in orbit, and the Sun's gravity keeps Earth circling it."],
+    act: { k: "sort", prompt: "Is each one a star, a planet or a moon?", bins: ["Star", "Planet", "Moon"], items: [["The Sun", 0], ["Jupiter", 1], ["Earth's Moon", 2], ["Mars", 1], ["Polaris, the North Star", 0], ["Titan, which orbits Saturn", 2]] },
+    practice: [
+      ["What is the closest star to Earth?", ["Polaris", "The Moon", "The Sun", "Mars"], 2, "The Sun is a star, and it's the closest one to us."],
+      ["Why do stars seem to move across the night sky?", ["They are falling", "Earth is spinning", "The wind blows them", "They orbit the Moon"], 1, "Earth's rotation makes stars appear to move."],
+      ["What force keeps the planets orbiting the Sun?", ["Magnetism", "Friction", "Gravity", "Wind"], 2, "The Sun's gravity holds the planets in orbit."],
+      ["What is a constellation?", ["A single huge star", "A pattern of stars that forms a picture", "A planet with rings", "A type of moon"], 1, "Constellations are star patterns people named, like the Big Dipper."],
+      ["Why does the Sun look bigger than other stars?", ["It is the biggest star in the universe", "It is much closer to us", "It is a planet", "It is made of fire"], 1, "The Sun is an average star that looks big because it's close."]]
+  },
+  "science-u3-l0": {
+    more: ["Picture the tiny particles as kids at recess. In a solid they hold hands in a tight circle (fixed shape). In a liquid they wander around but stay close (takes the shape of its cup). In a gas they run all over the playground (fills any space).",
+      "Adding heat makes particles move faster: ice melts into water, water boils into steam. Taking heat away slows them down: steam condenses, water freezes. Same stuff, different state.",
+      "Physical change: same stuff, new look (cut paper, melted ice, a crushed can). Chemical change: brand-new stuff that can't easily go back (burned toast, rusty bike, baked cake). Clues: new color, smell, gas bubbles, light or heat."],
+    act: { k: "sort", prompt: "Sort each item by its state of matter.", bins: ["Solid", "Liquid", "Gas"], items: [["An ice cube", 0], ["Orange juice", 1], ["Steam from a pot", 2], ["A rock", 0], ["Air in a balloon", 2], ["Milk", 1]] },
+    practice: [
+      ["Which state of matter takes the shape of its container but keeps the same amount?", ["Solid", "Liquid", "Gas", "Rock"], 1, "A liquid flows to fit its container but keeps its volume."],
+      ["What happens when you heat ice?", ["It freezes", "It melts", "It condenses", "It becomes a rock"], 1, "Adding heat melts ice into liquid water."],
+      ["Which is a physical change?", ["Toast burning", "A nail rusting", "Ice melting", "A cake baking"], 2, "Melted ice is still water, so it's a physical change."],
+      ["Drops form on the outside of a cold glass of lemonade. This is...", ["Melting", "Evaporation", "Condensation", "Freezing"], 2, "Water vapor in the air cools and turns into liquid drops."],
+      ["A gas will...", ["Keep its shape", "Spread out to fill its container", "Stay at the bottom", "Always be visible"], 1, "Gas particles spread out to fill any container."]]
+  },
+  "science-u3-l1": {
+    more: ["Every force is a push or a pull. Opening a drawer is a pull, kicking a ball is a push. A bigger force makes a bigger change in motion: a hard kick sends the ball farther.",
+      "Balanced forces are a tug-of-war tie: nobody moves. Unbalanced forces mean one side wins and something starts, stops or changes direction. Friction is the rubbing force that slows things down.",
+      "Magnets: opposite poles attract (N and S), same poles repel (N and N). Simple machines don't add energy; they trade. A ramp is longer to walk, but each step is easier. A lever lets a little push lift something heavy."],
+    act: { k: "match", prompt: "Match each simple machine to an everyday example.", pairs: [["Lever", "Seesaw"], ["Pulley", "Flagpole rope"], ["Inclined plane", "Wheelchair ramp"], ["Wedge", "Axe blade"], ["Wheel and axle", "Doorknob"]] },
+    practice: [
+      ["Two teams pull a rope with equal force. What happens?", ["The rope moves left", "The rope moves right", "The rope doesn't move", "The rope breaks"], 2, "Balanced forces cause no change in motion."],
+      ["Which surface has the MOST friction for a sliding block?", ["Ice", "Smooth glass", "Sandpaper", "Wet tile"], 2, "Rough surfaces like sandpaper create more friction."],
+      ["What happens when two north poles of magnets face each other?", ["They attract", "They repel", "Nothing", "They melt"], 1, "Like poles repel, or push apart."],
+      ["Which force pulls objects toward Earth?", ["Friction", "Magnetism", "Gravity", "Push"], 2, "Gravity pulls everything toward Earth's center."],
+      ["Why is a ramp helpful for moving a heavy box up?", ["It makes the box lighter", "It takes less force, over a longer distance", "It removes gravity", "It makes the box smaller"], 1, "An inclined plane trades a longer distance for less force."]]
+  },
+  "science-u3-l2": {
+    more: ["Light travels in straight lines, super fast. When it hits something it can bounce off (reflect, like a mirror), bend (refract, like a straw in water) or be soaked up (absorb, like a black shirt in the sun).",
+      "Sound is a shake! Put your hand on your throat and hum: you can feel the vibration. Fast vibrations make high pitch; slow vibrations make low pitch. Big vibrations are loud.",
+      "Heat flows from warm to cool, like a hot cocoa warming your hands. Conductors let heat and electricity flow easily (metals). Insulators slow them down (rubber, plastic, wood). A circuit needs a complete loop to work.",
+      "Renewable energy comes back on its own: sunlight, wind and moving water. Nonrenewable energy, like coal, oil and natural gas, took millions of years to form, and once we use it, it's gone."],
+    act: { k: "sort", prompt: "Is each material a conductor or an insulator of electricity?", bins: ["Conductor", "Insulator"], items: [["Copper wire", 0], ["Rubber gloves", 1], ["A steel spoon", 0], ["A wooden spoon", 1], ["Aluminum foil", 0], ["A plastic cup", 1]] },
+    practice: [
+      ["What happens when light hits a mirror?", ["It is absorbed", "It reflects", "It stops", "It turns into sound"], 1, "Mirrors reflect, or bounce back, light."],
+      ["What causes sound?", ["Light", "Vibrations", "Heat", "Magnets"], 1, "All sounds are made by vibrating objects."],
+      ["Which is the best conductor of electricity?", ["Rubber", "Wood", "Copper", "Plastic"], 2, "Metals like copper let electricity flow easily."],
+      ["Which energy source is renewable?", ["Coal", "Oil", "Wind", "Natural gas"], 2, "Wind keeps blowing and won't run out."],
+      ["A light bulb in a circuit won't turn on. What is the most likely reason?", ["The circuit has a gap", "The wire is too shiny", "The bulb is too bright", "It is daytime"], 0, "Electricity needs a complete, closed loop to flow."]]
+  }
+});
+
+// Extra explanations, a hands-on activity and practice questions for U.S. History.
+Object.assign(EXTRA, {
+  "history-u0-l0": {
+    more: ["Thousands of years ago, the first people came to the Americas, probably walking across land that once connected Asia and Alaska. Over a very long time, their families spread across both continents and formed hundreds of different nations.",
+      "Native nations used what was around them, like shopping only at the store next door. Near the ocean? Fish and cedar-plank houses. On the grassy plains? Buffalo and tipis. In the dry Southwest? Corn and adobe homes.",
+      "The Three Sisters are corn, beans and squash, planted together as a team: corn is the pole the beans climb, beans feed the soil, and big squash leaves shade out weeds. The Haudenosaunee League showed that nations could work together, like a team."],
+    act: { k: "match", prompt: "Match each nation to its home and way of life.", pairs: [["Tlingit", "Northwest coast: fishing and cedar plank houses"], ["Lakota", "Great Plains: buffalo hunting and tipis"], ["Hopi", "Southwest desert: corn farming and adobe pueblos"], ["Haudenosaunee", "Eastern woodlands: longhouses and the Three Sisters"]] },
+    practice: [
+      ["Why did the Lakota live in tipis?", ["Tipis were easy to move as they followed the buffalo", "They had no trees", "They lived by the ocean", "Tipis were made of ice"], 0, "Tipis could be packed up quickly to follow the buffalo herds."],
+      ["What are the Three Sisters?", ["Three rivers", "Corn, beans and squash", "Three Native nations", "Three seasons"], 1, "Corn, beans and squash were planted together and helped each other grow."],
+      ["What did people of the Southwest use to build pueblos?", ["Ice", "Adobe (sun-dried clay bricks)", "Buffalo hides", "Steel"], 1, "Adobe stays cool in the hot desert."],
+      ["What was the Haudenosaunee League?", ["A sports team", "Nations joined together to keep peace", "A trading ship", "A type of house"], 1, "Several nations joined to settle disagreements peacefully."],
+      ["How did the environment shape Native ways of life?", ["It didn't matter", "People used the plants, animals and materials nearby", "Everyone lived the same way", "They bought everything from Europe"], 1, "Food, homes and clothing came from the local land and water."]]
+  },
+  "history-u0-l1": {
+    more: ["Explorers set out for the three G's: Gold (riches and trade), Glory (fame for themselves and their country) and God (spreading their religion). Many wanted a faster sea route to the spices and silks of Asia.",
+      "A voyage meant months on a small wooden ship with no maps of where you were going, salty food and rough seas. Brave and risky! Each trip added new pieces to the world map.",
+      "The Columbian Exchange was a giant swap across the ocean. Europe got corn, potatoes, tomatoes and chocolate. The Americas got horses, cattle, wheat and, sadly, diseases that made many Native people very sick."],
+    act: { k: "order", prompt: "Put these voyages in order, from earliest to latest.", items: ["Leif Erikson reaches North America (about 1000)", "Columbus reaches the Caribbean (1492)", "Magellan's crew sails around the world (1519–1522)", "Lewis and Clark reach the Pacific Ocean (1805)"] },
+    practice: [
+      ["What was one main reason Europeans explored?", ["To find new sea routes for trade", "To go on vacation", "To find snow", "To visit friends"], 0, "Many explorers hoped to find faster routes to trade with Asia."],
+      ["In 1492, Columbus thought he had reached...", ["Africa", "Asia", "Australia", "Antarctica"], 1, "He believed he had reached Asia, but he was in the Caribbean."],
+      ["Why was Magellan's voyage so important?", ["His crew was the first to sail all the way around the world", "It found gold in California", "It reached the Moon", "It started the Revolution"], 0, "Magellan died on the way, but his crew finished the first trip around the globe."],
+      ["Which food traveled FROM the Americas TO Europe?", ["Wheat", "Potatoes", "Rice", "Cattle"], 1, "Potatoes came from the Americas and became important in Europe."],
+      ["Which animal did Europeans bring to the Americas?", ["Horse", "Buffalo", "Turkey", "Llama"], 0, "Horses came from Europe and changed life on the Plains."]]
+  },
+  "history-u0-l2": {
+    more: ["The first English colonies were risky: Jamestown (1607) almost starved, and the Pilgrims at Plymouth (1620) learned from the Wampanoag how to plant corn and survive.",
+      "Think of the colonies like three stores. New England sold fish and ships (rocky soil, cold). The Middle Colonies were the breadbasket (rich soil, lots of wheat). The Southern Colonies grew tobacco and rice on big plantations (warm, long seasons).",
+      "Enslaved Africans were taken from their homes by force and made to work without pay or freedom, mostly on Southern plantations. They kept their culture alive through music, stories and faith, and many resisted."],
+    act: { k: "sort", prompt: "Which colonial region does each clue describe?", bins: ["New England", "Middle", "Southern"], items: [["Fishing and shipbuilding", 0], ["Called the “breadbasket”", 1], ["Large plantations", 2], ["Rocky soil and cold winters", 0], ["Rich soil for wheat", 1], ["Tobacco and rice", 2]] },
+    practice: [
+      ["What was the first permanent English settlement?", ["Plymouth", "Jamestown", "Boston", "New York"], 1, "Jamestown, Virginia, was founded in 1607."],
+      ["Who helped the Pilgrims learn to grow corn?", ["The Wampanoag", "The Spanish", "The Lakota", "The French"], 0, "Squanto and the Wampanoag taught them how to farm the land."],
+      ["Why were the Middle Colonies called the “breadbasket”?", ["They baked bread for England", "They grew lots of wheat and grain", "They made baskets", "They had no farms"], 1, "Rich soil let them grow lots of grain."],
+      ["Which crop was most important in the Southern Colonies?", ["Tobacco", "Apples", "Potatoes", "Wheat"], 0, "Tobacco and rice grew well in the warm South."],
+      ["Why did New England colonists rely on fishing and shipbuilding?", ["The soil was rocky and the growing season was short", "They didn't like farming", "There were no trees", "It was too hot"], 0, "Poor farmland pushed them toward the sea."]]
+  },
+  "history-u1-l0": {
+    more: ["Imagine someone far away making rules about your allowance without asking you. That's how colonists felt: Britain taxed them, but they had no one representing them in Parliament. “No taxation without representation!”",
+      "Anger grew step by step: protests and boycotts, then the Boston Massacre, when British soldiers fired into a crowd, then the Boston Tea Party, when colonists dumped British tea into the harbor.",
+      "In April 1775, British soldiers marched to Lexington and Concord to take the colonists' weapons. Paul Revere rode to warn the Minutemen, shots were fired, and the American Revolution began."],
+    act: { k: "order", prompt: "Put these events in order.", items: ["French and Indian War ends (1763)", "Stamp Act taxes paper goods (1765)", "Boston Massacre (1770)", "Boston Tea Party (1773)", "Battles of Lexington and Concord (1775)"] },
+    practice: [
+      ["What did “No taxation without representation” mean?", ["No taxes ever", "Colonists shouldn't be taxed without a voice in government", "Only kings pay taxes", "Taxes should go to Britain"], 1, "Colonists wanted a say in the laws that taxed them."],
+      ["What did colonists dump into Boston Harbor in 1773?", ["Gold", "Tea", "Guns", "Sugar"], 1, "At the Boston Tea Party, they dumped British tea to protest the tax."],
+      ["Who rode to warn that “the regulars are coming”?", ["George Washington", "Paul Revere", "Ben Franklin", "John Adams"], 1, "Paul Revere warned the Minutemen that British troops were marching."],
+      ["Where did the first battles of the Revolution happen?", ["Yorktown", "Lexington and Concord", "Gettysburg", "Philadelphia"], 1, "The war began at Lexington and Concord in 1775."],
+      ["What is a boycott?", ["A fight", "Refusing to buy something as a protest", "A tax", "A kind of ship"], 1, "Colonists refused to buy British goods to make a point."]]
+  },
+  "history-u1-l1": {
+    more: ["The Declaration of Independence was like a breakup letter to the king. It explained why the colonies were leaving and said everyone has rights to life, liberty and the pursuit of happiness.",
+      "Patriots wanted independence. Loyalists wanted to stay with Britain. Families, neighbors and towns were split, so the Revolution was also an argument at the dinner table.",
+      "The Americans were the underdogs. Help from France after the victory at Saratoga, a tough winter of training at Valley Forge and a final win at Yorktown in 1781 turned the war around."],
+    act: { k: "order", prompt: "Put these Revolutionary War events in order.", items: ["Declaration of Independence signed (1776)", "American victory at Saratoga (1777)", "Winter at Valley Forge (1777–78)", "British surrender at Yorktown (1781)", "Treaty of Paris ends the war (1783)"] },
+    practice: [
+      ["Who wrote most of the Declaration of Independence?", ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "Paul Revere"], 1, "Thomas Jefferson wrote most of it."],
+      ["The Declaration says all people have rights to...", ["life, liberty and the pursuit of happiness", "free land and gold", "a king and a queen", "tea without taxes"], 0, "Those famous words are in the Declaration's second paragraph."],
+      ["What was a Loyalist?", ["A colonist who wanted to stay loyal to Britain", "A French soldier", "A Native American leader", "A Patriot spy"], 0, "Loyalists supported the British king."],
+      ["Which country became an important ally of the Americans?", ["Spain", "France", "Germany", "Russia"], 1, "France sent soldiers, ships and money after Saratoga."],
+      ["What happened at Valley Forge?", ["The army survived a hard winter and trained to get stronger", "The British surrendered", "The Declaration was signed", "The first shots were fired"], 0, "Despite cold and hunger, Washington's army trained and came out stronger."]]
+  },
+  "history-u1-l2": {
+    more: ["The first plan, the Articles of Confederation, was too weak, like a team with no coach. In 1787 leaders met in Philadelphia and wrote the Constitution to make a stronger national government.",
+      "Three branches share the power so no one gets too much, like rock-paper-scissors. Congress writes the laws, the President carries them out, and the courts decide if they follow the Constitution. Each can check the others.",
+      "The Bill of Rights is the first ten amendments: a promise list of freedoms the government can't take away, like freedom of speech, religion and the press, and the right to a fair trial."],
+    act: { k: "match", prompt: "Match each part of our government to its job.", pairs: [["Legislative branch (Congress)", "Makes the laws"], ["Executive branch (President)", "Carries out the laws"], ["Judicial branch (Courts)", "Decides what laws mean"], ["Amendment", "A change or addition to the Constitution"], ["Bill of Rights", "The first ten amendments"]] },
+    practice: [
+      ["What is the supreme law of the United States?", ["The Declaration of Independence", "The Constitution", "The Bill of Rights only", "The Mayflower Compact"], 1, "The Constitution is the highest law of the land."],
+      ["Which branch makes the laws?", ["Executive", "Judicial", "Legislative", "Military"], 2, "Congress, the legislative branch, makes the laws."],
+      ["Why do we have checks and balances?", ["So no branch gets too much power", "So laws are made faster", "To pay taxes", "To pick the President"], 0, "Each branch can limit the others."],
+      ["How many amendments are in the Bill of Rights?", ["5", "10", "13", "27"], 1, "The Bill of Rights is the first ten amendments."],
+      ["Which freedom is protected by the First Amendment?", ["Freedom of speech", "The right to drive", "Free lunch", "The right to vote at age 10"], 0, "The First Amendment protects speech, religion, press, assembly and petition."]]
+  },
+  "history-u2-l0": {
+    more: ["In 1803 the U.S. bought the huge Louisiana Territory from France for about $15 million, roughly 3 cents an acre! It doubled the size of the country, and Lewis and Clark, guided by Sacagawea, set out to explore it.",
+      "Settlers headed west by covered wagon on trails like the Oregon Trail, a trip of about five months. The 1849 Gold Rush brought thousands to California, and in 1869 the transcontinental railroad made the trip take about a week.",
+      "Westward growth had a heavy cost. Native nations lost their homelands. On the Trail of Tears, the Cherokee and other nations were forced to walk hundreds of miles west, and thousands died."],
+    act: { k: "order", prompt: "Put these events of westward growth in order.", items: ["Louisiana Purchase (1803)", "Lewis and Clark set out (1804)", "Trail of Tears (1838–39)", "California Gold Rush (1849)", "Transcontinental railroad finished (1869)"] },
+    practice: [
+      ["From which country did the U.S. buy the Louisiana Territory?", ["Spain", "England", "France", "Mexico"], 2, "President Jefferson bought it from France in 1803."],
+      ["Who helped guide Lewis and Clark?", ["Pocahontas", "Sacagawea", "Squanto", "Sitting Bull"], 1, "Sacagawea, a Shoshone woman, helped as a guide and translator."],
+      ["About how long did a wagon trip on the Oregon Trail take?", ["About 5 days", "About 5 months", "About 5 years", "About 5 hours"], 1, "Wagon trains took about five months to cross."],
+      ["Which nation was forced west on the Trail of Tears?", ["Cherokee", "Tlingit", "Hopi", "Inuit"], 0, "The Cherokee and other Southeastern nations were forced to leave their homelands."],
+      ["How did the transcontinental railroad change travel?", ["It made crossing the country much faster", "It made it slower", "It only carried mail", "It went to Europe"], 0, "A months-long trip became about a week."]]
+  },
+  "history-u2-l1": {
+    more: ["Before factories, things were made by hand at home, one at a time. Factories used machines and many workers so goods could be made faster and cheaper. Eli Whitney's cotton gin cleaned cotton far faster than hands could.",
+      "Steamboats could travel up rivers against the current, and canals like the Erie Canal connected lakes and rivers. Moving goods became faster and cheaper, so towns and businesses grew.",
+      "Morse's telegraph sent messages in dots and dashes over wires: news in minutes instead of weeks! Then Bell's telephone carried voices, and Edison's light bulb lit homes after dark."],
+    act: { k: "match", prompt: "Match each inventor to the invention.", pairs: [["Eli Whitney", "Cotton gin"], ["Samuel Morse", "Telegraph and Morse code"], ["Alexander Graham Bell", "Telephone"], ["Thomas Edison", "Long-lasting light bulb"], ["Robert Fulton", "Successful steamboat"]] },
+    practice: [
+      ["What did the cotton gin do?", ["Spun thread", "Separated seeds from cotton quickly", "Wove cloth", "Planted cotton"], 1, "It cleaned seeds out of cotton much faster than by hand."],
+      ["How did the telegraph send messages?", ["By carrier pigeon", "In electric dots and dashes over wires", "By radio waves", "By horseback"], 1, "Morse code traveled as electric signals through wires."],
+      ["Which invention lit homes after dark without candles or gas lamps?", ["The telegraph", "Edison's light bulb", "The cotton gin", "The steamboat"], 1, "Edison's long-lasting light bulb brought electric light into homes."],
+      ["Why were factories important?", ["They made goods faster and cheaper", "They grew food", "They were schools", "They built roads only"], 0, "Machines and many workers made goods quickly."],
+      ["What did the Erie Canal connect?", ["The Great Lakes and the Hudson River", "Texas and Mexico", "Florida and Cuba", "Two mountains"], 0, "It linked Lake Erie to the Hudson River and New York City."]]
+  },
+  "history-u2-l2": {
+    more: ["By the 1850s the North and South disagreed sharply about slavery. Brave people like Harriet Tubman led enslaved people to freedom on the Underground Railroad, a secret network of routes and safe houses.",
+      "After Lincoln was elected, Southern states left the Union and formed the Confederacy. The Civil War began at Fort Sumter in 1861. It was the deadliest war in American history and ended at Appomattox in 1865.",
+      "Reconstruction means rebuilding. Three amendments changed the nation: the 13th ended slavery, the 14th made formerly enslaved people citizens, and the 15th gave Black men the right to vote."],
+    act: { k: "order", prompt: "Put these Civil War era events in order.", items: ["Abraham Lincoln is elected (1860)", "Attack on Fort Sumter starts the war (1861)", "Emancipation Proclamation (1863)", "Lee surrenders at Appomattox (1865)"] },
+    practice: [
+      ["Who led many enslaved people to freedom on the Underground Railroad?", ["Harriet Tubman", "Susan B. Anthony", "Rosa Parks", "Clara Barton"], 0, "Harriet Tubman made many trips to lead people north to freedom."],
+      ["What did the Emancipation Proclamation do?", ["Declared enslaved people in the Confederate states free", "Started the Civil War", "Gave women the vote", "Bought Louisiana"], 0, "In 1863, Lincoln declared enslaved people in the rebelling states free."],
+      ["Which side did the Southern states form?", ["The Union", "The Confederacy", "The Colonies", "The Loyalists"], 1, "Southern states left the Union and formed the Confederacy."],
+      ["Which amendment ended slavery?", ["1st", "10th", "13th", "19th"], 2, "The 13th Amendment (1865) ended slavery in the United States."],
+      ["What does Reconstruction mean?", ["Rebuilding the nation after the war", "Starting a new war", "Building railroads", "Exploring the West"], 0, "Reconstruction was the period of rebuilding the South and the Union."]]
+  },
+  "history-u3-l0": {
+    more: ["Millions of immigrants came for jobs, freedom and a fresh start. Many Europeans arrived at Ellis Island in New York, and many Asian immigrants arrived at Angel Island in California. They brought foods, languages and traditions that shaped America.",
+      "In 1903 the Wright brothers flew the first airplane, for just 12 seconds! Henry Ford's assembly line made cars cheap enough for regular families. Each worker added one part as the car moved down the line.",
+      "Women like Susan B. Anthony and Elizabeth Cady Stanton marched, gave speeches and wrote for decades. In 1920 the 19th Amendment finally gave women the right to vote."],
+    act: { k: "match", prompt: "Match each name to why it is famous.", pairs: [["Ellis Island", "Where many European immigrants arrived"], ["Angel Island", "Where many Asian immigrants arrived"], ["The Wright brothers", "First powered airplane flight"], ["Henry Ford", "Assembly line for cars"], ["Susan B. Anthony", "Fought for women's right to vote"]] },
+    practice: [
+      ["Why did many immigrants come to America?", ["For jobs and freedom", "To go to war", "To find snow", "To leave America"], 0, "Many came hoping for work, freedom and opportunity."],
+      ["What did Henry Ford's assembly line do?", ["Made cars faster and cheaper", "Built airplanes", "Made shoes", "Built railroads"], 0, "Each worker added one part, so cars were built faster and cost less."],
+      ["Where did the Wright brothers make their first flight?", ["Kitty Hawk, North Carolina", "New York City", "Chicago", "Los Angeles"], 0, "Their first powered flight was at Kitty Hawk in 1903."],
+      ["Which amendment gave women the right to vote?", ["13th", "15th", "19th", "1st"], 2, "The 19th Amendment was ratified in 1920."],
+      ["Where did many European immigrants first arrive?", ["Angel Island", "Ellis Island", "Plymouth Rock", "Alcatraz"], 1, "Ellis Island in New York Harbor processed millions of immigrants."]]
+  },
+  "history-u3-l1": {
+    more: ["The U.S. joined World War I in 1917. Then in 1929 the stock market crashed and the Great Depression began: many people lost jobs and homes. In the Dust Bowl, drought and wind blew farm soil away.",
+      "World War II began for the U.S. when Japan attacked Pearl Harbor on December 7, 1941. The Allies, including the U.S., Britain and the Soviet Union, fought against Germany, Italy and Japan, and won in 1945.",
+      "Everyone at home helped. Women went to work in factories (Rosie the Riveter), families planted victory gardens and rationed food and gas, and kids collected scrap metal for the war effort."],
+    act: { k: "sort", prompt: "Which time does each event belong to?", bins: ["World War I", "Great Depression", "World War II"], items: [["The U.S. joins the war in 1917", 0], ["The stock market crashes in 1929", 1], ["The Dust Bowl", 1], ["Pearl Harbor is attacked in 1941", 2], ["Rosie the Riveter", 2], ["The New Deal", 1]] },
+    practice: [
+      ["What event started the Great Depression?", ["Pearl Harbor", "The stock market crash of 1929", "The Gold Rush", "The Civil War"], 1, "The 1929 crash began years of hard times."],
+      ["What was the Dust Bowl?", ["A football game", "Drought and dust storms on the Great Plains", "A desert in Africa", "A type of dish"], 1, "Dry soil blew away in huge dust storms in the 1930s."],
+      ["What brought the U.S. into World War II?", ["The attack on Pearl Harbor", "The Boston Tea Party", "The Gold Rush", "The crash of 1929"], 0, "Japan attacked Pearl Harbor, Hawaii, on December 7, 1941."],
+      ["What did Rosie the Riveter stand for?", ["Women working in factories during the war", "A famous soldier", "A ship", "A farmer"], 0, "She stood for the women who built ships, planes and weapons."],
+      ["Who was President during the Great Depression and most of WWII?", ["Abraham Lincoln", "Franklin D. Roosevelt", "George Washington", "John F. Kennedy"], 1, "FDR led the New Deal and the country through most of WWII."]]
+  },
+  "history-u3-l2": {
+    more: ["Segregation meant laws that kept Black and white Americans apart in schools, buses and restaurants. In 1954, Brown v. Board of Education ruled that separate schools were unfair. In 1960, Ruby Bridges, age six, bravely integrated her school.",
+      "Rosa Parks refused to give up her bus seat in 1955, starting the Montgomery Bus Boycott. Dr. Martin Luther King Jr. led peaceful marches and gave the “I Have a Dream” speech. Peaceful protest changed laws like the Civil Rights Act of 1964.",
+      "In 1969 Neil Armstrong became the first person to walk on the Moon: “one small step for man, one giant leap for mankind.” Tiny computer chips later put computers in homes, phones and pockets."],
+    act: { k: "match", prompt: "Match each person to what they did.", pairs: [["Rosa Parks", "Refused to give up her bus seat"], ["Dr. Martin Luther King Jr.", "Led peaceful marches; “I Have a Dream”"], ["Ruby Bridges", "Integrated an all-white school at age six"], ["César Chávez", "Fought for fair treatment of farm workers"], ["Neil Armstrong", "First person to walk on the Moon"]] },
+    practice: [
+      ["What was segregation?", ["Laws that kept people apart by race", "A kind of school", "A sport", "A space mission"], 0, "Segregation laws separated people by race."],
+      ["What did Rosa Parks's action start?", ["The Montgomery Bus Boycott", "The Civil War", "The Gold Rush", "The Moon landing"], 0, "Her arrest sparked a year-long boycott of Montgomery buses."],
+      ["How did Dr. King believe change should happen?", ["Through peaceful, nonviolent protest", "Through war", "By leaving the country", "By staying quiet"], 0, "He led peaceful marches, speeches and boycotts."],
+      ["In what year did astronauts first walk on the Moon?", ["1955", "1963", "1969", "1981"], 2, "Apollo 11 landed on the Moon in July 1969."],
+      ["What did the Brown v. Board of Education decision say?", ["Separate schools for Black and white students were unfair", "Schools should close", "Buses were free", "Women could vote"], 0, "The Supreme Court ruled school segregation unconstitutional in 1954."]]
+  }
+});
+
+// Extra explanations, a hands-on activity and practice questions for Geography & Civics.
+Object.assign(EXTRA, {
+  "geo-u0-l0": {
+    more: ["A globe is like a tiny model of Earth: round, with true shapes. A map is like peeling an orange and flattening the skin: easy to fold and carry, but some places get stretched.",
+      "Never Eat Soggy Waffles! Going clockwise from the top: North, East, South, West. The in-between directions combine the two around them: northeast sits between north and east.",
+      "The map key (legend) is a decoder ring for symbols: a tiny tent might mean a campground. The scale is a measuring stick: if 1 inch = 10 miles, then 3 inches on the map is 30 miles in real life."],
+    act: { k: "match", prompt: "Match each map part to its job.", pairs: [["Compass rose", "Shows directions"], ["Map key", "Explains what the symbols mean"], ["Scale", "Shows real distances"], ["Title", "Tells what the map is about"], ["Physical map", "Shows landforms like mountains and rivers"]] },
+    practice: [
+      ["Which direction is opposite of east?", ["North", "South", "West", "Northeast"], 2, "East and west are opposites."],
+      ["On a map scale, 1 inch = 50 miles. Two towns are 2 inches apart. How far apart are they?", ["50 miles", "52 miles", "100 miles", "25 miles"], 2, "2 × 50 = 100 miles."],
+      ["Which tool shows Earth's true shape?", ["A flat map", "A globe", "A compass", "A map key"], 1, "A globe is round like Earth."],
+      ["Which direction is between south and west?", ["Southeast", "Northwest", "Southwest", "Northeast"], 2, "Southwest is between south and west."],
+      ["What does a map key do?", ["Shows distances", "Explains map symbols", "Shows directions", "Opens a door"], 1, "The key, or legend, tells what each symbol means."]]
+  },
+  "geo-u0-l1": {
+    more: ["The equator is a belt around Earth's middle, cutting it into a Northern and a Southern Hemisphere. The prime meridian is a line running from pole to pole that cuts Earth into Eastern and Western halves.",
+      "Latitude lines are like the rungs of a ladder: flat, going across, measuring north and south. Longitude lines are long and run from pole to pole, measuring east and west. Together they give every place an address.",
+      "Absolute location is an exact address, like 40°N, 74°W or 123 Oak Street. Relative location describes where something is compared to something else: “next to the library” or “north of Mexico.”"],
+    act: { k: "sort", prompt: "Is each place mostly in the Northern or Southern Hemisphere?", bins: ["Northern", "Southern"], items: [["The United States", 0], ["Australia", 1], ["Canada", 0], ["Antarctica", 1], ["Europe", 0], ["Most of South America", 1]] },
+    practice: [
+      ["What imaginary line divides Earth into Northern and Southern Hemispheres?", ["Prime meridian", "Equator", "Longitude", "Tropic of Cancer"], 1, "The equator circles Earth halfway between the poles."],
+      ["Lines of latitude run...", ["North to south, pole to pole", "East to west, across the globe", "In circles around cities", "Only near the equator"], 1, "Latitude lines run across, like ladder rungs, and measure north and south."],
+      ["Which hemisphere is the United States in?", ["Northern and Western", "Southern and Eastern", "Southern and Western", "Northern and Eastern"], 0, "The U.S. is north of the equator and west of the prime meridian."],
+      ["“The park is across the street from the school.” This is...", ["Absolute location", "Relative location", "Latitude", "A map key"], 1, "It describes the park compared to another place."],
+      ["Which line divides Earth into Eastern and Western Hemispheres?", ["Equator", "Prime meridian", "Tropic of Capricorn", "Arctic Circle"], 1, "The prime meridian (0° longitude) runs from pole to pole."]]
+  },
+  "geo-u0-l2": {
+    more: ["Remember the seven continents with: Eat An Apple As A Nighttime Snack = Europe, Antarctica, Asia, Africa, Australia, North America, South America. Asia is the biggest and Australia the smallest.",
+      "Five oceans, biggest to smallest: Pacific, Atlantic, Indian, Southern, Arctic. They're really one connected world ocean, so a drop of water could travel to all five!",
+      "Zoom out like a camera: your home → your town → your state → the United States → North America → the Northern and Western Hemispheres → planet Earth."],
+    act: { k: "sort", prompt: "Is each one a continent or an ocean?", bins: ["Continent", "Ocean"], items: [["Africa", 0], ["Atlantic", 1], ["Antarctica", 0], ["Arctic", 1], ["Europe", 0], ["Indian", 1]] },
+    practice: [
+      ["Which is the largest continent?", ["Africa", "Asia", "North America", "Europe"], 1, "Asia is the largest continent by area and population."],
+      ["Which is the largest ocean?", ["Atlantic", "Indian", "Pacific", "Arctic"], 2, "The Pacific is the largest and deepest ocean."],
+      ["Which continent is the smallest?", ["Europe", "Antarctica", "Australia", "South America"], 2, "Australia is the smallest continent."],
+      ["Which continent is covered in ice and has no permanent cities?", ["Australia", "Antarctica", "Europe", "Africa"], 1, "Antarctica is icy, and only scientists live there for a while."],
+      ["Which ocean surrounds the North Pole?", ["Indian", "Arctic", "Southern", "Pacific"], 1, "The Arctic Ocean is at the top of the world."]]
+  },
+  "geo-u1-l0": {
+    more: ["Picture the 50 states as a big family in five rooms: Northeast, Southeast, Midwest, Southwest and West. Washington, D.C., our nation's capital, isn't in any room. It's its own special district.",
+      "Record holders: Alaska is the biggest (more than twice the size of Texas!), Rhode Island is the smallest, and California has the most people. Hawaii is the only state made of islands.",
+      "A capital is where the state's government meets, like the principal's office of the state. It's often not the biggest city. Make flashcards and quiz yourself: say the state, then the capital."],
+    act: { k: "match", prompt: "Match each state to its capital.", pairs: [["Texas", "Austin"], ["California", "Sacramento"], ["New York", "Albany"], ["Florida", "Tallahassee"], ["Illinois", "Springfield"]] },
+    practice: [
+      ["Which two states don't touch any other state?", ["Texas and Florida", "Alaska and Hawaii", "Maine and Ohio", "California and Nevada"], 1, "Alaska is next to Canada, and Hawaii is islands in the Pacific."],
+      ["Which state is the largest by area?", ["Texas", "California", "Alaska", "Montana"], 2, "Alaska is the largest state."],
+      ["Which state is the smallest?", ["Delaware", "Rhode Island", "Connecticut", "Hawaii"], 1, "Rhode Island is the smallest state."],
+      ["What is the capital of California?", ["Los Angeles", "San Francisco", "Sacramento", "San Diego"], 2, "Sacramento is California's capital."],
+      ["Which state has the most people?", ["Texas", "California", "Florida", "New York"], 1, "California has the most people of any state."]]
+  },
+  "geo-u1-l1": {
+    more: ["Landforms are the shapes of the land. Make them with your hands: a fist is a mountain, a flat palm is a plain, a flat-topped fist is a plateau, and the space between two fists is a valley.",
+      "The Rocky Mountains in the West are tall and jagged (younger). The Appalachians in the East are lower and rounded (older and worn down). The Great Plains in the middle are wide and flat, perfect for farms.",
+      "Rivers flow downhill from their source (start) to their mouth (end). The Mississippi is the big river of the U.S. The Great Lakes are five huge freshwater lakes: remember HOMES = Huron, Ontario, Michigan, Erie, Superior."],
+    act: { k: "match", prompt: "Match each landform to its description.", pairs: [["Peninsula", "Land with water on three sides"], ["Island", "Land with water all around"], ["Plateau", "High, flat land"], ["Valley", "Low land between hills or mountains"], ["Canyon", "Deep valley with steep sides, carved by a river"]] },
+    practice: [
+      ["Florida has water on three sides. It is a...", ["Plateau", "Peninsula", "Valley", "Island"], 1, "A peninsula has water on three sides."],
+      ["Which mountains are in the western United States?", ["Appalachian Mountains", "Rocky Mountains", "Alps", "Andes"], 1, "The Rockies run through the western U.S. and Canada."],
+      ["What is the mouth of a river?", ["Where it starts", "Where it ends and empties into a bigger body of water", "Its deepest spot", "A waterfall"], 1, "The mouth is where the river empties, often into an ocean or lake."],
+      ["Which major U.S. river flows south into the Gulf of Mexico?", ["Hudson", "Colorado", "Mississippi", "Columbia"], 2, "The Mississippi flows south to the Gulf."],
+      ["What do the letters in HOMES stand for?", ["Five oceans", "The Great Lakes", "Five states", "Five mountains"], 1, "Huron, Ontario, Michigan, Erie, Superior: the Great Lakes."]]
+  },
+  "geo-u1-l2": {
+    more: ["A natural resource is anything from nature that people use: water, soil, trees, fish, oil, sunlight. If people made it in a factory, it's not a natural resource, but it may be made from one.",
+      "Regions are known for their resources, like a pantry: the Midwest's rich soil grows corn and wheat, the Southwest has oil and natural gas, and the Pacific Northwest has forests and fish.",
+      "Renewable resources can be replaced (trees can be replanted, the wind keeps blowing). Nonrenewable ones run out (oil, coal). Conservation means using resources wisely: reduce, reuse and recycle!"],
+    act: { k: "sort", prompt: "Is each resource renewable or nonrenewable?", bins: ["Renewable", "Nonrenewable"], items: [["Sunlight", 0], ["Oil", 1], ["Wind", 0], ["Coal", 1], ["Trees", 0], ["Natural gas", 1]] },
+    practice: [
+      ["Which is a natural resource?", ["A plastic toy", "Fresh water", "A car", "A computer"], 1, "Water comes from nature."],
+      ["Which resource is nonrenewable?", ["Wind", "Sunlight", "Coal", "Trees"], 2, "Coal takes millions of years to form, so it can run out."],
+      ["Which is an example of conservation?", ["Leaving the lights on", "Turning off the water while brushing your teeth", "Throwing away cans", "Driving everywhere"], 1, "Saving water is using a resource wisely."],
+      ["The Midwest is known for growing corn and wheat because of its...", ["Rich, flat farmland", "Deserts", "Tall mountains", "Glaciers"], 0, "Rich soil and flat land make the Midwest great for farming."],
+      ["What do the three R's stand for?", ["Read, write, run", "Reduce, reuse, recycle", "Rain, river, rock", "Rest, relax, repeat"], 1, "Reduce, reuse and recycle help protect resources."]]
+  },
+  "geo-u2-l0": {
+    more: ["North America's three big neighbors stack like a sandwich: Canada on top, the United States in the middle and Mexico on the bottom. Each has its own capital: Ottawa, Washington, D.C., and Mexico City.",
+      "Europe has many smaller countries packed close together, so you can drive through several in a day. Asia is huge and has the most people, including China and India. Practice country–capital pairs out loud like a song.",
+      "Africa has 54 countries and the Sahara Desert. South America's largest country is Brazil, home to most of the Amazon rainforest. Russia is the largest country in the world, stretching across two continents."],
+    act: { k: "match", prompt: "Match each country to its capital.", pairs: [["France", "Paris"], ["Japan", "Tokyo"], ["Egypt", "Cairo"], ["Canada", "Ottawa"], ["Brazil", "Brasília"]] },
+    practice: [
+      ["What is the capital of Mexico?", ["Cancún", "Mexico City", "Monterrey", "Tijuana"], 1, "Mexico City is Mexico's capital and largest city."],
+      ["Which country is the largest in the world by area?", ["China", "Canada", "Russia", "United States"], 2, "Russia stretches across Europe and Asia."],
+      ["What is the capital of Australia?", ["Sydney", "Melbourne", "Canberra", "Perth"], 2, "Canberra is the capital, not Sydney."],
+      ["Which is the largest country in South America?", ["Argentina", "Brazil", "Peru", "Chile"], 1, "Brazil is South America's largest country."],
+      ["Which two countries have the most people?", ["U.S. and Canada", "India and China", "Brazil and Mexico", "Russia and Japan"], 1, "India and China each have more than a billion people."]]
+  },
+  "geo-u2-l1": {
+    more: ["Think of Earth like a pizza in an oven. The middle (the tropics, near the equator) gets the most direct heat. The edges (the poles) stay coldest. The temperate zones in between get a mix and have four seasons.",
+      "A biome is a big neighborhood with its own weather, plants and animals: hot, wet rainforests; dry deserts; cold, treeless tundra; grassy grasslands; and forests full of trees.",
+      "Living things fit their biome like a key fits a lock. A cactus stores water for the dry desert, and a polar bear has thick fur and fat for the icy Arctic."],
+    act: { k: "match", prompt: "Match each biome to its description.", pairs: [["Tropical rainforest", "Hot and wet with tall trees"], ["Desert", "Very dry with cactus and lizards"], ["Tundra", "Cold and treeless with frozen ground"], ["Grassland", "Wide, grassy and flat"], ["Deciduous forest", "Four seasons; trees drop leaves in fall"]] },
+    practice: [
+      ["Which climate zone is near the equator?", ["Polar", "Temperate", "Tropical", "Arctic"], 2, "The tropical zone near the equator is hot all year."],
+      ["Where are the polar zones?", ["Near the equator", "Near the North and South Poles", "In the middle of the U.S.", "In every desert"], 1, "The polar zones are near the poles, where it's cold all year."],
+      ["What helps a camel live in the desert?", ["Thick fur for snow", "It can go days without drinking", "Webbed feet", "Gills"], 1, "Camels are adapted to survive with little water."],
+      ["Most of the United States is in which climate zone?", ["Tropical", "Temperate", "Polar", "Desert"], 1, "Most of the U.S. is temperate, with four seasons."],
+      ["Which biome is cold, with no trees and frozen ground?", ["Tundra", "Rainforest", "Grassland", "Deciduous forest"], 0, "The tundra is a cold, treeless biome."]]
+  },
+  "geo-u2-l2": {
+    more: ["Culture is a group's “recipe for living”: the language they speak, food they eat, clothes they wear, holidays, music, art and beliefs. Geography stirs the pot: people by the sea eat more fish.",
+      "Landmarks are like a country's signature: the Eiffel Tower (France), the Great Wall (China), the Pyramids (Egypt), the Statue of Liberty (U.S.) and Machu Picchu (Peru). Each tells a story about the people who built it.",
+      "Around the world, people celebrate harvests, new years and special days in different ways, like Lunar New Year, Diwali, Thanksgiving and Día de los Muertos. Learning about them helps us respect each other."],
+    act: { k: "match", prompt: "Match each landmark to its country.", pairs: [["Eiffel Tower", "France"], ["Great Wall", "China"], ["Great Pyramids of Giza", "Egypt"], ["Statue of Liberty", "United States"], ["Machu Picchu", "Peru"]] },
+    practice: [
+      ["Which is part of a group's culture?", ["The language they speak", "The height of their mountains", "The temperature", "The size of the ocean"], 0, "Language is a big part of culture."],
+      ["Which holiday is a festival of lights celebrated in India and around the world?", ["Diwali", "Thanksgiving", "Independence Day", "Groundhog Day"], 0, "Diwali is celebrated with lamps, lights and sweets."],
+      ["Which of these is one of the most widely spoken languages in the world?", ["Mandarin Chinese", "Latin", "Klingon", "Morse code"], 0, "Mandarin Chinese is spoken by more than a billion people."],
+      ["How can geography shape culture?", ["People in cold places wear warm clothes", "It doesn't", "Mountains choose holidays", "Rivers speak languages"], 0, "Climate and land affect food, clothing and homes."],
+      ["Why is learning about other cultures important?", ["It helps us understand and respect others", "It is not important", "So we can all be the same", "To win arguments"], 0, "Understanding differences builds respect."]]
+  },
+  "geo-u3-l0": {
+    more: ["Congress is like a two-room clubhouse: the Senate (2 senators per state = 100) and the House of Representatives (based on population = 435). Both rooms must agree on a bill.",
+      "The President is the captain who carries out laws, leads the military and meets other countries' leaders. The Supreme Court is the referee: it decides whether laws follow the Constitution.",
+      "A bill becomes a law like a relay race: it is written, passes the House, passes the Senate, then the President signs it. If the President vetoes it, Congress can still pass it with a two-thirds vote."],
+    act: { k: "sort", prompt: "Which branch does each clue describe?", bins: ["Legislative", "Executive", "Judicial"], items: [["Makes the laws", 0], ["Signs or vetoes bills", 1], ["Decides if laws follow the Constitution", 2], ["The Senate and the House", 0], ["Commander in chief", 1], ["The Supreme Court", 2]] },
+    practice: [
+      ["How many senators does each state have?", ["1", "2", "Depends on population", "10"], 1, "Every state has two senators."],
+      ["Who leads the executive branch?", ["The Chief Justice", "The President", "The Speaker of the House", "The governor"], 1, "The President heads the executive branch."],
+      ["What is a veto?", ["The President's rejection of a bill", "A new law", "A court case", "An election"], 0, "A veto means the President refuses to sign a bill."],
+      ["How many justices are on the Supreme Court?", ["5", "7", "9", "12"], 2, "The Supreme Court has nine justices."],
+      ["Which comes LAST when a bill becomes a law?", ["Someone writes the bill", "The House votes", "The Senate votes", "The President signs it"], 3, "After both houses pass it, the President signs it into law."]]
+  },
+  "geo-u3-l1": {
+    more: ["Rights are freedoms that belong to you, like speaking your mind. Responsibilities are things good citizens do: follow laws, pay taxes, vote, serve on juries and help their community.",
+      "Government comes in three sizes, like nesting boxes. Local (mayor, city council) handles trash, parks and libraries. State (governor) handles highways and driver's licenses. Federal (President) handles money, the military and the whole country.",
+      "Symbols are pictures that stand for big ideas. The flag's 50 stars stand for the states and its 13 stripes for the first colonies. The bald eagle stands for freedom, and the Statue of Liberty welcomes newcomers."],
+    act: { k: "sort", prompt: "Which level of government handles each job?", bins: ["Federal", "State", "Local"], items: [["Printing money", 0], ["Running the military", 0], ["Driver's licenses", 1], ["Building state highways", 1], ["The public library", 2], ["Trash pickup", 2]] },
+    practice: [
+      ["Who leads a state government?", ["The President", "The governor", "The mayor", "The sheriff"], 1, "A governor is the head of a state."],
+      ["Which is a responsibility of a citizen?", ["Obeying laws", "Owning a pet", "Watching TV", "Eating dessert"], 0, "Following laws is a key responsibility."],
+      ["What do the 50 stars on the U.S. flag stand for?", ["50 Presidents", "The 50 states", "50 wars", "50 colonies"], 1, "Each star stands for one state."],
+      ["Who leads a city government?", ["A governor", "A mayor", "A senator", "A king"], 1, "A mayor leads a city."],
+      ["What does the bald eagle stand for?", ["Freedom and strength", "Rain", "Money", "The Moon"], 0, "The bald eagle is a symbol of freedom."]]
+  },
+  "geo-u3-l2": {
+    more: ["Needs keep you alive and safe (food, water, shelter, clothing). Wants are nice to have (toys, candy, video games). Goods are things you can touch; services are jobs people do for you, like a haircut.",
+      "Scarcity means there isn't enough of something for everyone, so we must choose. The thing you give up when you choose is the opportunity cost. Buy the toy and you give up the book.",
+      "Earning means working for money. A budget is a plan for your money: spend some, save some and maybe share some. Saving a little at a time adds up, like filling a jar one coin at a time."],
+    act: { k: "sort", prompt: "Is each one a need or a want?", bins: ["Need", "Want"], items: [["Clean water", 0], ["A video game", 1], ["A warm winter coat", 0], ["A candy bar", 1], ["A safe place to live", 0], ["A toy robot", 1]] },
+    practice: [
+      ["Which is a service?", ["A bicycle", "A haircut", "An apple", "A book"], 1, "A haircut is work someone does for you."],
+      ["What is scarcity?", ["Having more than enough", "Not having enough of something for everyone", "A kind of tax", "A scary story"], 1, "Scarcity means limited resources, so people must choose."],
+      ["You have $5 and choose a book instead of a toy. The toy is your...", ["Budget", "Opportunity cost", "Income", "Service"], 1, "The opportunity cost is what you gave up."],
+      ["You save $2 each week. How much will you have after 6 weeks?", ["$8", "$10", "$12", "$14"], 2, "2 × 6 = $12."],
+      ["What is a budget?", ["A plan for how to spend and save money", "A type of bank", "A store", "A toy"], 0, "A budget helps you plan your money."]]
+  }
+});
+
   </script>
   <script>
 // ===================== SETTINGS =====================
@@ -3000,7 +3742,8 @@ function weekOf(ui, li) { return ui * 3 + li + 1; }
 function lessonId(key, ui, li) { return `${key}-u${ui}-l${li}`; }
 function testId(key, ui) { return ui === 'final' ? `${key}-final` : `${key}-u${ui}`; }
 function passMark(n) { return Math.ceil(n * PASS_FRACTION); }
-function maxStars(key, ui, li) { const t = TEACH[lessonId(key, ui, li)]; return (t ? t.steps.length : 0) + 1; }
+// One star per quick check, one for the Practice Lab and one for the lesson challenge
+function maxStars(key, ui, li) { const t = TEACH[lessonId(key, ui, li)]; return (t ? t.steps.length : 0) + 2; }
 const SVGNS = 'http://www.w3.org/2000/svg';
 function svg(tag, attrs, text) { const e = document.createElementNS(SVGNS, tag); Object.entries(attrs || {}).forEach(([k, v]) => e.setAttribute(k, v)); if (text != null) e.textContent = text; return e; }
 function subjChip(s) { const c = el('span', 'chip'); c.style.background = SUBJ[s.key].soft; c.appendChild(el('span', '', SUBJ[s.key].e)); c.appendChild(el('span', '', s.name)); return c; }
@@ -3069,9 +3812,10 @@ function saveStore() { try { localStorage.setItem(STORE_KEY, JSON.stringify(stor
 function learner() { return store.lastName || ''; }
 function prog() {
   const name = learner().toLowerCase() || '_guest';
-  if (!store.students[name]) store.students[name] = { done: {}, best: {}, stars: {} };
+  if (!store.students[name]) store.students[name] = { done: {}, best: {}, stars: {}, lab: {} };
   const p = store.students[name];
   if (!p.stars) p.stars = {};
+  if (!p.lab) p.lab = {};
   return p;
 }
 function isDone(id) { return !!prog().done[id]; }
@@ -3085,11 +3829,13 @@ function setLearner(name) {
   const guest = store.students._guest;
   if (name && guest) {
     const key = name.toLowerCase();
-    const target = store.students[key] || (store.students[key] = { done: {}, best: {}, stars: {} });
+    const target = store.students[key] || (store.students[key] = { done: {}, best: {}, stars: {}, lab: {} });
     if (!target.stars) target.stars = {};
+    if (!target.lab) target.lab = {};
     Object.assign(target.done, guest.done);
     Object.entries(guest.best).forEach(([id, b]) => { if (!target.best[id] || b.c > target.best[id].c) target.best[id] = b; });
     Object.entries(guest.stars || {}).forEach(([id, n]) => { target.stars[id] = Math.max(target.stars[id] || 0, n); });
+    Object.entries(guest.lab || {}).forEach(([id, g]) => { target.lab[id] = mergeLab(target.lab[id], g); });
     delete store.students._guest;
   }
   store.lastName = name;
@@ -3118,6 +3864,7 @@ function show(view) {
   $('test-bar').classList.toggle('hidden', !testing);
   $('app-bar').classList.toggle('hidden', testing);
   updateStarPill();
+  stopSpeech();
   window.scrollTo({ top: 0 });
   if (view === 'view-home') requestAnimationFrame(drawTrail);
 }
@@ -3132,13 +3879,14 @@ let tab = 'map';
 try { tab = localStorage.getItem(STORE_KEY + '_tab2') || 'map'; } catch (e) {}
 function setTab(t) {
   tab = t; try { localStorage.setItem(STORE_KEY + '_tab2', t); } catch (e) {}
-  ['map', 'subjects', 'badges'].forEach(k => {
+  ['map', 'subjects', 'badges', 'parents'].forEach(k => {
     const on = k === t;
     $('tab-' + k).className = 'btn px-4 py-2 text-sm ' + (on ? 'btn-sun' : 'btn-white');
     $('tab-' + k).setAttribute('aria-selected', on);
     $(k + '-view').classList.toggle('hidden', !on);
   });
   if (t === 'map') requestAnimationFrame(drawTrail);
+  if (t === 'parents') renderParents();
 }
 
 function stat(icon, label, value, sub) {
@@ -3213,23 +3961,20 @@ TRAIL.push({ type: 'summit' });
 const OFFSETS = [0, 0.6, 0.9, 0.6, 0, -0.6, -0.9, -0.6];
 let selectedNode = null;
 
+// Every week, camp and the summit is always open: 'current' only marks the suggested next stop.
 function nodeState(n, cur) {
   if (n.type === 'week') {
-    const done = weekDoneCount(n.w);
-    if (done === SUBJECTS.length) return 'done';
-    if (n.w === cur) return 'current';
-    return n.w < cur ? 'open' : 'locked';
+    if (weekDoneCount(n.w) === SUBJECTS.length) return 'done';
+    return n.w === cur ? 'current' : 'open';
   }
   if (n.type === 'camp') {
-    const passed = unitPassedCount(n.ui);
-    if (passed === SUBJECTS.length) return 'done';
+    if (unitPassedCount(n.ui) === SUBJECTS.length) return 'done';
     const lessonsDone = [1, 2, 3].every(k => weekDoneCount(n.ui * 3 + k) === SUBJECTS.length);
-    return lessonsDone ? 'current' : 'locked';
+    return lessonsDone && cur === n.ui * 3 + 3 ? 'current' : 'open';
   }
   const finals = SUBJECTS.filter(s => (bestOf(testId(s.key, 'final')) || {}).p).length;
   if (finals === SUBJECTS.length) return 'done';
-  const all = cur > WEEKS || Array.from({ length: WEEKS }, (_, i) => weekDoneCount(i + 1)).every(d => d === SUBJECTS.length);
-  return all ? 'current' : 'locked';
+  return cur > WEEKS ? 'current' : 'open';
 }
 function nodeLabel(n) {
   if (n.type === 'week') return `Week ${n.w}`;
@@ -3247,23 +3992,23 @@ function renderMap() {
     const shift = el('div', 'trail-shift relative flex flex-col items-center');
     const o = OFFSETS[i % OFFSETS.length];
     shift.style.setProperty('--o', o);
-    const fills = { done: '#22c55e', current: '#fde047', open: '#ffffff', locked: '#cbd5e1' };
+    const fills = { done: '#22c55e', current: '#fde047', open: '#ffffff' };
     const dot = el('button', 'node-dot fun font-bold ' + (n.type !== 'week' ? 'node-camp ' : '') + (state === 'current' ? 'node-current' : ''));
     dot.type = 'button';
     dot.style.background = fills[state];
     dot.setAttribute('aria-expanded', selectedNode === i);
     let face;
-    if (n.type === 'week') face = state === 'done' ? '✓' : state === 'locked' ? '🔒' : String(n.w);
-    else if (n.type === 'camp') face = state === 'done' ? '🏅' : state === 'locked' ? '🔒' : '⛺';
+    if (n.type === 'week') face = state === 'done' ? '✓' : String(n.w);
+    else if (n.type === 'camp') face = state === 'done' ? '🏅' : '⛺';
     else face = state === 'done' ? '🏆' : '🏔️';
-    dot.appendChild(el('span', n.type === 'week' && state !== 'locked' ? 'text-3xl ' + (state === 'done' ? 'text-white' : '') : 'text-3xl', face));
+    dot.appendChild(el('span', 'text-3xl ' + (n.type === 'week' && state === 'done' ? 'text-white' : ''), face));
     // progress ring for weeks in progress
-    if (n.type === 'week' && state !== 'done' && state !== 'locked') {
+    if (n.type === 'week' && state !== 'done') {
       const d = weekDoneCount(n.w);
       const ring = el('span', 'absolute -bottom-2 left-1/2 -translate-x-1/2 chip tabular text-[10px] px-1.5 py-0', `${d}/5`);
       dot.appendChild(ring);
     }
-    dot.setAttribute('aria-label', `${nodeLabel(n)}: ${state === 'done' ? 'complete' : state === 'locked' ? 'locked' : state === 'current' ? 'up next' : 'in progress'}`);
+    dot.setAttribute('aria-label', `${nodeLabel(n)}: ${state === 'done' ? 'complete' : state === 'current' ? 'up next' : 'open'}`);
     dot.onclick = () => { selectedNode = selectedNode === i ? -1 : i; renderMap(); requestAnimationFrame(drawTrail); };
     shift.appendChild(dot);
     const lab = el('span', 'mt-2 chip text-xs', nodeLabel(n));
@@ -3297,7 +4042,6 @@ function nodePanel(n, state, cur) {
     head.appendChild(el('h3', 'fun text-2xl font-bold', `Week ${n.w}`));
     head.appendChild(el('span', 'chip', `Unit ${ui + 1} · lesson ${li + 1} of 3`));
     p.appendChild(head);
-    if (state === 'locked') p.appendChild(el('p', 'mt-2 text-sm font-bold text-indigo-900/70', `🔒 This week unlocks after Week ${cur}. You can still peek at the lessons!`));
     const list = el('div', 'mt-3 space-y-1');
     SUBJECTS.forEach(s => list.appendChild(lessonButton(s, ui, li, true)));
     p.appendChild(list);
@@ -3305,7 +4049,7 @@ function nodePanel(n, state, cur) {
     head.appendChild(el('h3', 'fun text-2xl font-bold', `⛺ Unit ${n.ui + 1} Camp`));
     head.appendChild(el('span', 'chip', `${unitPassedCount(n.ui)}/5 badges`));
     p.appendChild(head);
-    p.appendChild(el('p', 'mt-2 text-sm font-bold text-indigo-900/70', state === 'locked' ? `🔒 Finish Weeks ${n.ui * 3 + 1}–${n.ui * 3 + 3} to unlock camp. Each test you pass earns a badge!` : 'Take each unit test. Pass with 70% to earn that subject\'s badge!'));
+    p.appendChild(el('p', 'mt-2 text-sm font-bold text-indigo-900/70', `Unit tests cover Weeks ${n.ui * 3 + 1}–${n.ui * 3 + 3}. Take them whenever you're ready. Pass with 70% to earn that subject's badge!`));
     const grid = el('div', 'mt-3 grid gap-2 sm:grid-cols-2');
     SUBJECTS.forEach(s => grid.appendChild(testButton(s, n.ui, `${s.name}: Unit ${n.ui + 1} test`)));
     p.appendChild(grid);
@@ -3783,7 +4527,7 @@ function newCheck(c) { return { c, order: shuffle([0, 1, 2, 3]), tries: 0, picke
 function openLesson(key, ui, li) {
   closeDone();
   const s = subj(key), u = s.units[ui], l = u.lessons[li], t = TEACH[lessonId(key, ui, li)];
-  lessonCtx = { key, ui, li, step: 0, s, u, l, t, checks: t.steps.map(st => newCheck(st.check)), challenge: newCheck(l.tryIt), seen: { 0: true } };
+  lessonCtx = { key, ui, li, step: 0, s, u, l, t, checks: t.steps.map(st => newCheck(st.check)), challenge: newCheck(l.tryIt), seen: { 0: true }, more: {}, lab: newLab(key, ui, li) };
   vizColor = SUBJ[key].c;
   const chips = $('lesson-chips'); chips.innerHTML = '';
   chips.appendChild(subjChip(s));
@@ -3793,7 +4537,9 @@ function openLesson(key, ui, li) {
   renderLessonStep();
   show('view-lesson');
 }
-function lastStep() { return lessonCtx.t.steps.length + 1; }
+// Steps: 0 = start, 1..n = concepts, n+1 = Practice Lab, n+2 = wrap-up
+function labStep() { return lessonCtx.t.steps.length + 1; }
+function lastStep() { return lessonCtx.t.steps.length + 2; }
 function stepResolved(i) { return i < 1 || i > lessonCtx.t.steps.length || lessonCtx.checks[i - 1].resolved; }
 
 function renderProgress() {
@@ -3802,12 +4548,13 @@ function renderProgress() {
   for (let i = 0; i <= n; i++) {
     const seg = el('button', 'seg ' + (i === lessonCtx.step ? 'seg-now' : (lessonCtx.seen[i] && stepResolved(i)) ? 'seg-done' : ''));
     seg.type = 'button'; seg.setAttribute('role', 'listitem');
-    seg.setAttribute('aria-label', i === 0 ? 'Start' : i === n ? 'Wrap-up' : `Concept ${i}`);
+    seg.setAttribute('aria-label', i === 0 ? 'Start' : i === n ? 'Wrap-up' : i === n - 1 ? 'Practice Lab' : `Concept ${i}`);
+    if (i === n - 1) seg.classList.add('seg-lab');
     seg.onclick = () => goStep(i);
     bar.appendChild(seg);
   }
 }
-function goStep(i) { lessonCtx.step = i; lessonCtx.seen[i] = true; renderLessonStep(); $('view-lesson').scrollIntoView({ block: 'start' }); window.scrollTo({ top: 0 }); }
+function goStep(i) { stopSpeech(); lessonCtx.step = i; lessonCtx.seen[i] = true; renderLessonStep(); $('view-lesson').scrollIntoView({ block: 'start' }); window.scrollTo({ top: 0 }); }
 function lessonStep(d) {
   const i = lessonCtx.step;
   if (d > 0 && i === lastStep()) return finishLesson();
@@ -3821,11 +4568,12 @@ function renderLessonStep() {
   renderProgress();
   if (step === 0) renderIntro(stage);
   else if (step === lastStep()) renderWrap(stage);
+  else if (step === labStep()) renderLab(stage);
   else renderConcept(stage, step - 1);
   paintMascots(stage);
   $('lesson-back').disabled = step === 0;
   const next = $('lesson-next');
-  next.textContent = step === 0 ? "Let's go! →" : step === lastStep() ? 'Finish lesson ✓' : step === t.steps.length ? 'Wrap-up →' : 'Next →';
+  next.textContent = step === 0 ? "Let's go! →" : step === lastStep() ? 'Finish lesson ✓' : step === labStep() ? 'Wrap-up →' : step === t.steps.length ? 'Practice Lab →' : 'Next →';
   next.className = 'btn px-4 py-3 text-base ' + (step === lastStep() ? 'btn-go' : 'btn-sun');
   next.disabled = false;
 }
@@ -3852,17 +4600,27 @@ function renderIntro(stage) {
     const n = el('span', 'w-8 h-8 rounded-full border-[3px] border-indigo-950 shrink-0 flex items-center justify-center fun font-bold text-white', String(i + 1)); n.style.background = vizColor;
     li2.appendChild(n); li2.appendChild(el('span', 'font-extrabold leading-tight', st.t)); ol.appendChild(li2);
   });
+  const labItem = el('li', 'flex items-center gap-3 rounded-2xl border-[3px] border-indigo-950 px-3 py-2'); labItem.style.background = '#ecfeff';
+  labItem.appendChild(el('span', 'w-8 h-8 rounded-full border-[3px] border-indigo-950 shrink-0 flex items-center justify-center text-base bg-white', '🧪'));
+  labItem.appendChild(el('span', 'font-extrabold leading-tight', 'Practice Lab: hands-on activity and extra practice'));
+  ol.appendChild(labItem);
   stage.appendChild(ol);
   stage.appendChild(el('h3', 'mt-6 fun text-xl font-bold', '📖 Words you\'ll meet'));
   const words = el('div', 'mt-2 flex flex-wrap gap-2');
   l.vocab.forEach(([w]) => { const c = el('span', 'chip text-sm', w); c.style.background = SUBJ[key].soft; words.appendChild(c); });
   stage.appendChild(words);
-  stage.appendChild(el('p', 'mt-5 text-sm font-bold text-indigo-900/70', `⭐ Earn a star for every quick check you get right on the first try: up to ${maxStars(key, ui, li)} stars!`));
+  stage.appendChild(el('p', 'mt-5 text-sm font-bold text-indigo-900/70', `⭐ Earn a star for every quick check you get right on the first try, one for the Practice Lab and one for the lesson challenge: up to ${maxStars(key, ui, li)} stars! Tap 🔊 anytime to hear the lesson read aloud.`));
 }
 
-function renderCheckBlock(stage, ck, label) {
-  const box = el('div', 'mt-6 rounded-[22px] border-[3px] border-dashed border-indigo-950 p-4 sm:p-5 relative'); box.style.background = '#f0f9ff';
-  box.appendChild(el('p', 'text-xs font-black uppercase tracking-wider', label));
+// opt.star = false for practice questions (no star pop); opt.onResolve runs after the question is settled
+function renderCheckBlock(stage, ck, label, opt = {}) {
+  const star = opt.star !== false;
+  const box = el('div', 'mt-6 rounded-[22px] border-[3px] border-dashed border-indigo-950 p-4 sm:p-5 relative'); box.style.background = opt.bg || '#f0f9ff';
+  const top = el('div', 'flex items-center justify-between gap-2');
+  top.appendChild(el('p', 'text-xs font-black uppercase tracking-wider', label));
+  const sp = speakButton(() => ck.c[0] + '. ' + ck.order.map((oi, k) => 'ABCD'[k] + ': ' + ck.c[1][oi]).join('. '), true);
+  if (sp) top.appendChild(sp);
+  box.appendChild(top);
   box.appendChild(el('p', 'mt-1 text-lg font-extrabold leading-snug', ck.c[0]));
   const opts = el('div', 'mt-3 grid gap-2.5 sm:grid-cols-2'); opts.className += ' check-options';
   const fb = el('div', 'hidden mt-3 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 font-bold leading-snug'); fb.setAttribute('aria-live', 'polite');
@@ -3883,7 +4641,7 @@ function renderCheckBlock(stage, ck, label) {
     fb.classList.remove('hidden');
     if (ck.resolved && ck.picked[ck.picked.length - 1] === ck.c[2]) {
       fb.style.background = '#bbf7d0';
-      fb.textContent = (ck.first ? '⭐ ' + CHEERS[(ck.c[0].length) % CHEERS.length] + ' ' : 'Correct! ') + ck.c[3];
+      fb.textContent = (ck.first ? (star ? '⭐ ' : '✅ ') + CHEERS[(ck.c[0].length) % CHEERS.length] + ' ' : 'Correct! ') + ck.c[3];
     } else if (ck.resolved) {
       fb.style.background = '#fef3c7';
       fb.textContent = `The answer is “${ck.c[1][ck.c[2]]}.” ${ck.c[3]}`;
@@ -3897,9 +4655,10 @@ function renderCheckBlock(stage, ck, label) {
     ck.tries++; ck.picked.push(oi);
     if (oi === ck.c[2]) {
       ck.resolved = true; ck.first = ck.tries === 1;
-      if (ck.first) { const pop = el('span', 'star-pop text-2xl', '+1 ⭐'); box.appendChild(pop); setTimeout(() => pop.remove(), 1300); }
+      if (ck.first && star) { const pop = el('span', 'star-pop text-2xl', '+1 ⭐'); box.appendChild(pop); setTimeout(() => pop.remove(), 1300); }
     } else if (ck.tries >= 2) ck.resolved = true;
     paint(); renderProgress();
+    if (ck.resolved && opt.onResolve) opt.onResolve();
   };
   box.appendChild(opts); box.appendChild(fb);
   stage.appendChild(box);
@@ -3911,7 +4670,10 @@ function renderConcept(stage, i) {
   const lab = el('span', 'chip text-white', `Concept ${i + 1} of ${n}`); lab.style.background = vizColor; lab.style.textShadow = '0 1px 0 rgba(0,0,0,.3)';
   stage.appendChild(lab);
   stage.appendChild(el('h3', 'fun text-2xl sm:text-3xl font-bold mt-2 leading-tight', st.t));
+  const tools = conceptTools(i, st);
+  stage.appendChild(tools.bar);
   st.teach.forEach(p => stage.appendChild(el('p', 'mt-3 text-lg font-semibold leading-relaxed', p)));
+  stage.appendChild(tools.box);
   if (st.see) { const v = renderViz(st.see); v.classList.add('mt-5'); stage.appendChild(v); }
   renderCheckBlock(stage, lessonCtx.checks[i], '🧠 Quick check');
 }
@@ -3921,6 +4683,8 @@ function renderWrap(stage) {
   stage.appendChild(sayBox('Treasure chest time! Here\'s everything from today in one place.'));
   const sec = (icon, title) => { stage.appendChild(el('h3', 'mt-7 fun text-xl font-bold', `${icon} ${title}`)); };
   sec('🧠', 'Big ideas to remember');
+  const spk = speakButton(() => 'Big ideas to remember. ' + l.ideas.join(' '));
+  if (spk) { spk.classList.add('mt-2'); stage.appendChild(spk); }
   const ul = el('ul', 'mt-2 space-y-2');
   l.ideas.forEach(x => { const li = el('li', 'flex gap-3'); const d = el('span', 'mt-2 w-3 h-3 rounded-full border-2 border-indigo-950 shrink-0'); d.style.background = vizColor; li.appendChild(d); li.appendChild(el('span', 'font-semibold leading-relaxed', x)); ul.appendChild(li); });
   stage.appendChild(ul);
@@ -3948,7 +4712,7 @@ function renderWrap(stage) {
   renderCheckBlock(stage, lessonCtx.challenge, '🏆 Lesson challenge');
 }
 
-function earnedStars() { return lessonCtx.checks.filter(c => c.first).length + (lessonCtx.challenge.first ? 1 : 0); }
+function earnedStars() { return lessonCtx.checks.filter(c => c.first).length + (lessonCtx.challenge.first ? 1 : 0) + (lessonCtx.lab.star ? 1 : 0); }
 function finishLesson() {
   const { key, ui, li, s } = lessonCtx;
   const id = lessonId(key, ui, li), p = prog();
@@ -4201,7 +4965,7 @@ function buildEmail() {
   const testName = test.ui === 'final' ? 'Final Exam' : `Unit ${test.ui + 1} Test (${s.units[test.ui].title})`;
   const when = new Date().toLocaleString();
   const header =
-`Jerzy's Learning Adventure - Test Results
+`Mikey Mitchell's Lesson Plans - Test Results
 
 Name:      ${name}
 Subject:   ${s.name}
@@ -4279,10 +5043,859 @@ function copyResults() {
   else fallback();
 }
 
+// ===================== READ ALOUD =====================
+// Uses the device's built-in voice (works in Safari on iPhone/iPad and in Chrome/Edge). Buttons are hidden where it isn't available.
+const CAN_SPEAK = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+let speakingBtn = null, speakQueue = 0;
+const FRACTION_NAMES = { 2: ['half', 'halves'], 3: ['third', 'thirds'], 4: ['fourth', 'fourths'], 5: ['fifth', 'fifths'], 6: ['sixth', 'sixths'], 8: ['eighth', 'eighths'], 10: ['tenth', 'tenths'], 12: ['twelfth', 'twelfths'], 100: ['hundredth', 'hundredths'] };
+let EMOJI_RE = /[\u2600-\u27BF\u2B00-\u2BFF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
+try { EMOJI_RE = new RegExp('\\p{Extended_Pictographic}|\\uFE0F', 'gu'); } catch (e) {}
+function fracWords(n, d) { const f = FRACTION_NAMES[d]; return f ? `${n} ${Number(n) === 1 ? f[0] : f[1]}` : `${n} over ${d}`; }
+function speechText(t) {
+  return String(t)
+    .replace(/(\d+) (\d+)\/(\d+)/g, (m, w, n, d) => `${w} and ${fracWords(n, d)}`)
+    .replace(/(\d+)\/(\d+)/g, (m, n, d) => fracWords(n, d))
+    .replace(/×/g, ' times ').replace(/÷/g, ' divided by ').replace(/−/g, ' minus ').replace(/ = /g, ' equals ').replace(/ \+ /g, ' plus ')
+    .replace(/ > /g, ' is greater than ').replace(/ < /g, ' is less than ').replace(/→/g, ', then ').replace(/°F/g, ' degrees Fahrenheit').replace(/°/g, ' degrees')
+    .replace(EMOJI_RE, '').replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
+}
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices().filter(v => /^en[-_]US/i.test(v.lang));
+    return vs.find(v => /Samantha|Google US English|Aria|Jenny|Ava/i.test(v.name)) || vs[0] || null;
+  } catch (e) { return null; }
+}
+function resetSpeakBtn() {
+  if (speakingBtn) { speakingBtn.textContent = speakingBtn.dataset.idle; speakingBtn.classList.remove('tool-on'); speakingBtn.setAttribute('aria-pressed', 'false'); }
+  speakingBtn = null;
+}
+function stopSpeech() {
+  if (!CAN_SPEAK) return;
+  speakQueue++;
+  try { speechSynthesis.cancel(); } catch (e) {}
+  resetSpeakBtn();
+}
+function speak(text, btn) {
+  stopSpeech();
+  const run = ++speakQueue;
+  // Short chunks: some browsers stop reading long passages part-way through
+  const chunks = speechText(text).match(/[^.!?]+[.!?]*\s*/g) || [];
+  if (!chunks.length) return;
+  speakingBtn = btn;
+  if (btn) { btn.textContent = btn.dataset.stop; btn.classList.add('tool-on'); btn.setAttribute('aria-pressed', 'true'); }
+  const voice = pickVoice();
+  chunks.forEach((c, i) => {
+    const u = new SpeechSynthesisUtterance(c.trim());
+    u.rate = 0.92; u.pitch = 1.05; u.lang = 'en-US'; if (voice) u.voice = voice;
+    if (i === chunks.length - 1) u.onend = () => { if (run === speakQueue) resetSpeakBtn(); };
+    u.onerror = () => { if (run === speakQueue) resetSpeakBtn(); };
+    try { speechSynthesis.speak(u); } catch (e) { resetSpeakBtn(); }
+  });
+}
+function speakButton(textFn, small) {
+  if (!CAN_SPEAK) return null;
+  const b = el('button', 'tool speak-btn' + (small ? ' tool-sm' : ''));
+  b.type = 'button';
+  b.dataset.idle = small ? '🔊' : '🔊 Read to me';
+  b.dataset.stop = small ? '⏹' : '⏹ Stop';
+  b.textContent = b.dataset.idle;
+  b.setAttribute('aria-label', small ? 'Read aloud' : 'Read this aloud');
+  b.setAttribute('aria-pressed', 'false');
+  b.onclick = () => { if (speakingBtn === b) stopSpeech(); else speak(textFn(), b); };
+  return b;
+}
+
+// ===================== "EXPLAIN IT ANOTHER WAY" =====================
+function extraFor(key, ui, li) { return EXTRA[lessonId(key, ui, li)] || {}; }
+function conceptTools(i, st) {
+  const { key, ui, li } = lessonCtx;
+  const more = (extraFor(key, ui, li).more || [])[i];
+  const bar = el('div', 'mt-3 flex flex-wrap gap-2');
+  const box = el('div', 'hidden'); box.id = 'explain-box';
+  const sp = speakButton(() => st.t + '. ' + st.teach.join(' ') + (lessonCtx.more[i] && more ? ' Here is another way to think about it. ' + more : ''));
+  if (sp) bar.appendChild(sp);
+  if (more) {
+    const b = el('button', 'tool'); b.type = 'button'; b.id = 'explain-btn';
+    const say = sayBox(more, 'w-14 h-14');
+    const bub = say.querySelector('.bubble');
+    bub.insertBefore(el('p', 'text-xs font-black uppercase tracking-wider text-sky-700 mb-1', 'Another way to think about it'), bub.firstChild);
+    box.appendChild(say);
+    const sync = () => {
+      const on = !!lessonCtx.more[i];
+      b.textContent = on ? '🦉 Hide the other way' : '🦉 Explain it another way';
+      b.classList.toggle('tool-on', on); b.setAttribute('aria-expanded', String(on));
+      box.className = on ? 'mt-4 animate-pop-in' : 'hidden';
+    };
+    b.onclick = () => { lessonCtx.more[i] = !lessonCtx.more[i]; sync(); };
+    bar.appendChild(b); sync();
+  }
+  return { bar, box };
+}
+
+// ===================== PRACTICE LAB =====================
+function newActivity(a) {
+  const st = { a, done: false, mistakes: 0, msg: '', bad: [] };
+  const idx = arr => arr.map((_, i) => i);
+  if (a.k === 'sort') { st.items = shuffle(idx(a.items)); st.place = {}; st.ok = {}; st.sel = null; }
+  if (a.k === 'order') { do { st.pool = shuffle(idx(a.items)); } while (a.items.length > 1 && st.pool.every((v, i) => v === i)); st.next = 0; }
+  if (a.k === 'match') { do { st.right = shuffle(idx(a.pairs)); } while (a.pairs.length > 1 && st.right.every((v, i) => v === i)); st.matched = {}; st.selL = null; st.selR = null; st.count = 0; }
+  return st;
+}
+function newLab(key, ui, li) {
+  const ex = extraFor(key, ui, li), l = subj(key).units[ui].lessons[li];
+  return {
+    star: false,
+    act: ex.act ? newActivity(ex.act) : null,
+    vocab: newActivity({ k: 'match', prompt: 'Tap a word, then tap its meaning.', pairs: l.vocab.slice(0, 5) }),
+    mc: key === 'math' ? [] : (ex.practice || []).map(newCheck),
+    math: key === 'math' && MATHGEN[lessonId(key, ui, li)] ? newMathSet(lessonId(key, ui, li)) : null,
+    bestMath: 0, sets: 0
+  };
+}
+function mergeLab(a, b) {
+  if (!a) return b ? Object.assign({}, b) : undefined;
+  if (!b) return a;
+  return { act: Math.max(a.act || 0, b.act || 0), vocab: Math.max(a.vocab || 0, b.vocab || 0), pr: Math.max(a.pr || 0, b.pr || 0), pn: 5, sets: (a.sets || 0) + (b.sets || 0) > 0 ? Math.max(a.sets || 0, b.sets || 0) : 0, at: Math.max(a.at || 0, b.at || 0) };
+}
+function labIsComplete(rec, id) { return !!rec && (rec.act || !(EXTRA[id] || {}).act) && rec.pr >= 4; }
+function labPracticeRight() { const L = lessonCtx.lab; return L.math ? L.bestMath : L.mc.filter(c => c.first).length; }
+
+// Called after every activity or practice answer: saves progress and awards the Lab star
+function labUpdate() {
+  const L = lessonCtx.lab, { key, ui, li } = lessonCtx, id = lessonId(key, ui, li);
+  const pr = labPracticeRight();
+  const rec = { act: L.act && L.act.done ? 1 : 0, vocab: L.vocab.done ? 1 : 0, pr, pn: 5, sets: L.sets, at: Date.now() };
+  const p = prog(); p.lab[id] = mergeLab(p.lab[id], rec); saveStore();
+  if (!L.star && (!L.act || L.act.done) && pr >= 4) {
+    L.star = true;
+    const s = $('lab-status');
+    if (s) { const pop = el('span', 'star-pop text-2xl', '+1 ⭐'); s.appendChild(pop); setTimeout(() => pop.remove(), 1300); }
+    showToast('Practice Lab star earned! ⭐');
+  }
+  renderLabStatus(); renderProgress();
+}
+function renderLabStatus() {
+  const box = $('lab-status'); if (!box) return;
+  const L = lessonCtx.lab;
+  box.innerHTML = '';
+  box.style.background = L.star ? '#bbf7d0' : '#fef9c3';
+  box.appendChild(el('p', 'text-xs font-black uppercase tracking-wider', L.star ? '⭐ Practice Lab star earned!' : '⭐ Earn the Practice Lab star'));
+  const ul = el('ul', 'mt-1 space-y-0.5 text-sm font-bold');
+  const item = (ok, text) => { const li = el('li', 'flex gap-2'); li.appendChild(el('span', '', ok ? '✅' : '⬜')); li.appendChild(el('span', '', text)); ul.appendChild(li); };
+  if (L.act) item(L.act.done, 'Finish the hands-on activity');
+  item(labPracticeRight() >= 4, L.math ? `Get 4 of 5 problems right on the first try (best: ${L.bestMath} of 5)` : `Get 4 of 5 practice questions right on the first try (${labPracticeRight()} so far)`);
+  box.appendChild(ul);
+  const st = el('span', 'sr-only'); st.setAttribute('aria-live', 'polite'); st.textContent = L.star ? 'Practice Lab star earned' : ''; box.appendChild(st);
+}
+
+function renderLab(stage) {
+  const L = lessonCtx.lab;
+  stage.appendChild(sayBox(L.math ? 'Welcome to the Practice Lab! Try the hands-on activity, solve fresh problems (tap “New problems” for as many as you like), then play the word match.' : 'Welcome to the Practice Lab! Try the hands-on activity, then the practice questions and the word match.'));
+  const status = el('div', 'mt-5 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 relative'); status.id = 'lab-status';
+  stage.appendChild(status); renderLabStatus();
+  const sec = (icon, title, sub) => {
+    const h = el('h3', 'mt-8 fun text-xl font-bold', `${icon} ${title}`); stage.appendChild(h);
+    if (sub) stage.appendChild(el('p', 'text-sm font-bold text-indigo-900/70', sub));
+  };
+  if (L.act) {
+    sec('🧩', 'Hands-on activity', L.act.a.prompt);
+    const box = el('div', 'mt-3'); box.id = 'lab-act'; stage.appendChild(box);
+    renderActivity(box, L.act, labUpdate);
+  }
+  if (L.math) {
+    sec('🔢', 'Practice problems', 'Type your answer and tap Check. Stuck? Tap “Show me how.”');
+    const box = el('div', 'mt-3'); box.id = 'lab-math'; stage.appendChild(box);
+    renderMathSet(box);
+  } else if (L.mc.length) {
+    sec('✏️', 'Practice questions', 'New questions to practice what you learned.');
+    const box = el('div'); box.id = 'lab-practice'; stage.appendChild(box);
+    L.mc.forEach((ck, k) => renderCheckBlock(box, ck, `✏️ Practice ${k + 1} of ${L.mc.length}`, { star: false, bg: '#ffffff', onResolve: labUpdate }));
+  }
+  if (L.vocab.a.pairs.length > 1) {
+    sec('📖', 'Word match (bonus)', L.vocab.a.prompt);
+    const box = el('div', 'mt-3'); box.id = 'lab-vocab'; stage.appendChild(box);
+    renderActivity(box, L.vocab, labUpdate);
+  }
+}
+
+// ---- activities: sort, order, match ----
+function renderActivity(box, st, onDone) {
+  box.innerHTML = '';
+  ({ sort: renderSortAct, order: renderOrderAct, match: renderMatchAct })[st.a.k](box, st, () => { renderActivity(box, st, onDone); }, onDone);
+  if (st.msg) {
+    const m = el('p', 'mt-3 rounded-2xl border-[3px] border-indigo-950 px-4 py-2.5 font-bold leading-snug', st.msg);
+    m.style.background = st.done ? '#bbf7d0' : '#fecdd3'; m.setAttribute('aria-live', 'polite');
+    box.appendChild(m);
+  }
+  if (st.done) {
+    const again = el('button', 'tool mt-3', '🔁 Try it again'); again.type = 'button';
+    again.onclick = () => { const fresh = newActivity(st.a); Object.keys(st).forEach(k => delete st[k]); Object.assign(st, fresh); renderActivity(box, st, onDone); };
+    box.appendChild(again);
+  }
+  st.bad = [];
+}
+function finishAct(st, onDone, text) {
+  st.done = true;
+  st.msg = (st.mistakes === 0 ? '🎉 Perfect, no mistakes! ' : `🎉 You did it! (${st.mistakes} ${st.mistakes === 1 ? 'try' : 'tries'} to fix along the way) `) + (text || '');
+  onDone();
+}
+function tileEl(text, cls) { const b = el('button', 'tile ' + (cls || '')); b.type = 'button'; b.appendChild(el('span', 'min-w-0', text)); return b; }
+
+function renderSortAct(box, st, redraw, onDone) {
+  const a = st.a;
+  const tray = st.items.filter(i => st.place[i] === undefined);
+  if (tray.length) {
+    box.appendChild(el('p', 'text-xs font-black uppercase tracking-wider mb-2', st.sel === null ? 'Tap a card…' : '…now tap the box it belongs in'));
+    const g = el('div', 'grid gap-2 sm:grid-cols-2'); g.setAttribute('data-role', 'tray');
+    tray.forEach(i => {
+      const t = tileEl(a.items[i][0], (st.sel === i ? 'tile-sel ' : '') + (st.bad.includes(i) ? 'tile-bad' : ''));
+      t.setAttribute('aria-pressed', String(st.sel === i)); t.dataset.item = i;
+      t.onclick = () => { st.sel = st.sel === i ? null : i; st.msg = ''; redraw(); };
+      g.appendChild(t);
+    });
+    box.appendChild(g);
+  }
+  const bins = el('div', 'mt-4 grid gap-3'); bins.style.gridTemplateColumns = `repeat(auto-fit, minmax(${a.bins.length === 3 ? 190 : 130}px, 1fr))`;
+  a.bins.forEach((name, bi) => {
+    const bin = el('div', 'bin' + (st.sel !== null ? ' bin-ready' : ''));
+    const head = el('button', 'w-full text-center text-sm font-black uppercase tracking-wider mb-2 cursor-pointer', (st.sel !== null ? '⬇ ' : '') + name); head.type = 'button';
+    head.dataset.bin = bi; head.setAttribute('aria-label', `Put the card in ${name}`);
+    const drop = () => {
+      if (st.done) return;
+      if (st.sel === null) { showToast('Tap a card first, then tap a box.'); return; }
+      st.place[st.sel] = bi; st.sel = null; st.msg = ''; redraw();
+    };
+    head.onclick = drop;
+    bin.onclick = e => { if (!e.target.closest('button')) drop(); };
+    bin.appendChild(head);
+    const list = el('div', 'space-y-2');
+    st.items.filter(i => st.place[i] === bi).forEach(i => {
+      const ok = st.ok[i];
+      const t = tileEl((ok ? '✓ ' : '') + a.items[i][0], ok ? 'tile-ok text-sm' : 'tile-placed text-sm' + (st.sel === i ? ' tile-sel' : ''));
+      t.disabled = !!ok || st.done;
+      t.onclick = () => { delete st.place[i]; st.sel = null; redraw(); };
+      if (!ok) t.setAttribute('aria-label', `${a.items[i][0]} (tap to take it back out)`);
+      list.appendChild(t);
+    });
+    bin.appendChild(list);
+    bins.appendChild(bin);
+  });
+  box.appendChild(bins);
+  if (!st.done) {
+    const all = tray.length === 0;
+    const chk = el('button', 'btn btn-go mt-4 w-full px-5 py-3 text-base', all ? 'Check my sorting ✓' : `Place all the cards to check (${a.items.length - tray.length}/${a.items.length})`);
+    chk.type = 'button'; chk.disabled = !all; chk.dataset.role = 'check';
+    chk.onclick = () => {
+      let wrong = 0;
+      st.items.forEach(i => { if (st.place[i] === a.items[i][1]) st.ok[i] = true; else { delete st.place[i]; wrong++; st.bad.push(i); } });
+      if (!wrong) finishAct(st, onDone, 'Every card is in the right box.');
+      else { st.mistakes += wrong; st.msg = `${a.items.length - wrong} right! ${wrong} card${wrong === 1 ? '' : 's'} went back to the top. Try again!`; }
+      redraw();
+    };
+    box.appendChild(chk);
+  }
+}
+
+function renderOrderAct(box, st, redraw, onDone) {
+  const a = st.a;
+  const ol = el('ol', 'space-y-2'); ol.setAttribute('data-role', 'answer');
+  for (let k = 0; k < st.next; k++) {
+    const li = el('li', 'tile tile-ok');
+    const n = el('span', 'w-7 h-7 rounded-full border-2 border-indigo-950 bg-white shrink-0 flex items-center justify-center fun font-bold text-sm', String(k + 1));
+    li.appendChild(n); li.appendChild(el('span', 'min-w-0', a.items[k])); ol.appendChild(li);
+  }
+  if (st.next) box.appendChild(ol);
+  const left = st.pool.filter(i => i >= st.next);
+  if (left.length) {
+    box.appendChild(el('p', 'text-xs font-black uppercase tracking-wider mt-3 mb-2', st.next === 0 ? 'Tap the one that comes first' : `What comes next? (#${st.next + 1})`));
+    const g = el('div', 'grid gap-2 sm:grid-cols-2'); g.setAttribute('data-role', 'pool');
+    left.forEach(i => {
+      const t = tileEl(a.items[i], st.bad.includes(i) ? 'tile-bad' : ''); t.dataset.item = i;
+      t.onclick = () => {
+        if (i === st.next) { st.next++; st.msg = ''; if (st.next === a.items.length) finishAct(st, onDone, 'Everything is in the right order.'); }
+        else { st.mistakes++; st.bad = [i]; st.msg = 'Not quite! That one comes later. What happens before it?'; }
+        redraw();
+      };
+      g.appendChild(t);
+    });
+    box.appendChild(g);
+  }
+}
+
+const MATCH_COLORS = ['#fde68a', '#bfdbfe', '#fbcfe8', '#ddd6fe', '#bbf7d0', '#fed7aa'];
+function renderMatchAct(box, st, redraw, onDone) {
+  const a = st.a;
+  const grid = el('div', 'grid gap-2 items-start'); grid.style.gridTemplateColumns = 'minmax(0, 2fr) minmax(0, 3fr)';
+  const colL = el('div', 'space-y-2'), colR = el('div', 'space-y-2');
+  colL.setAttribute('data-role', 'left'); colR.setAttribute('data-role', 'right');
+  const tag = (t, n) => { const b = el('span', 'w-6 h-6 rounded-full border-2 border-indigo-950 shrink-0 flex items-center justify-center fun font-bold text-xs', String(n)); b.style.background = '#fff'; t.insertBefore(b, t.firstChild); };
+  const tryPair = () => {
+    if (st.selL === null || st.selR === null) return;
+    if (st.selL === st.selR) { st.matched[st.selL] = ++st.count; st.msg = ''; if (st.count === a.pairs.length) finishAct(st, onDone, 'Every pair is matched.'); }
+    else { st.mistakes++; st.bad = ['L' + st.selL, 'R' + st.selR]; st.msg = 'Not a match. Try a different pair!'; }
+    st.selL = st.selR = null;
+  };
+  a.pairs.forEach(([left], i) => {
+    const m = st.matched[i];
+    const t = tileEl(left, 'text-sm ' + (m ? 'tile-ok' : st.selL === i ? 'tile-sel' : st.bad.includes('L' + i) ? 'tile-bad' : ''));
+    if (m) { tag(t, m); t.style.background = MATCH_COLORS[(m - 1) % MATCH_COLORS.length]; t.disabled = true; }
+    t.dataset.left = i; t.setAttribute('aria-pressed', String(st.selL === i));
+    t.onclick = () => { st.selL = st.selL === i ? null : i; tryPair(); redraw(); };
+    colL.appendChild(t);
+  });
+  st.right.forEach(i => {
+    const m = st.matched[i];
+    const t = tileEl(a.pairs[i][1], 'text-sm font-bold ' + (m ? 'tile-ok' : st.selR === i ? 'tile-sel' : st.bad.includes('R' + i) ? 'tile-bad' : ''));
+    if (m) { tag(t, m); t.style.background = MATCH_COLORS[(m - 1) % MATCH_COLORS.length]; t.disabled = true; }
+    t.dataset.right = i; t.setAttribute('aria-pressed', String(st.selR === i));
+    t.onclick = () => { st.selR = st.selR === i ? null : i; tryPair(); redraw(); };
+    colR.appendChild(t);
+  });
+  grid.appendChild(colL); grid.appendChild(colR);
+  box.appendChild(grid);
+}
+
+// ===================== MATH PRACTICE (fresh problems every time) =====================
+const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const nf = n => Number(n).toLocaleString('en-US');
+const money = c => '$' + (c / 100).toFixed(2);
+const PLACE_NAMES = ['ones', 'tens', 'hundreds', 'thousands', 'ten thousands'];
+const SIGNS = ['>', '<', '='];
+const signOf = (a, b) => a > b ? 0 : a < b ? 1 : 2;
+const signWords = ['is greater than', 'is less than', 'equals'];
+const fmtTime = m => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
+
+const MATHGEN = {
+  'math-u0-l0': () => pick([
+    () => { let n, s, pos, d; do { n = R(1000, 99999); s = String(n); pos = R(0, s.length - 1); d = s[pos]; } while (d === '0' || s.split(d).length !== 2);
+      const pl = s.length - 1 - pos, val = Number(d) * 10 ** pl;
+      return { q: `What is the value of the ${d} in ${nf(n)}?`, parts: [{ ans: val }], why: `The ${d} is in the ${PLACE_NAMES[pl]} place, so it is worth ${d} × ${nf(10 ** pl)} = ${nf(val)}.`, how: { k: 'pv', n: s, hl: pl } }; },
+    () => { const p = pick([10, 100, 1000]); let n; do { n = R(p === 1000 ? 1000 : 100, 9999); } while (n % p === 0);
+      const ans = Math.round(n / p) * p, dig = Math.floor(n / (p / 10)) % 10, name = { 10: 'ten', 100: 'hundred', 1000: 'thousand' }[p];
+      return { q: `Round ${nf(n)} to the nearest ${name}.`, parts: [{ ans }], why: `Look at the digit just right of the ${PLACE_NAMES[String(p).length - 1]} place: it's ${dig}. ${dig >= 5 ? '5 or more, so round up' : 'Less than 5, so round down'} to ${nf(ans)}.`, how: { k: 'nl', min: Math.floor(n / p) * p, max: Math.floor(n / p) * p + p, step: p / 10, marks: [n], labels: [Math.floor(n / p) * p, Math.floor(n / p) * p + p / 2, Math.floor(n / p) * p + p] } }; },
+    () => { const a = R(1000, 99999); const b = Math.max(1000, a + pick([-1, 1]) * pick([1, 10, 100, 1000, 10000]) * R(1, 3)); const k = signOf(a, b);
+      return { q: `Which sign makes this true?  ${nf(a)} ☐ ${nf(b)}`, choices: SIGNS, ans: k, why: `${k === 2 ? 'They are the same number.' : 'Compare from the left, place by place, until the digits are different.'} ${nf(a)} ${signWords[k]} ${nf(b)}.` }; },
+    () => { const n = R(1001, 9999), ds = String(n).split('').map(Number); let miss; do { miss = R(0, 3); } while (ds[miss] === 0);
+      const terms = ds.map((d, j) => d * 10 ** (3 - j)).filter(v => v); const missVal = ds[miss] * 10 ** (3 - miss);
+      return { q: `Fill in the missing number: ${terms.map(v => v === missVal ? '?' : nf(v)).join(' + ')} = ${nf(n)}`, parts: [{ ans: missVal }], why: `In ${nf(n)}, the ${ds[miss]} is in the ${PLACE_NAMES[3 - miss]} place, so it stands for ${nf(missVal)}.` }; }
+  ])(),
+  'math-u0-l1': () => {
+    if (R(0, 1)) { const a = R(1000, 8999), b = R(100, 9999 - a); return { q: `${nf(a)} + ${nf(b)} = ?`, parts: [{ ans: a + b }], why: `Line up the places and add from the ones, regrouping any column that makes 10 or more: ${nf(a)} + ${nf(b)} = ${nf(a + b)}.` }; }
+    const a = R(1500, 9999), b = R(100, a - 100);
+    return { q: `${nf(a)} − ${nf(b)} = ?`, parts: [{ ans: a - b }], why: `Line up the places and subtract from the ones, borrowing when the top digit is smaller: ${nf(a)} − ${nf(b)} = ${nf(a - b)}. Check by adding: ${nf(a - b)} + ${nf(b)} = ${nf(a)}.` };
+  },
+  'math-u0-l2': () => {
+    const a = R(2, 10), b = R(2, 10), skip = Array.from({ length: a }, (_, k) => (k + 1) * b).join(', ');
+    if (R(0, 3) === 0) return { q: `? × ${b} = ${a * b}`, parts: [{ ans: a }], why: `Skip-count by ${b} until you reach ${a * b}: ${skip}. That's ${a} jumps, so ${a} × ${b} = ${a * b}.` };
+    return { q: `${a} × ${b} = ?`, parts: [{ ans: a * b }], why: `${a} groups of ${b}. Skip-count by ${b}: ${skip}. So ${a} × ${b} = ${a * b}.`, how: a * b <= 50 ? { k: 'array', r: a, c: b } : null };
+  },
+  'math-u1-l0': () => {
+    if (R(0, 1)) { const a = R(12, 99), b = R(2, 9), t = a - a % 10, o = a % 10;
+      return { q: `${a} × ${b} = ?`, parts: [{ ans: a * b }], why: `Break ${a} into ${t} and ${o}: (${t} × ${b}) + (${o} × ${b}) = ${t * b} + ${o * b} = ${a * b}.` }; }
+    const a = R(11, 39), b = R(11, 19), bo = b % 10;
+    return { q: `${a} × ${b} = ?`, parts: [{ ans: a * b }], why: `Two smaller problems: ${a} × ${bo} = ${a * bo}, and ${a} × 10 = ${a * 10}. Add them: ${a * bo} + ${a * 10} = ${a * b}.` };
+  },
+  'math-u1-l1': () => {
+    const d = R(2, 9), qn = R(2, 12), r = R(0, 2) ? R(1, d - 1) : 0, n = d * qn + r;
+    return { q: `${n} ÷ ${d} = ? R ?`, note: 'Type 0 in the remainder box if nothing is left over.', parts: [{ label: 'Quotient', ans: qn }, { label: 'Remainder', pre: 'R', ans: r }],
+      why: `${d} × ${qn} = ${d * qn}. ${r ? `${n} − ${d * qn} = ${r} left over, so ${n} ÷ ${d} = ${qn} R${r}.` : `That's exactly ${n}, so ${n} ÷ ${d} = ${qn} with nothing left over (R0).`}` };
+  },
+  'math-u1-l2': () => pick([
+    () => { const a = R(2, 20), b = R(2, 9), c = R(2, 9); return { q: `${a} + ${b} × ${c} = ?`, parts: [{ ans: a + b * c }], why: `Multiply first: ${b} × ${c} = ${b * c}. Then add: ${a} + ${b * c} = ${a + b * c}.` }; },
+    () => { const a = R(2, 12), b = R(2, 9), c = R(2, 6); return { q: `(${a} + ${b}) × ${c} = ?`, parts: [{ ans: (a + b) * c }], why: `Parentheses first: ${a} + ${b} = ${a + b}. Then multiply: ${a + b} × ${c} = ${(a + b) * c}.` }; },
+    () => { const c = R(2, 9), qq = R(2, 9), b = c * qq, a = R(qq + 1, qq + 30); return { q: `${a} − ${b} ÷ ${c} = ?`, parts: [{ ans: a - qq }], why: `Divide first: ${b} ÷ ${c} = ${qq}. Then subtract: ${a} − ${qq} = ${a - qq}.` }; },
+    () => { const p = R(3, 8), k = pick([6, 8, 10, 12]), u = R(5, p * k - 5), th = pick([['packs of', 'pencils'], ['boxes of', 'crayons'], ['bags of', 'marbles'], ['sheets of', 'stickers']]);
+      return { q: `Sam has ${p} ${th[0]} ${k} ${th[1]}. He gives away ${u}. How many ${th[1]} are left?`, parts: [{ ans: p * k - u }], why: `Step 1: ${p} × ${k} = ${p * k} ${th[1]}. Step 2: ${p * k} − ${u} = ${p * k - u} left.` }; }
+  ])(),
+  'math-u2-l0': () => pick([
+    () => { const d = pick([4, 5, 6, 8, 10, 12]); let a = R(1, d - 1), b = R(1, d - 1); if (a === b) b = b === d - 1 ? b - 1 : b + 1; const k = signOf(a, b);
+      return { q: `Which sign makes this true?  ${a}/${d} ☐ ${b}/${d}`, choices: SIGNS, ans: k, why: `Same bottom numbers, so compare the tops: ${a} ${k ? '<' : '>'} ${b}. So ${a}/${d} ${signWords[k]} ${b}/${d}.`, how: { k: 'frac', bars: [[a, d, `${a}/${d}`], [b, d, `${b}/${d}`]] } }; },
+    () => { const n = R(1, 2); let d1, d2; do { d1 = pick([3, 4, 5, 6, 8]); d2 = pick([3, 4, 5, 6, 8, 10]); } while (d1 === d2 || n >= d1 || n >= d2); const k = signOf(d2, d1);
+      return { q: `Which sign makes this true?  ${n}/${d1} ☐ ${n}/${d2}`, choices: SIGNS, ans: k, why: `Same top numbers, so the smaller bottom number means bigger pieces. ${n}/${d1} ${signWords[k]} ${n}/${d2}.`, how: { k: 'frac', bars: [[n, d1, `${n}/${d1}`], [n, d2, `${n}/${d2}`]] } }; },
+    () => { const d = pick([2, 3, 4, 5]), n = R(1, d - 1), k = R(2, 4);
+      return { q: `Find the equivalent fraction: ${n}/${d} = ?/${d * k}`, parts: [{ ans: n * k, post: `/${d * k}` }], why: `${d} × ${k} = ${d * k}, so multiply the top by ${k} too: ${n} × ${k} = ${n * k}. ${n}/${d} = ${n * k}/${d * k}.`, how: { k: 'frac', bars: [[n, d, `${n}/${d}`], [n * k, d * k, `${n * k}/${d * k}`]] } }; }
+  ])(),
+  'math-u2-l1': () => pick([
+    () => { const d = pick([5, 6, 8, 10, 12]), a = R(1, d - 2), b = R(1, d - 1 - a);
+      return { q: `${a}/${d} + ${b}/${d} = ?/${d}`, parts: [{ ans: a + b, post: `/${d}` }], why: `Same bottoms: add the tops and keep the bottom. ${a} + ${b} = ${a + b}, so the answer is ${a + b}/${d}.`, how: { k: 'frac', bars: [[a, d, `${a}/${d}`], [b, d, `+ ${b}/${d}`], [a + b, d, `= ${a + b}/${d}`]] } }; },
+    () => { const d = pick([5, 6, 8, 10, 12]), a = R(2, d - 1), b = R(1, a - 1);
+      return { q: `${a}/${d} − ${b}/${d} = ?/${d}`, parts: [{ ans: a - b, post: `/${d}` }], why: `Same bottoms: subtract the tops and keep the bottom. ${a} − ${b} = ${a - b}, so the answer is ${a - b}/${d}.` }; },
+    () => { const d = pick([2, 3, 4, 5, 6, 8]), w = R(1, 4), r = R(1, d - 1), n = w * d + r;
+      return { q: `Write ${n}/${d} as a mixed number.`, parts: [{ label: 'Whole', ans: w }, { label: 'Top', ans: r, post: `/${d}` }], why: `${n} ÷ ${d} = ${w} R${r}: that's ${w} whole${w > 1 ? 's' : ''} and ${r}/${d} left over. So ${n}/${d} = ${w} ${r}/${d}.` }; },
+    () => { const k = R(2, 5), d = pick([3, 4, 5, 6, 8, 10]), a = R(1, Math.min(3, d - 1));
+      return { q: `${k} × ${a}/${d} = ?/${d}`, parts: [{ ans: k * a, post: `/${d}` }], why: `Multiply just the top: ${k} × ${a} = ${k * a}. So ${k} × ${a}/${d} = ${k * a}/${d}.` }; }
+  ])(),
+  'math-u2-l2': () => pick([
+    () => { const t = R(1, 9); let h; do { h = R(10, 99); } while (h === t * 10); const flip = R(0, 1), A = flip ? `0.${h}` : `0.${t}`, B = flip ? `0.${t}` : `0.${h}`, k = flip ? signOf(h, t * 10) : signOf(t * 10, h);
+      return { q: `Which sign makes this true?  ${A} ☐ ${B}`, choices: SIGNS, ans: k, why: `Give both numbers hundredths by adding a zero: 0.${t} = 0.${t}0. Compare ${flip ? h : t * 10} hundredths and ${flip ? t * 10 : h} hundredths, so ${A} ${signWords[k]} ${B}.` }; },
+    () => { const a = R(105, 899), b = R(105, 1400 - a);
+      return { q: `${money(a)} + ${money(b)} = ?`, parts: [{ pre: '$', ans: (a + b) / 100, dec: true }], why: `Line up the decimal points and add like whole numbers: ${money(a)} + ${money(b)} = ${money(a + b)}.` }; },
+    () => { const pay = pick([5, 10, 20]), cost = R(101, pay * 100 - 25);
+      return { q: `You pay with a $${pay} bill for a snack that costs ${money(cost)}. How much change do you get?`, parts: [{ pre: '$', ans: (pay * 100 - cost) / 100, dec: true }], why: `Subtract: $${pay}.00 − ${money(cost)} = ${money(pay * 100 - cost)}.` }; },
+    () => { const n = R(1, 99);
+      return { q: `Write ${n}/100 as a decimal.`, parts: [{ ans: n / 100, dec: true }], why: `${n} hundredths: the last digit goes in the hundredths place, so ${n}/100 = ${(n / 100).toFixed(2)}.` }; }
+  ])(),
+  'math-u3-l0': () => {
+    const CONV = [['feet', 'inches', 12], ['yards', 'feet', 3], ['pounds', 'ounces', 16], ['gallons', 'quarts', 4], ['quarts', 'pints', 2], ['kilograms', 'grams', 1000], ['meters', 'centimeters', 100], ['kilometers', 'meters', 1000], ['hours', 'minutes', 60], ['minutes', 'seconds', 60], ['liters', 'milliliters', 1000]];
+    const one = u => u === 'feet' ? 'foot' : u.slice(0, -1);
+    const t = R(0, 2);
+    if (t === 2) {
+      let s, dur, e; do { s = R(7, 10) * 60 + R(0, 11) * 5; dur = R(5, 40) * 5; e = s + dur; } while (e >= 13 * 60);
+      const H = Math.floor(dur / 60), M = dur % 60, hop = s + H * 60;
+      return { q: `A movie starts at ${fmtTime(s)} and ends at ${fmtTime(e)}. How long is it?`, parts: [{ label: 'Hours', ans: H, post: 'h' }, { label: 'Minutes', ans: M, post: 'min' }],
+        why: H ? `Hop by whole hours first: ${fmtTime(s)} to ${fmtTime(hop)} is ${H} hour${H > 1 ? 's' : ''}. Then count minutes: ${fmtTime(hop)} to ${fmtTime(e)} is ${M} minutes. Total: ${H} h ${M} min.` : `Less than an hour, so count the minutes: ${fmtTime(s)} to ${fmtTime(e)} is ${M} minutes (0 hours).` };
+    }
+    const [big, small, f] = pick(CONV), n = f >= 100 ? R(2, 9) : R(2, 12);
+    if (t === 0) return { q: `${n} ${big} = ? ${small}`, parts: [{ ans: n * f, post: small }], why: `Big unit to small unit: multiply. 1 ${one(big)} = ${f} ${small}, so ${n} × ${f} = ${nf(n * f)} ${small}.` };
+    return { q: `${nf(n * f)} ${small} = ? ${big}`, parts: [{ ans: n, post: big }], why: `Small unit to big unit: divide. 1 ${one(big)} = ${f} ${small}, so ${nf(n * f)} ÷ ${f} = ${n} ${big}.` };
+  },
+  'math-u3-l1': () => {
+    const w = R(2, 12), h = R(2, 9), t = R(0, 2);
+    if (t === 0) return { q: `A rectangle is ${w} units long and ${h} units wide. What is its area?`, parts: [{ ans: w * h, post: 'square units' }], why: `Area = length × width = ${w} × ${h} = ${w * h} square units.`, see: { k: 'area', w, h } };
+    if (t === 1) return { q: `A rectangle is ${w} units long and ${h} units wide. What is its perimeter?`, parts: [{ ans: 2 * (w + h), post: 'units' }], why: `Perimeter = add all four sides: ${w} + ${h} + ${w} + ${h} = ${2 * (w + h)} units.`, see: { k: 'area', w, h, edge: true } };
+    return { q: `A rectangle has an area of ${w * h} square units. One side is ${w} units long. How long is the other side?`, parts: [{ ans: h, post: 'units' }], why: `Area = length × width, so ${w} × ? = ${w * h}. Divide: ${w * h} ÷ ${w} = ${h} units.` };
+  },
+  'math-u3-l2': () => pick([
+    () => { let x, y; do { x = R(0, 6); y = R(0, 6); } while (!x && !y);
+      return { q: 'What are the coordinates of point P?', see: { k: 'grid', max: 6, pts: [[x, y, 'P']] }, parts: [{ label: 'x (across)', pre: '(', ans: x }, { label: 'y (up)', pre: ',', ans: y, post: ')' }], why: `Start at (0, 0). Walk across ${x} on the x-axis, then climb up ${y}. P = (${x}, ${y}).` }; },
+    () => { const names = shuffle(['🍎 Apple', '🍌 Banana', '🍇 Grapes', '🍓 Berries', '🍊 Orange', '🍑 Peach']).slice(0, 4), vals = names.map(() => R(2, 12));
+      let i, j; do { i = R(0, 3); j = R(0, 3); } while (vals[i] <= vals[j]);
+      const bare = s => s.split(' ').slice(1).join(' ');
+      if (R(0, 1)) return { q: `How many more votes did ${bare(names[i])} get than ${bare(names[j])}?`, see: { k: 'bars', items: names.map((n, k) => [n, vals[k]]), cap: 'Favorite fruit votes' }, parts: [{ ans: vals[i] - vals[j] }], why: `${bare(names[i])} got ${vals[i]} and ${bare(names[j])} got ${vals[j]}. ${vals[i]} − ${vals[j]} = ${vals[i] - vals[j]} more.` };
+      const tot = vals.reduce((a, b) => a + b, 0);
+      return { q: 'How many votes were there in all?', see: { k: 'bars', items: names.map((n, k) => [n, vals[k]]), cap: 'Favorite fruit votes' }, parts: [{ ans: tot }], why: `Add every bar: ${vals.join(' + ')} = ${tot}.` }; },
+    () => { const counts = [R(0, 3), R(1, 5), R(1, 5), R(0, 4), R(0, 3)], v = R(1, 5), tot = counts.reduce((a, b) => a + b, 0);
+      if (R(0, 1)) return { q: `The line plot shows how many books each student read. How many students read ${v} book${v > 1 ? 's' : ''}?`, see: { k: 'lplot', min: 1, max: 5, counts }, parts: [{ ans: counts[v - 1] }], why: `Count the X marks above ${v}: there ${counts[v - 1] === 1 ? 'is' : 'are'} ${counts[v - 1]}.` };
+      return { q: 'The line plot shows how many books each student read. How many students are in the plot?', see: { k: 'lplot', min: 1, max: 5, counts }, parts: [{ ans: tot }], why: `Each X is one student. Add the stacks: ${counts.join(' + ')} = ${tot}.` }; }
+  ])()
+};
+
+function newMathSet(id) {
+  const seen = new Set(), probs = [];
+  for (let tries = 0; probs.length < 5 && tries < 60; tries++) {
+    const p = MATHGEN[id](), sig = p.q + JSON.stringify(p.see || '');
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    probs.push(Object.assign(p, { tries: 0, done: false, first: false, show: false, vals: (p.parts || []).map(() => '') }));
+  }
+  return { id, probs };
+}
+function parseAnswer(v) { const s = String(v).replace(/[\s,$]/g, ''); if (!/^-?\d*\.?\d+$/.test(s)) return NaN; return Number(s); }
+function answerText(p) {
+  if (p.choices) return p.choices[p.ans];
+  const ps = p.parts;
+  if (ps[0].label === 'x (across)') return `(${ps[0].ans}, ${ps[1].ans})`;
+  return ps.map(pt => {
+    const v = pt.dec ? (pt.pre === '$' ? '$' + pt.ans.toFixed(2) : String(pt.ans)) : (pt.pre === 'R' ? 'R' : '') + nf(pt.ans);
+    return v + (pt.post ? (pt.post.startsWith('/') ? pt.post : ' ' + pt.post) : '');
+  }).join(' ');
+}
+
+function renderMathSet(box) {
+  const L = lessonCtx.lab, set = L.math;
+  box.innerHTML = '';
+  const firstRight = set.probs.filter(p => p.first).length, finished = set.probs.filter(p => p.done).length;
+  const head = el('div', 'flex flex-wrap items-center justify-between gap-2');
+  head.appendChild(el('p', 'text-sm font-extrabold tabular', `Right on the first try: ${firstRight} of ${set.probs.length} · ${finished}/${set.probs.length} done`));
+  const fresh = el('button', 'tool', '🔄 New problems'); fresh.type = 'button'; fresh.id = 'math-new';
+  fresh.onclick = () => { L.math = newMathSet(set.id); renderMathSet(box); };
+  head.appendChild(fresh);
+  box.appendChild(head);
+  if (finished === set.probs.length) {
+    const done = el('div', 'mt-3 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 font-bold'); done.style.background = firstRight >= 4 ? '#bbf7d0' : '#fef9c3';
+    done.textContent = firstRight >= 4 ? `🎉 Set complete! ${firstRight} of 5 on the first try. Tap “New problems” for more practice.` : `Set complete: ${firstRight} of 5 on the first try. Tap “New problems” and aim for 4 of 5!`;
+    box.appendChild(done);
+  }
+  set.probs.forEach((p, k) => { const c = el('div'); box.appendChild(c); renderMathProblem(c, p, k, set, box); });
+}
+function renderMathProblem(card, p, k, set, setBox) {
+  card.innerHTML = '';
+  card.className = 'mt-4 rounded-[22px] border-[3px] border-indigo-950 p-4 sm:p-5 bg-white math-prob';
+  const top = el('div', 'flex items-center justify-between gap-2');
+  top.appendChild(el('p', 'text-xs font-black uppercase tracking-wider', `Problem ${k + 1} of ${set.probs.length}`));
+  const sp = speakButton(() => p.q.replace('☐', 'blank'), true); if (sp) top.appendChild(sp);
+  card.appendChild(top);
+  card.appendChild(el('p', 'mt-1 text-xl font-extrabold leading-snug', p.q));
+  if (p.see) { const v = renderViz(p.see); v.classList.add('mt-3'); card.appendChild(v); }
+  const settle = right => {
+    p.tries++;
+    if (right) { p.done = true; p.first = p.tries === 1; }
+    else if (p.tries >= 2) { p.done = true; p.show = true; }
+    const was = (lessonCtx.lab.bestMath || 0);
+    const allDone = set.probs.every(q => q.done);
+    if (allDone) {
+      const fr = set.probs.filter(q => q.first).length;
+      if (!set.counted) { set.counted = true; lessonCtx.lab.sets++; }
+      lessonCtx.lab.bestMath = Math.max(was, fr);
+      labUpdate();
+      renderMathSet(setBox);
+      return;
+    }
+    // Running best so a strong set counts as soon as it is earned
+    lessonCtx.lab.bestMath = Math.max(was, Math.min(set.probs.filter(q => q.first).length, 5));
+    if (lessonCtx.lab.bestMath !== was || p.done) labUpdate();
+    renderMathProblem(card, p, k, set, setBox);
+    const hd = setBox.querySelector('p'); if (hd) hd.textContent = `Right on the first try: ${set.probs.filter(q => q.first).length} of ${set.probs.length} · ${set.probs.filter(q => q.done).length}/${set.probs.length} done`;
+  };
+  if (p.choices) {
+    const row = el('div', 'mt-3 grid grid-cols-3 gap-2 max-w-xs');
+    p.choices.forEach((c, ci) => {
+      const b = el('button', 'opt justify-center fun text-2xl font-bold'); b.type = 'button'; b.textContent = c; b.dataset.choice = ci;
+      b.setAttribute('aria-label', ['greater than', 'less than', 'equal to'][ci] || c);
+      if (p.done && ci === p.ans) b.classList.add('opt-right');
+      else if (p.picked && p.picked.includes(ci)) b.classList.add('opt-wrong');
+      b.disabled = p.done || (p.picked && p.picked.includes(ci));
+      b.onclick = () => { (p.picked = p.picked || []).push(ci); settle(ci === p.ans); };
+      row.appendChild(b);
+    });
+    card.appendChild(row);
+  } else {
+    const row = el('div', 'mt-3 flex flex-wrap items-end gap-2');
+    const inputs = [];
+    p.parts.forEach((pt, pi) => {
+      const wrap = el('label', 'flex flex-col gap-1');
+      if (pt.label) wrap.appendChild(el('span', 'text-[11px] font-black uppercase tracking-wider text-indigo-900/70', pt.label));
+      const line = el('span', 'flex items-center gap-1.5 fun text-xl font-bold');
+      if (pt.pre) line.appendChild(el('span', '', pt.pre));
+      const inp = el('input', 'num-in tabular' + (p.done ? (p.show ? ' num-bad' : ' num-ok') : ''));
+      inp.type = 'text'; inp.inputMode = pt.dec ? 'decimal' : 'numeric'; inp.autocomplete = 'off'; inp.enterKeyHint = 'done';
+      inp.setAttribute('aria-label', pt.label || 'Answer'); inp.value = p.done && p.show ? (pt.dec ? Number(pt.ans).toFixed(2) : String(pt.ans)) : p.vals[pi];
+      inp.disabled = p.done; inp.dataset.part = pi;
+      inp.oninput = () => { p.vals[pi] = inp.value; };
+      inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); check(); } };
+      line.appendChild(inp); inputs.push(inp);
+      if (pt.post) line.appendChild(el('span', pt.post.startsWith('/') ? '' : 'text-base', pt.post));
+      wrap.appendChild(line); row.appendChild(wrap);
+    });
+    const check = () => {
+      if (p.done) return;
+      const vals = inputs.map(i => parseAnswer(i.value));
+      if (vals.some(v => Number.isNaN(v))) { showToast('Type a number in each box first.'); const e = inputs.find(i => Number.isNaN(parseAnswer(i.value))); if (e) e.focus(); return; }
+      settle(p.parts.every((pt, pi) => Math.abs(vals[pi] - pt.ans) < 1e-9));
+    };
+    if (!p.done) { const b = el('button', 'btn btn-sun px-5 py-2.5 text-base', 'Check'); b.type = 'button'; b.dataset.role = 'check'; b.onclick = check; row.appendChild(b); }
+    card.appendChild(row);
+    if (p.note && !p.done) card.appendChild(el('p', 'mt-2 text-xs font-bold text-indigo-900/60', p.note));
+  }
+  if (p.tries) {
+    const fb = el('p', 'mt-3 rounded-2xl border-[3px] border-indigo-950 px-4 py-2.5 font-bold leading-snug'); fb.setAttribute('aria-live', 'polite');
+    if (p.done && !p.show) { fb.style.background = '#bbf7d0'; fb.textContent = p.first ? '✅ ' + CHEERS[(p.q.length) % CHEERS.length] : '✅ Correct! Nice fix.'; }
+    else if (p.done) { fb.style.background = '#fef3c7'; fb.textContent = `The answer is ${answerText(p)}.`; }
+    else { fb.style.background = '#fecdd3'; fb.textContent = 'Not quite. Check your work and try once more!'; }
+    card.appendChild(fb);
+  }
+  const how = el('div', 'mt-3');
+  if (!p.show) {
+    const hb = el('button', 'tool', '🦉 Show me how'); hb.type = 'button'; hb.dataset.role = 'how';
+    hb.onclick = () => { p.show = true; renderMathProblem(card, p, k, set, setBox); };
+    how.appendChild(hb);
+  } else {
+    const hbox = el('div', 'rounded-2xl border-[3px] border-indigo-950 p-3'); hbox.style.background = '#ecfeff';
+    hbox.appendChild(el('p', 'text-xs font-black uppercase tracking-wider text-sky-700', '🦉 How to solve it'));
+    hbox.appendChild(el('p', 'mt-1 font-bold leading-snug', p.why));
+    if (p.how) { const v = renderViz(p.how); v.classList.add('mt-3'); hbox.appendChild(v); }
+    how.appendChild(hbox);
+  }
+  card.appendChild(how);
+}
+
+// ===================== GROWN-UPS: plans, schedule and progress report =====================
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+let planWeek = null, planKey = true, lastReport = null;
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function actAnswer(a) {
+  if (!a) return '';
+  if (a.k === 'sort') return a.bins.map((b, bi) => `<b>${esc(b)}:</b> ${a.items.filter(it => it[1] === bi).map(it => esc(it[0])).join('; ')}`).join('<br>');
+  if (a.k === 'order') return a.items.map((x, i) => `${i + 1}. ${esc(x)}`).join('<br>');
+  return a.pairs.map(([x, y]) => `<b>${esc(x)}</b> = ${esc(y)}`).join('<br>');
+}
+function lessonPlanHTML(s, ui, li, withKey) {
+  const l = s.units[ui].lessons[li], t = TEACH[lessonId(s.key, ui, li)], ex = extraFor(s.key, ui, li), di = SUBJECTS.indexOf(s);
+  const q = c => `${esc(c[0])} <i>(${esc(c[1][c[2]])})</i>`;
+  let h = `<p class="meta"><b>Week ${weekOf(ui, li)}, ${DAYS[di]}</b> · Unit ${ui + 1}: ${esc(s.units[ui].title)} · About 40 minutes</p>`;
+  h += `<h4>Objective</h4><p>${esc(l.goal)}</p>`;
+  h += `<h4>Materials</h4><p>Pencil and notebook, this app on a phone, tablet or computer, and the supplies for the at-home extension below.</p>`;
+  h += `<h4>Vocabulary</h4><ul>${l.vocab.map(([w, d]) => `<li><b>${esc(w)}</b>: ${esc(d)}</li>`).join('')}</ul>`;
+  h += `<h4>Lesson flow</h4><ol class="flow">`;
+  h += `<li><b>Warm-up (5 min).</b> Read the hook together and talk about it: <i>${esc(t.hook)}</i></li>`;
+  h += `<li><b>Teach (15–20 min).</b> Work through each concept in the app. Read it aloud (or tap 🔊), study the picture together, then answer the quick check.<ol type="a">`;
+  t.steps.forEach((st, i) => {
+    h += `<li><b>${esc(st.t)}${/[.?!]$/.test(st.t) ? '' : '.'}</b> ${esc(st.teach.join(' '))}`;
+    if (ex.more && ex.more[i]) h += `<br><span class="muted"><b>If it doesn't click:</b> ${esc(ex.more[i])}</span>`;
+    h += `<br><span class="muted"><b>Quick check:</b> ${esc(st.check[0])}</span></li>`;
+  });
+  h += `</ol></li>`;
+  h += `<li><b>Practice Lab (10 min).</b> ${ex.act ? 'Hands-on activity: ' + esc(ex.act.prompt) + ' ' : ''}${s.key === 'math' ? 'Then solve 5 fresh practice problems (new ones every time) and aim for 4 of 5 on the first try.' : 'Then answer 5 practice questions and aim for 4 of 5 on the first try.'} Bonus: match the vocabulary words.</li>`;
+  h += `<li><b>Wrap-up (5 min).</b> Review the big ideas:<ul>${l.ideas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>Worked example: ${esc(l.ex)}<br>Lesson challenge: ${esc(l.tryIt[0])}</li>`;
+  h += `<li><b>Extension / at home.</b> ${esc(t.doIt)} <span class="muted">Fun fact: ${esc(t.fun)}</span></li>`;
+  h += `</ol>`;
+  if (withKey) {
+    h += `<div class="key avoid"><h4>Answer key</h4>`;
+    h += `<p><b>Quick checks:</b></p><ol>${t.steps.map(st => `<li>${q(st.check)}</li>`).join('')}</ol>`;
+    if (ex.act) h += `<p><b>Activity:</b><br>${actAnswer(ex.act)}</p>`;
+    if (ex.practice) h += `<p><b>Practice questions:</b></p><ol>${ex.practice.map(c => `<li>${q(c)}</li>`).join('')}</ol>`;
+    else if (s.key === 'math') h += `<p><b>Practice problems:</b> generated fresh each time; the app checks every answer and shows how to solve it.</p>`;
+    h += `<p><b>Lesson challenge:</b> ${q(l.tryIt)}</p></div>`;
+  }
+  return h;
+}
+function weekGlanceHTML(w) {
+  const ui = Math.floor((w - 1) / 3), li = (w - 1) % 3;
+  return `<table class="ptable glance"><thead><tr><th>Day</th><th>Subject</th><th>Lesson</th></tr></thead><tbody>${SUBJECTS.map((s, i) => `<tr><td>${DAYS[i]}</td><td>${SUBJ[s.key].e} ${esc(s.name)}</td><td>${esc(s.units[ui].lessons[li].t)}${isDone(lessonId(s.key, ui, li)) ? ' ✓' : ''}</td></tr>`).join('')}</tbody></table>`;
+}
+function printHTML(html) {
+  $('print-area').innerHTML = html;
+  try { window.print(); } catch (e) { showToast('Printing is not available here.'); }
+}
+function printWeek() {
+  const w = planWeek, ui = Math.floor((w - 1) / 3), li = (w - 1) % 3;
+  let h = `<h1>Mikey Mitchell's Lesson Plans · Week ${w}</h1><p class="muted">Unit ${ui + 1} · Grades 3–5 · Explorer: ${esc(learner() || '__________________')} · Printed ${esc(new Date().toLocaleDateString())}</p>`;
+  h += `<h2>Week at a glance</h2>${weekGlanceHTML(w)}<p class="muted">Every day: 20 minutes of free reading. ${li === 2 ? `After this week: take the five Unit ${ui + 1} tests at Camp (about 20 minutes each).` : ''}</p>`;
+  SUBJECTS.forEach((s, i) => { h += `<h2 class="pb">${DAYS[i]}: ${esc(s.name)} · ${esc(s.units[ui].lessons[li].t)}</h2>${lessonPlanHTML(s, ui, li, planKey)}`; });
+  printHTML(h);
+}
+
+function reportData() {
+  const rows = SUBJECTS.map(s => {
+    let lessons = 0, stars = 0, starMax = 0, labs = 0;
+    s.units.forEach((u, ui) => u.lessons.forEach((l, li) => {
+      const id = lessonId(s.key, ui, li);
+      if (isDone(id)) lessons++;
+      stars += starsOf(id); starMax += maxStars(s.key, ui, li);
+      if (labIsComplete(prog().lab[id], id)) labs++;
+    }));
+    const tests = [0, 1, 2, 3, 'final'].map(ui => { const b = bestOf(testId(s.key, ui)); return b ? `${b.c}/${b.t}${b.p ? ' ✓' : ''}` : '-'; });
+    return { s, lessons, stars, starMax, labs, tests };
+  });
+  const log = [];
+  SUBJECTS.forEach(s => s.units.forEach((u, ui) => u.lessons.forEach((l, li) => {
+    const id = lessonId(s.key, ui, li), at = prog().done[id];
+    if (at) log.push({ at: typeof at === 'number' ? at : 0, s, t: l.t, w: weekOf(ui, li), stars: starsOf(id), max: maxStars(s.key, ui, li) });
+  })));
+  log.sort((a, b) => b.at - a.at);
+  const tot = k => rows.reduce((n, r) => n + r[k], 0);
+  const badges = SUBJECTS.reduce((n, s) => n + [0, 1, 2, 3].filter(ui => (bestOf(testId(s.key, ui)) || {}).p).length, 0);
+  const trophies = SUBJECTS.filter(s => (bestOf(testId(s.key, 'final')) || {}).p).length;
+  return { name: learner(), rows, log, lessons: tot('lessons'), stars: tot('stars'), starMax: tot('starMax'), labs: tot('labs'), badges, trophies };
+}
+const dateStr = at => at ? new Date(at).toLocaleDateString() : '';
+function reportTableHTML(d) {
+  return `<table class="ptable report"><thead><tr><th>Subject</th><th>Lessons</th><th>Stars</th><th>Practice Labs</th><th>Unit 1</th><th>Unit 2</th><th>Unit 3</th><th>Unit 4</th><th>Final</th></tr></thead><tbody>${d.rows.map(r => `<tr><td><b>${SUBJ[r.s.key].e} ${esc(r.s.name)}</b></td><td>${r.lessons}/12</td><td>${r.stars}/${r.starMax}</td><td>${r.labs}/12</td>${r.tests.map(x => `<td>${esc(x)}</td>`).join('')}</tr>`).join('')}<tr><td><b>Total</b></td><td><b>${d.lessons}/60</b></td><td><b>${d.stars}/${d.starMax}</b></td><td><b>${d.labs}/60</b></td><td colspan="5"><b>${d.badges}/20 badges · ${d.trophies}/5 trophies</b></td></tr></tbody></table>`;
+}
+function logHTML(d, limit) {
+  if (!d.log.length) return '<p class="muted">No lessons finished yet.</p>';
+  const rows = d.log.slice(0, limit || d.log.length);
+  return `<table class="ptable log"><thead><tr><th>Date</th><th>Subject</th><th>Lesson</th><th>Stars</th></tr></thead><tbody>${rows.map(x => `<tr><td>${esc(dateStr(x.at))}</td><td>${esc(x.s.name)}</td><td>Week ${x.w}: ${esc(x.t)}</td><td>${x.stars}/${x.max}</td></tr>`).join('')}</tbody></table>`;
+}
+function printReport() {
+  const d = reportData();
+  printHTML(`<h1>Mikey Mitchell's Lesson Plans · Progress Report</h1><p class="muted">Explorer: ${esc(d.name || '(no name entered)')} · ${esc(new Date().toLocaleDateString())} · Grades 3–5</p>
+    <h2>Summary</h2><p>Lessons finished: <b>${d.lessons} of 60</b> · Stars: <b>${d.stars} of ${d.starMax}</b> · Practice Labs completed: <b>${d.labs} of 60</b> · Unit badges: <b>${d.badges} of 20</b> · Final trophies: <b>${d.trophies} of 5</b></p>
+    <h2>By subject</h2>${reportTableHTML(d)}<p class="muted">Test scores are the best score so far; ✓ = passed (70% or higher).</p>
+    <h2>Lesson log</h2>${logHTML(d)}`);
+}
+function buildReport() {
+  const d = reportData(), when = new Date().toLocaleString();
+  const subjLines = d.rows.map(r => `${r.s.name}: ${r.lessons}/12 lessons, ${r.stars}/${r.starMax} stars, ${r.labs}/12 labs | Tests U1 ${r.tests[0]}, U2 ${r.tests[1]}, U3 ${r.tests[2]}, U4 ${r.tests[3]}, Final ${r.tests[4]}`);
+  const logLines = d.log.map(x => `- ${dateStr(x.at)}: ${x.s.name} W${x.w} ${x.t} (${x.stars}/${x.max} stars)`);
+  const header =
+`Mikey Mitchell's Lesson Plans - Progress Report
+
+Explorer:  ${d.name}
+Date:      ${when}
+Lessons:   ${d.lessons} of 60
+Stars:     ${d.stars} of ${d.starMax}
+Labs:      ${d.labs} of 60 Practice Labs completed
+Badges:    ${d.badges} of 20 unit tests passed
+Trophies:  ${d.trophies} of 5 final exams passed
+
+By subject (best test scores, ✓ = passed):
+${subjLines.join('\n')}
+`;
+  const subject = `Progress Report: ${d.name} - ${d.lessons}/60 lessons - ${new Date().toLocaleDateString()}`;
+  const fullBody = header + `\nLesson log (${d.log.length}):\n` + (logLines.join('\n') || 'No lessons finished yet.');
+  const prefix = `mailto:${RESULTS_EMAIL}?subject=${mailEncode(subject)}&body=`;
+  const draftWith = c => header + `\nRecent lessons:\n` + (logLines.slice(0, c).join('\n') || 'None yet') + (c < logLines.length ? `\n...and ${logLines.length - c} more` : '');
+  let draft = header;
+  for (let c = Math.min(logLines.length, 12); c >= 0; c--) { const t = draftWith(c); if ((prefix + mailEncode(t)).length <= MAILTO_MAX_LENGTH) { draft = t; break; } }
+  if ((prefix + mailEncode(draft)).length > MAILTO_MAX_LENGTH) draft = draft.replace(/ \| Tests[^\n]*/g, '');
+  const payload = { _subject: subject, _captcha: 'false', _template: 'table', Report: 'Progress report', Name: d.name, Date: when, Lessons_Completed: `${d.lessons} of 60`, Stars: `${d.stars} of ${d.starMax}`, Practice_Labs: `${d.labs} of 60`, Badges: `${d.badges} of 20`, Trophies: `${d.trophies} of 5` };
+  d.rows.forEach((r, i) => { payload[r.s.name.replace(/&/g, 'and').replace(/[^A-Za-z0-9]+/g, '_')] = subjLines[i].slice(r.s.name.length + 2); });
+  payload.Lesson_Log = logLines.join('\n') || 'No lessons finished yet.';
+  return { subject, fullBody, mailto: prefix + mailEncode(draft), payload };
+}
+function setReportStatus(kind, text, showButtons) {
+  const b = $('report-status'); if (!b) return;
+  b.className = 'mt-4 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 text-sm font-bold';
+  b.style.background = { pending: '#f8fafc', ok: '#bbf7d0', fail: '#fde68a' }[kind];
+  b.textContent = text;
+  $('report-actions').classList.toggle('hidden', !showButtons);
+}
+async function emailReport() {
+  if (!learner()) { setReportStatus('fail', "Type the explorer's name at the top of the page and tap Save first, so the report shows who it's for.", false); $('learner-name').focus(); return; }
+  const mail = buildReport();
+  lastReport = mail;
+  $('report-mail').href = mail.mailto;
+  setReportStatus('pending', `Sending the progress report to ${RESULTS_NAME}...`, false);
+  const fail = () => { if (lastReport === mail) setReportStatus('fail', `The report could not be sent automatically. Tap "Email report to ${RESULTS_NAME}" below, then tap Send in your mail app.`, true); };
+  if (location.protocol === 'file:') return fail();
+  try {
+    const res = await fetch(FORM_ENDPOINT, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(mail.payload) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || String(data.success) !== 'true') throw new Error(data.message || 'error ' + res.status);
+    if (lastReport === mail) setReportStatus('ok', `The progress report was sent to ${RESULTS_NAME} automatically.`, false);
+  } catch (e) { fail(); }
+}
+function copyReport() {
+  if (!lastReport) return;
+  const text = `To: ${RESULTS_EMAIL}\nSubject: ${lastReport.subject}\n\n${lastReport.fullBody}`;
+  const fallback = () => {
+    try {
+      const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px;';
+      document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+      document.execCommand('copy'); document.body.removeChild(ta); showToast('Report copied!');
+    } catch (e) {}
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => showToast('Report copied!')).catch(fallback);
+  else fallback();
+}
+
+function renderParents() {
+  const pv = $('parents-view'); pv.innerHTML = '';
+  const cur = currentWeek();
+  if (planWeek === null) planWeek = Math.min(Math.max(cur, 1), WEEKS);
+  const card = (icon, title, sub) => {
+    const c = el('div', 'card p-5 sm:p-7'); c.appendChild(el('h3', 'fun text-2xl font-bold', `${icon} ${title}`));
+    if (sub) c.appendChild(el('p', 'text-sm font-semibold text-indigo-900/70 mt-1', sub));
+    pv.appendChild(c); return c;
+  };
+
+  // How to use
+  const how = card('👪', 'For grown-ups', 'A complete homeschool curriculum for grades 3–5: 60 lessons in 5 subjects over 12 weeks, with 20 unit tests and 5 final exams.');
+  const ul = el('ul', 'mt-4 grid gap-3 sm:grid-cols-2');
+  [['📅', 'One lesson a day', 'Each lesson takes about 35–45 minutes: a warm-up, 3–4 short concepts with a quick check, a Practice Lab and a wrap-up challenge.'],
+   ['🔓', 'Every week is open', 'Follow the map in order or jump to any week to match what your child is learning. Scout the Owl marks the suggested next stop.'],
+   ['🔊', 'Read aloud and re-explain', 'Tap 🔊 to hear any concept or question read aloud. Tap 🦉 “Explain it another way” when something doesn\'t click.'],
+   ['🧪', 'Practice Lab', 'Sorting, ordering and matching activities, a word match and practice questions. Math makes fresh problems every time.'],
+   ['🏅', 'Tests and results', 'After every third week, take the 5 unit tests at Camp. After Week 12, take the finals. Results are emailed to Mikey automatically.'],
+   ['💾', 'Saved progress', 'Progress is saved on this device under the explorer\'s name. Use the same device and name each day.']
+  ].forEach(([i, t, d]) => {
+    const li = el('li', 'card-soft p-3 flex gap-3');
+    li.appendChild(el('span', 'text-2xl shrink-0', i));
+    const tx = el('div', 'min-w-0'); tx.appendChild(el('p', 'font-black leading-tight', t)); tx.appendChild(el('p', 'text-sm font-semibold text-indigo-900/75 leading-snug mt-0.5', d)); li.appendChild(tx);
+    ul.appendChild(li);
+  });
+  how.appendChild(ul);
+
+  // Weekly schedule
+  const sch = card('📅', 'Weekly schedule', 'One subject a day keeps each day focused. Adjust to fit your family.');
+  const tw = el('div', 'mt-4 grid gap-2 sm:grid-cols-2'); tw.id = 'schedule-list';
+  const rows = SUBJECTS.map((s, i) => [DAYS[i], `${SUBJ[s.key].e} ${s.name}`, 'Today\'s lesson in the app (about 40 min), then 20 minutes of free reading'])
+    .concat([['Weekend', '🏠 Try it at home', 'Pick one or two “Try it at home” activities from the week (they\'re in each lesson plan)'],
+             ['Weeks 3, 6, 9, 12', '⛺ Unit tests', 'After finishing the week, take the 5 unit tests at Camp (about 20 minutes each, one or two a day)'],
+             ['After Week 12', '🏔️ Final exams', 'One final exam per subject at the Summit (25 questions, 35 minutes)']]);
+  rows.forEach(([when, what, todo], i) => {
+    const r = el('div', 'rounded-2xl border-[3px] border-indigo-950 px-3 py-2.5');
+    r.style.background = i < SUBJECTS.length ? SUBJ[SUBJECTS[i].key].soft : '#f8fafc';
+    r.appendChild(el('p', 'text-[11px] font-black uppercase tracking-wider text-indigo-900/70', when));
+    r.appendChild(el('p', 'font-extrabold leading-tight', what));
+    r.appendChild(el('p', 'mt-0.5 text-sm font-semibold text-indigo-900/75 leading-snug', todo));
+    tw.appendChild(r);
+  });
+  sch.appendChild(tw);
+
+  // Lesson plans
+  const plans = card('🗓️', 'Lesson plans', 'Day-by-day plans with objectives, vocabulary, the teaching flow, extension activities and answer keys.');
+  const ctr = el('div', 'mt-4 flex flex-wrap items-end gap-3');
+  const wl = el('label', 'flex flex-col gap-1'); wl.appendChild(el('span', 'text-xs font-black uppercase tracking-wider', 'Week'));
+  const sel = el('select', 'px-3 py-2.5 rounded-2xl border-[3px] border-indigo-950 bg-white font-extrabold text-base'); sel.id = 'plan-week';
+  for (let w = 1; w <= WEEKS; w++) { const o = el('option', '', `Week ${w}${w === cur ? ' (current)' : ''}`); o.value = w; if (w === planWeek) o.selected = true; sel.appendChild(o); }
+  sel.onchange = () => { planWeek = Number(sel.value); renderParents(); const pl = $('plan-list'); if (pl) pl.scrollIntoView({ block: 'nearest' }); };
+  wl.appendChild(sel); ctr.appendChild(wl);
+  const kl = el('label', 'flex items-center gap-2 font-extrabold text-sm py-2.5 cursor-pointer');
+  const kb = el('input', 'w-5 h-5'); kb.type = 'checkbox'; kb.checked = planKey; kb.id = 'plan-key'; kb.onchange = () => { planKey = kb.checked; renderParents(); };
+  kl.appendChild(kb); kl.appendChild(el('span', '', 'Include answer keys')); ctr.appendChild(kl);
+  const pb = el('button', 'btn btn-sky px-4 py-2.5 text-sm', '🖨️ Print this week'); pb.type = 'button'; pb.id = 'print-week'; pb.onclick = printWeek;
+  ctr.appendChild(pb);
+  plans.appendChild(ctr);
+  const ui = Math.floor((planWeek - 1) / 3), li = (planWeek - 1) % 3;
+  const list = el('div', 'mt-4 space-y-3'); list.id = 'plan-list';
+  SUBJECTS.forEach((s, i) => {
+    const d = el('details', 'rounded-2xl border-[3px] border-indigo-950 bg-white overflow-hidden');
+    const sum = el('summary', 'flex items-center justify-between gap-2 px-4 py-3'); sum.style.background = SUBJ[s.key].soft;
+    const st = el('span', 'min-w-0');
+    st.appendChild(el('span', 'block text-[11px] font-black uppercase tracking-wider', `${DAYS[i]} · ${SUBJ[s.key].e} ${s.name}`));
+    st.appendChild(el('span', 'block font-extrabold leading-snug', s.units[ui].lessons[li].t));
+    sum.appendChild(st);
+    const chev = el('span', 'chev fun text-xl shrink-0', '›'); chev.setAttribute('aria-hidden', 'true'); sum.appendChild(chev);
+    d.appendChild(sum);
+    const body = el('div', 'plan px-4 pb-4 pt-2'); body.innerHTML = lessonPlanHTML(s, ui, li, planKey);
+    const open = el('button', 'btn btn-sun mt-4 px-4 py-2 text-sm', `Open this lesson →`); open.type = 'button'; open.onclick = () => openLesson(s.key, ui, li);
+    body.appendChild(open);
+    d.appendChild(body);
+    list.appendChild(d);
+  });
+  plans.appendChild(list);
+
+  // Progress report
+  const d = reportData();
+  const rep = card('📊', 'Progress report', `For ${d.name || 'the explorer (add a name at the top to save progress under it)'} · updated live as lessons and tests are finished.`);
+  const sumRow = el('div', 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3');
+  sumRow.appendChild(stat('✅', 'Lessons', `${d.lessons}/60`, 'finished'));
+  sumRow.appendChild(stat('🧪', 'Labs', `${d.labs}/60`, 'completed'));
+  sumRow.appendChild(stat('🏅', 'Badges', `${d.badges}/20`, 'unit tests'));
+  sumRow.appendChild(stat('🏆', 'Trophies', `${d.trophies}/5`, 'finals'));
+  rep.appendChild(sumRow);
+  const rt = el('div', 'mt-4 grid gap-3 sm:grid-cols-2'); rt.id = 'report-table';
+  d.rows.forEach(r => {
+    const c = el('div', 'rounded-2xl border-[3px] border-indigo-950 bg-white overflow-hidden');
+    const top = el('div', 'px-3 py-2 font-extrabold border-b-[3px] border-indigo-950', `${SUBJ[r.s.key].e} ${r.s.name}`); top.style.background = SUBJ[r.s.key].soft;
+    c.appendChild(top);
+    const body = el('div', 'px-3 py-2.5');
+    body.appendChild(el('p', 'text-sm font-bold tabular', `Lessons ${r.lessons}/12 · Stars ${r.stars}/${r.starMax} · Labs ${r.labs}/12`));
+    const chips = el('div', 'mt-2 flex flex-wrap gap-1.5');
+    ['U1', 'U2', 'U3', 'U4', 'Final'].forEach((lab, k) => {
+      const x = r.tests[k], ch = el('span', 'chip tabular', `${lab} ${x}`);
+      ch.style.background = x.includes('✓') ? '#bbf7d0' : x === '-' ? '#fff' : '#fecdd3';
+      chips.appendChild(ch);
+    });
+    body.appendChild(chips); c.appendChild(body); rt.appendChild(c);
+  });
+  rep.appendChild(rt);
+  rep.appendChild(el('p', 'mt-2 text-xs font-bold text-indigo-900/60', 'Test scores show the best try; ✓ = passed. A Practice Lab counts when the activity is done and 4 of 5 practice answers were right on the first try.'));
+  rep.appendChild(el('h4', 'mt-5 fun text-lg font-bold', '📝 Lesson log'));
+  const lg = el('ul', 'mt-2 space-y-1.5'); lg.id = 'report-log';
+  if (!d.log.length) lg.appendChild(el('li', 'text-sm font-semibold text-indigo-900/70', 'No lessons finished yet.'));
+  d.log.slice(0, 15).forEach(x => {
+    const li = el('li', 'flex items-start gap-3 rounded-xl bg-slate-50 px-3 py-2 text-sm');
+    li.appendChild(el('span', 'font-black tabular shrink-0 w-20', dateStr(x.at)));
+    const mid = el('span', 'min-w-0 flex-1 font-semibold leading-snug'); mid.appendChild(el('b', '', x.s.name + ': ')); mid.appendChild(document.createTextNode(`Week ${x.w}, ${x.t}`)); li.appendChild(mid);
+    li.appendChild(el('span', 'shrink-0 font-bold tabular', `${x.stars}/${x.max} ⭐`));
+    lg.appendChild(li);
+  });
+  if (d.log.length > 15) lg.appendChild(el('li', 'text-xs font-bold text-indigo-900/60', `…and ${d.log.length - 15} more (print the report to see them all)`));
+  rep.appendChild(lg);
+  const acts = el('div', 'mt-5 flex flex-col sm:flex-row gap-3');
+  const pr = el('button', 'btn btn-white px-5 py-3 text-base', '🖨️ Print report'); pr.type = 'button'; pr.id = 'print-report'; pr.onclick = printReport;
+  const em = el('button', 'btn btn-sky px-5 py-3 text-base', `✉️ Email report to ${RESULTS_NAME}`); em.type = 'button'; em.id = 'email-report'; em.onclick = emailReport;
+  acts.appendChild(em); acts.appendChild(pr);
+  rep.appendChild(acts);
+  const status = el('div', 'hidden'); status.id = 'report-status'; status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); rep.appendChild(status);
+  const ra = el('div', 'hidden mt-3 flex flex-col sm:flex-row gap-3'); ra.id = 'report-actions';
+  const ml = el('a', 'btn btn-sky flex-1 px-5 py-3 text-base', `✉️ Email report to ${RESULTS_NAME}`); ml.id = 'report-mail'; ml.href = 'mailto:' + RESULTS_EMAIL;
+  ml.onclick = () => setReportStatus('pending', `Your mail app should now show the report addressed to ${RESULTS_NAME}. Tap Send to deliver it. If nothing opened, use "Copy report".`, true);
+  const cp = el('button', 'btn btn-white px-5 py-3 text-base', 'Copy report'); cp.type = 'button'; cp.onclick = copyReport;
+  ra.appendChild(ml); ra.appendChild(cp); rep.appendChild(ra);
+  rep.appendChild(el('p', 'mt-3 text-xs font-semibold text-indigo-900/60', `Reports go to ${RESULTS_EMAIL}.`));
+}
+
 // ===================== START =====================
 $('learner-name').addEventListener('keydown', e => { if (e.key === 'Enter') saveLearner(); });
 $('brief-name').addEventListener('keydown', e => { if (e.key === 'Enter') startTest(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDone(); } });
+if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch (e) {} }
 paintMascots();
 setLearner(store.lastName);
 renderHome();
