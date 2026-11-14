@@ -5246,19 +5246,57 @@ const FRACTION_NAMES = { 2: ['half', 'halves'], 3: ['third', 'thirds'], 4: ['fou
 let EMOJI_RE = /[\u2600-\u27BF\u2B00-\u2BFF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
 try { EMOJI_RE = new RegExp('\\p{Extended_Pictographic}|\\uFE0F', 'gu'); } catch (e) {}
 function fracWords(n, d) { const f = FRACTION_NAMES[d]; return f ? `${n} ${Number(n) === 1 ? f[0] : f[1]}` : `${n} over ${d}`; }
+// ---- choosing the most natural voice the device has ----
+// Phones and computers ship with very different voices. Downloaded "Enhanced"/"Premium" voices (Apple),
+// "Natural" voices (Microsoft Edge) and Google's voices (Chrome, Android) sound far more human than the
+// basic "compact" ones, and the joke/novelty voices sound robotic, so voices are ranked before use.
+const VOICE_KEY = STORE_KEY + '_voice';
+const VOICE_RATES = [['Slower', 0.85], ['Normal', 0.95], ['A bit faster', 1.05]];
+const NOVELTY = /eloquence|\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy|princess|deranged|hysterical|eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b|espeak/;
+let voicePrefs = { uri: '', rate: 0.95 };
+try { voicePrefs = Object.assign(voicePrefs, JSON.parse(localStorage.getItem(VOICE_KEY) || '{}')); } catch (e) {}
+function saveVoicePrefs() { try { localStorage.setItem(VOICE_KEY, JSON.stringify(voicePrefs)); } catch (e) {} }
+function voiceScore(v) {
+  const n = ((v.name || '') + ' ' + (v.voiceURI || '')).toLowerCase(), lang = (v.lang || '').replace('_', '-').toLowerCase();
+  if (!lang.startsWith('en')) return -1000;
+  let sc = lang === 'en-us' ? 30 : /^en-(gb|au|ca|ie|nz)/.test(lang) ? 20 : 10;
+  if (/premium/.test(n)) sc += 100;
+  if (/natural|neural/.test(n)) sc += 95;
+  if (/enhanced/.test(n)) sc += 80;
+  if (/siri/.test(n)) sc += 70;
+  if (/google/.test(n)) sc += 60;
+  if (v.localService === false && !/google|natural|neural/.test(n)) sc += 15;   // network voices (Android, Chrome OS) are usually smoother
+  if (/\b(ava|zoe|samantha|allison|evan|nathan|joelle|noelle|susan|aria|jenny|michelle|emma|serena|karen|moira|tessa)\b/.test(n)) sc += 10;
+  if (/compact/.test(n)) sc -= 10;
+  if (NOVELTY.test(n)) sc -= 300;
+  return sc;
+}
+function isNatural(v) { return voiceScore(v) >= 80; }
+function voiceList() {
+  try { return speechSynthesis.getVoices().filter(v => voiceScore(v) > -1000).sort((a, b) => voiceScore(b) - voiceScore(a)); } catch (e) { return []; }
+}
+function pickVoice() {
+  const vs = voiceList();
+  return (voicePrefs.uri && vs.find(v => v.voiceURI === voicePrefs.uri)) || vs[0] || null;
+}
+// Words read more naturally than symbols
 function speechText(t) {
   return String(t)
     .replace(/(\d+) (\d+)\/(\d+)/g, (m, w, n, d) => `${w} and ${fracWords(n, d)}`)
     .replace(/(\d+)\/(\d+)/g, (m, n, d) => fracWords(n, d))
+    .replace(/(\d+) ?R(\d+)\b/g, '$1 remainder $2')
     .replace(/×/g, ' times ').replace(/÷/g, ' divided by ').replace(/−/g, ' minus ').replace(/ = /g, ' equals ').replace(/ \+ /g, ' plus ')
-    .replace(/ > /g, ' is greater than ').replace(/ < /g, ' is less than ').replace(/→/g, ', then ').replace(/°F/g, ' degrees Fahrenheit').replace(/°/g, ' degrees')
+    .replace(/ > /g, ' is greater than ').replace(/ < /g, ' is less than ').replace(/→/g, ', then ').replace(/°F/g, ' degrees Fahrenheit').replace(/°C/g, ' degrees Celsius').replace(/°/g, ' degrees')
+    .replace(/☐/g, ' blank ').replace(/(\d)\s*–\s*(\d)/g, '$1 to $2').replace(/\s*[–—]\s*/g, ', ').replace(/\be\.g\./g, 'for example')
     .replace(EMOJI_RE, '').replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
 }
-function pickVoice() {
-  try {
-    const vs = speechSynthesis.getVoices().filter(v => /^en[-_]US/i.test(v.lang));
-    return vs.find(v => /Samantha|Google US English|Aria|Jenny|Ava/i.test(v.name)) || vs[0] || null;
-  } catch (e) { return null; }
+// A few sentences per piece keeps the voice's natural rise and fall (one sentence at a time sounds choppy),
+// while still staying short enough that browsers don't cut off long passages.
+function speechChunks(text) {
+  const sents = speechText(text).match(/[^.!?]+[.!?"]*\s*/g) || [];
+  const out = [];
+  sents.forEach(x => { x = x.trim(); if (!x) return; if (out.length && (out[out.length - 1] + ' ' + x).length <= 230) out[out.length - 1] += ' ' + x; else out.push(x); });
+  return out;
 }
 function resetSpeakBtn() {
   if (speakingBtn) { speakingBtn.textContent = speakingBtn.dataset.idle; speakingBtn.classList.remove('tool-on'); speakingBtn.setAttribute('aria-pressed', 'false'); }
@@ -5271,21 +5309,80 @@ function stopSpeech() {
   resetSpeakBtn();
 }
 function speak(text, btn) {
+  let busy = false;
+  try { busy = speechSynthesis.speaking || speechSynthesis.pending; } catch (e) {}
   stopSpeech();
   const run = ++speakQueue;
-  // Short chunks: some browsers stop reading long passages part-way through
-  const chunks = speechText(text).match(/[^.!?]+[.!?]*\s*/g) || [];
+  const chunks = speechChunks(text);
   if (!chunks.length) return;
   speakingBtn = btn;
   if (btn) { btn.textContent = btn.dataset.stop; btn.classList.add('tool-on'); btn.setAttribute('aria-pressed', 'true'); }
   const voice = pickVoice();
-  chunks.forEach((c, i) => {
-    const u = new SpeechSynthesisUtterance(c.trim());
-    u.rate = 0.92; u.pitch = 1.05; u.lang = 'en-US'; if (voice) u.voice = voice;
-    if (i === chunks.length - 1) u.onend = () => { if (run === speakQueue) resetSpeakBtn(); };
-    u.onerror = () => { if (run === speakQueue) resetSpeakBtn(); };
-    try { speechSynthesis.speak(u); } catch (e) { resetSpeakBtn(); }
+  const go = () => {
+    if (run !== speakQueue) return;
+    chunks.forEach((c, i) => {
+      const u = new SpeechSynthesisUtterance(c);
+      u.rate = voicePrefs.rate || 0.95; u.pitch = 1;
+      if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
+      if (i === chunks.length - 1) u.onend = () => { if (run === speakQueue) resetSpeakBtn(); };
+      u.onerror = () => { if (run === speakQueue) resetSpeakBtn(); };
+      try { speechSynthesis.speak(u); } catch (e) { resetSpeakBtn(); }
+    });
+  };
+  // Safari can drop speech that starts right after a cancel, so wait a moment if something was playing
+  if (busy) setTimeout(go, 150); else go();
+}
+// ---- Grown-ups: choose the voice and speed ----
+const VOICE_SAMPLE = "Hi! I'm Scout the Owl. Let's read and learn together. Every right answer earns you a star!";
+function renderVoiceCard(c) {
+  let body = $('voice-body');
+  if (!body) { body = el('div', 'mt-4'); body.id = 'voice-body'; c.appendChild(body); }
+  body.innerHTML = '';
+  if (!CAN_SPEAK) { body.appendChild(el('p', 'text-sm font-bold text-indigo-900/75', 'Read-aloud isn\'t available in this browser. It works in Safari on iPhone and iPad, and in Chrome or Edge on computers.')); return; }
+  const vs = voiceList();
+  if (!vs.length) { body.appendChild(el('p', 'text-sm font-bold text-indigo-900/75', 'Looking for voices on this device…')); return; }
+  const cur = pickVoice();
+  const row = el('div', 'flex flex-wrap items-end gap-3');
+  const lab = el('label', 'flex flex-col gap-1 min-w-0 flex-1'); lab.style.minWidth = '14rem';
+  lab.appendChild(el('span', 'text-xs font-black uppercase tracking-wider', 'Voice'));
+  const sel = el('select', 'w-full px-3 py-2.5 rounded-2xl border-[3px] border-indigo-950 bg-white font-extrabold text-base'); sel.id = 'voice-select';
+  const auto = el('option', '', `Automatic: ${cur ? cur.name : 'best voice'}`); auto.value = ''; sel.appendChild(auto);
+  vs.forEach(v => { const o = el('option', '', `${isNatural(v) ? '★ ' : ''}${v.name} (${v.lang})`); o.value = v.voiceURI; if (v.voiceURI === voicePrefs.uri) o.selected = true; sel.appendChild(o); });
+  sel.onchange = () => { voicePrefs.uri = sel.value; saveVoicePrefs(); speak(VOICE_SAMPLE, test); };
+  lab.appendChild(sel); row.appendChild(lab);
+  const test = el('button', 'tool speak-btn', '▶ Test voice'); test.type = 'button'; test.id = 'voice-test';
+  test.dataset.idle = '▶ Test voice'; test.dataset.stop = '⏹ Stop';
+  test.onclick = () => { if (speakingBtn === test) stopSpeech(); else speak(VOICE_SAMPLE, test); };
+  row.appendChild(test);
+  body.appendChild(row);
+  const sp = el('div', 'mt-3 flex flex-wrap items-center gap-2');
+  sp.appendChild(el('span', 'text-xs font-black uppercase tracking-wider mr-1', 'Speed'));
+  VOICE_RATES.forEach(([name, r], i) => {
+    const b = el('button', 'tool' + (Math.abs((voicePrefs.rate || 0.95) - r) < 0.01 ? ' tool-on' : ''), name); b.type = 'button'; b.id = 'voice-rate-' + i;
+    b.setAttribute('aria-pressed', String(Math.abs((voicePrefs.rate || 0.95) - r) < 0.01));
+    b.onclick = () => { voicePrefs.rate = r; saveVoicePrefs(); renderVoiceCard(c); speak(VOICE_SAMPLE, $('voice-test')); };
+    sp.appendChild(b);
   });
+  body.appendChild(sp);
+  const natural = vs.filter(isNatural).length;
+  const note = el('div', 'mt-3 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 text-sm font-bold leading-snug'); note.id = 'voice-note';
+  note.style.background = natural ? '#dcfce7' : '#fef9c3';
+  note.textContent = natural ? `★ marks the ${natural} natural-sounding voice${natural === 1 ? '' : 's'} on this device. The best one is picked automatically, or choose your favorite above.`
+    : 'This device only has basic voices, so reading may sound robotic. You can download a natural voice for free; see the steps below.';
+  body.appendChild(note);
+  const d = el('details', 'mt-3 rounded-2xl border-[3px] border-indigo-950 bg-white');
+  if (!natural) d.open = true;
+  const sum = el('summary', 'flex items-center justify-between gap-2 px-4 py-3 font-extrabold');
+  sum.appendChild(el('span', '', 'How to get a more natural voice (free)')); const ch = el('span', 'chev fun text-xl', '›'); ch.setAttribute('aria-hidden', 'true'); sum.appendChild(ch);
+  d.appendChild(sum);
+  const ul = el('ul', 'px-4 pb-4 space-y-2 text-sm font-semibold text-indigo-900/85 leading-snug');
+  [['iPhone or iPad', 'Settings → Accessibility → Spoken Content → Voices → English. Download a voice marked Enhanced or Premium (Ava, Zoe, Evan or Samantha sound great). Then reopen this page and pick it above. Siri voices can\'t be used by web pages, but these can.'],
+   ['Mac', 'System Settings → Accessibility → Spoken Content → System voice → Manage Voices. Download an Enhanced or Premium English voice, then reopen this page in Safari.'],
+   ['Windows', 'Open the lessons in Microsoft Edge. It includes very natural voices such as Aria, Jenny and Guy.'],
+   ['Android', 'Settings → Accessibility → Text-to-speech output. Choose Speech Services by Google and install the English voice data, then use Chrome.'],
+   ['Chromebook or Chrome', 'Pick “Google US English” above.']].forEach(([w, t]) => { const li = el('li'); li.appendChild(el('b', '', w + ': ')); li.appendChild(document.createTextNode(t)); ul.appendChild(li); });
+  d.appendChild(ul);
+  body.appendChild(d);
 }
 function speakButton(textFn, small) {
   if (!CAN_SPEAK) return null;
@@ -6148,6 +6245,10 @@ function renderParents() {
   block('📏 Standards', ['Each lesson plan lists the standards it supports: Common Core (math and reading/writing), NGSS (science) and the C3 Framework (history, geography and civics).', 'Homeschool rules differ from state to state, so check your state\'s requirements for subjects, hours and records. The printed plans and progress report make good records.'], '#f3e8ff');
   scope.appendChild(sc);
 
+  // Read-aloud voice
+  const vc = card('🔊', 'Read-aloud voice', 'Choose the most natural-sounding voice on this device and how fast it reads.'); vc.id = 'voice-card';
+  renderVoiceCard(vc);
+
   // Weekly schedule
   const sch = card('📅', 'Weekly schedule', 'One subject a day keeps each day focused. Adjust to fit your family.');
   const tw = el('div', 'mt-4 grid gap-2 sm:grid-cols-2'); tw.id = 'schedule-list';
@@ -6255,7 +6356,8 @@ function renderParents() {
 $('learner-name').addEventListener('keydown', e => { if (e.key === 'Enter') saveLearner(); });
 $('brief-name').addEventListener('keydown', e => { if (e.key === 'Enter') startTest(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDone(); } });
-if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch (e) {} }
+// Voices often load a moment after the page opens; refresh the voice picker when they arrive
+if (CAN_SPEAK) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => { const c = $('voice-card'); if (c) renderVoiceCard(c); }; } catch (e) {} }
 paintMascots();
 setLearner(store.lastName);
 renderHome();
