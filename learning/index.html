@@ -8635,15 +8635,14 @@ function closeDone() { $('done-modal').classList.add('hidden'); }
 let test = null, timer = null, lastBrief = null;
 
 function buildTest(key, ui) {
-  const s = subj(key);
-  let pool, title, minutes;
-  if (isFinal(ui)) {
-    pool = shuffle(termUnits(termOfFinal(ui)).flatMap(i => s.units[i].test.map(q => ({ q, unit: i })))).slice(0, FINAL_QUESTIONS);
-    title = `${s.name} ${TERMS > 1 ? `Term ${termOfFinal(ui) + 1} ` : ''}Final Exam`; minutes = FINAL_TEST_MINUTES;
-  } else {
-    pool = shuffle(s.units[ui].test.map(q => ({ q, unit: ui })));
-    title = `${s.name} · Unit ${ui + 1} Test: ${s.units[ui].title}`; minutes = UNIT_TEST_MINUTES;
-  }
+  const s = subj(key), units = isFinal(ui) ? termUnits(termOfFinal(ui)) : [ui], n = isFinal(ui) ? FINAL_QUESTIONS : 15;
+  const bank = () => shuffle(units.flatMap(i => s.units[i].test.map(q => ({ q, unit: i }))));
+  // Math problems are made new for every try (mathtest.js), so they never repeat practice or an earlier try.
+  // Other subjects draw from their question lists.
+  let pool = key === 'math' ? mathTestPool(units, n, testId(key, ui)) : bank().slice(0, n);
+  if (pool.length < n) pool = pool.concat(bank().slice(0, n - pool.length));   // safety net only
+  const title = isFinal(ui) ? `${s.name} ${TERMS > 1 ? `Term ${termOfFinal(ui) + 1} ` : ''}Final Exam` : `${s.name} · Unit ${ui + 1} Test: ${s.units[ui].title}`;
+  const minutes = isFinal(ui) ? FINAL_TEST_MINUTES : UNIT_TEST_MINUTES;
   const questions = pool.map(({ q, unit }) => {
     const order = shuffle([0, 1, 2, 3]);
     return { q: q[0], options: order.map(i => q[1][i]), answer: order.indexOf(q[2]), why: q[3], unit };
@@ -8665,6 +8664,7 @@ function openBrief(key, ui) {
   $('brief-desc').textContent = isFinal(ui)
     ? `${n} questions picked at random from ${TERMS > 1 ? `Units ${fu[0] + 1}–${fu[fu.length - 1] + 1} (Weeks ${termWeeks(ft)[0]}–${termWeeks(ft)[1]})` : `all four ${s.name} units`}. Pass to win the ${s.name} trophy!`
     : `Covers: ${s.units[ui].lessons.map(l => l.t).join(', ')}. Pass to earn the badge!`;
+  if (key === 'math') $('brief-desc').textContent += ' Every try has brand-new problems that aren’t in your practice, so work each one out.';
   const st = $('brief-stats'); st.innerHTML = '';
   st.appendChild(stat('❓', 'Questions', String(n)));
   st.appendChild(stat('⏱️', 'Time', `${mins} min`));
@@ -9501,7 +9501,7 @@ const MATHGEN = {
   'math-u3-l2': () => pick([
     () => { let x, y; do { x = R(0, 6); y = R(0, 6); } while (!x && !y);
       return { q: 'What are the coordinates of point P?', see: { k: 'grid', max: 6, pts: [[x, y, 'P']] }, parts: [{ label: 'x (across)', pre: '(', ans: x }, { label: 'y (up)', pre: ',', ans: y, post: ')' }], why: `Start at (0, 0). Walk across ${x} on the x-axis, then climb up ${y}. P = (${x}, ${y}).` }; },
-    () => { const names = shuffle(['🍎 Apple', '🍌 Banana', '🍇 Grapes', '🍓 Berries', '🍊 Orange', '🍑 Peach']).slice(0, 4), vals = names.map(() => R(2, 12));
+    () => { const names = shuffle(['🍎 Apple', '🍌 Banana', '🍇 Grapes', '🍓 Berries', '🍊 Orange', '🍑 Peach']).slice(0, 4); let vals; do { vals = names.map(() => R(2, 12)); } while (Math.max(...vals) === Math.min(...vals));   // all four bars the same would leave no "more" question
       let i, j; do { i = R(0, 3); j = R(0, 3); } while (vals[i] <= vals[j]);
       const bare = s => s.split(' ').slice(1).join(' ');
       if (R(0, 1)) return { q: `How many more votes did ${bare(names[i])} get than ${bare(names[j])}?`, see: { k: 'bars', items: names.map((n, k) => [n, vals[k]]), cap: 'Favorite fruit votes' }, parts: [{ ans: vals[i] - vals[j] }], why: `${bare(names[i])} got ${vals[i]} and ${bare(names[j])} got ${vals[j]}. ${vals[i]} − ${vals[j]} = ${vals[i] - vals[j]} more.` };
@@ -9521,6 +9521,7 @@ function newMathSet(id) {
     seen.add(sig);
     probs.push(Object.assign(p, { tries: 0, done: false, first: false, show: false, vals: (p.parts || []).map(() => '') }));
   }
+  notePractice(probs);   // so math tests never repeat a problem shown here
   return { id, probs };
 }
 function parseAnswer(v) { const s = String(v).replace(/[\s,$]/g, ''); if (!/^-?\d*\.?\d+$/.test(s)) return NaN; return Number(s); }
@@ -9692,6 +9693,7 @@ function newMixedSet(ids, weak) {
     seen.add(sig);
     probs.push(Object.assign(p, { from: id, tries: 0, done: false, first: false, show: false, vals: (p.parts || []).map(() => '') }));
   }
+  notePractice(probs);   // so math tests never repeat a problem shown here
   return { id: 'mixed', probs };
 }
 function openMathWarmup() {
@@ -9907,11 +9909,13 @@ function mergeStudent(a, b, sumGym) {
   Object.entries(b.lab || {}).forEach(([id, g]) => { a.lab[id] = mergeLab(a.lab[id], g); });
   ['miss', 'mmiss'].forEach(k => Object.entries(b[k] || {}).forEach(([h, x]) => { if (!a[k][h] || (x.at || 0) > (a[k][h].at || 0)) a[k][h] = x; }));
   Object.entries(b.tmiss || {}).forEach(([id, x]) => { if (!a.tmiss[id] || (x.at || 0) > (a.tmiss[id].at || 0)) a.tmiss[id] = x; });
+  if (b.pseen) a.pseen = (a.pseen || []).concat(b.pseen).slice(-600);   // practice problems shown (kept out of math tests)
   const ga = a.gym || { n: 0 }, gb = b.gym || { n: 0 };
   a.gym = { n: sumGym ? (ga.n || 0) + (gb.n || 0) : Math.max(ga.n || 0, gb.n || 0), last: Math.max(ga.last || 0, gb.last || 0) };
   return a;
 }
-function backupObj() { return { app: BACKUP_APP, v: 1, at: Date.now(), store: { lastName: store.lastName, students: store.students } }; }
+// The practice-shown list and last test tries only steer which new math problems are made, so they stay out of backups to keep codes short
+function backupObj() { return { app: BACKUP_APP, v: 1, at: Date.now(), store: { lastName: store.lastName, students: Object.fromEntries(Object.entries(store.students).map(([k, p]) => [k, Object.assign({}, p, { pseen: undefined, tlast: undefined })])) } }; }
 function b64encode(str) { const bytes = new TextEncoder().encode(str); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); }
 function b64decode(b64) { const bin = atob(b64); const bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
 function backupCode() { return BACKUP_PREFIX + b64encode(JSON.stringify(backupObj())); }
@@ -10269,7 +10273,7 @@ function renderParents() {
    ['🔊', 'Read aloud and re-explain', 'Tap 🔊 to hear any concept, passage or question read aloud. Tap 🦉 “Explain it another way” when something doesn\'t click. Read history and geography together with younger readers: the names and dates make them the hardest to read.'],
    ['🧪', 'Practice Lab', 'Sorting, ordering and matching activities, practice questions and a word match. Reading lessons add a passage to read, writing lessons add a writing assignment with a checklist, and math makes fresh problems every time.'],
    ['🔁', 'Built-in review', 'Every lesson starts with two warm-up questions from earlier weeks. Before each test, take the untimed 🧪 Practice quiz at Camp. Use 🔢 Daily math warm-up for 10 minutes of mixed math on the days without a math lesson.'],
-   ['🏅', 'Tests and results', 'After every third week, take the 5 unit tests at Camp. At the end of each 12-week term, take that term\'s finals at the Summit. Results are emailed to Mikey automatically, and the answer review explains every question.'],
+   ['🏅', 'Tests and results', 'After every third week, take the 5 unit tests at Camp. At the end of each 12-week term, take that term\'s finals at the Summit. Results are emailed to Mikey automatically, and the answer review explains every question. Math tests are made new on every try, with problems that never come from practice, so answers can\'t be memorized.'],
    ['💾', 'Saved progress', 'Progress is saved on this device under the explorer\'s name. Save a backup every week or two (below); it also moves progress to the Home Screen app or a new device.'],
    ['🎯', 'Needs practice', 'Questions missed on the first try come back in warm-up reviews, practice quizzes and 🎯 Tricky questions until they\'re answered right again. See them below in Skills to practice.']
   ].forEach(([i, t, d]) => {
@@ -10646,6 +10650,1092 @@ Object.assign(MATHGEN, {
     return { q: `Two boxes are stacked together. One is ${l} × ${w} × ${h} and the other is ${l2} × ${w2} × ${h2} (in unit cubes). What is their total volume?`, parts: [{ ans: V + V2, post: 'cubic units' }], why: `Find each volume and add: ${l} × ${w} × ${h} = ${V}, and ${l2} × ${w2} × ${h2} = ${V2}. ${V} + ${V2} = ${V + V2} cubic units.` };
   }
 });
+
+// ===================== MATH TESTS: brand-new problems on every try =====================
+// Math unit tests and finals don't use a fixed list of questions. Each lesson has its own question makers, written apart
+// from the practice ones, and every try fills them with new numbers, so an answer remembered from an earlier try or from
+// practice is no help. A problem is made again if it matches any lesson or practice-quiz question, any Practice Lab or
+// warm-up problem this learner has been shown, a problem the lesson's practice often gives, or a question from the
+// learner's last try at the same test.
+
+const PNAMES = ['ones', 'tens', 'hundreds', 'thousands', 'ten thousands', 'hundred thousands', 'millions'];
+const ONES_W = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS_W = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+const numWords = n => n < 20 ? ONES_W[n] : n < 100 ? TENS_W[Math.floor(n / 10)] + (n % 10 ? '-' + ONES_W[n % 10] : '') : ONES_W[Math.floor(n / 100)] + ' hundred' + (n % 100 ? ' ' + numWords(n % 100) : '');
+const fr = (n, d) => `${n}/${d}`;
+const dec = (x, p) => Number(x).toFixed(p);                          // fixed places: dec(2.5, 2) = "2.50"
+const dnum = x => String(clean(x));                                  // plain decimal: 2.50 → "2.5"
+const nd = x => clean(x).toLocaleString('en-US', { maximumFractionDigits: 6 });   // commas and decimals: 4567.8 → "4,567.8"
+const plural = (n, w) => `${nf(n)} ${w}${n === 1 ? '' : 's'}`;
+const art = w => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
+const SING = { feet: 'foot', inches: 'inch', yards: 'yard', pounds: 'pound', ounces: 'ounce', gallons: 'gallon', quarts: 'quart', hours: 'hour', minutes: 'minute', meters: 'meter', centimeters: 'centimeter' };
+const unitOf = (n, u) => `${n} ${n === 1 ? SING[u] || u : u}`;
+const pm = m => `${(Math.floor(m / 60) + 11) % 12 + 1}:${String(m % 60).padStart(2, '0')} p.m.`;
+const hm = (h, m) => [h ? `${h} hour${h > 1 ? 's' : ''}` : '', m ? `${m} minutes` : ''].filter(Boolean).join(' ') || '0 minutes';
+// Column-by-column mistakes, used as wrong answers
+const colAdd = (a, b) => { let r = 0, p = 1; while (a || b) { r += ((a % 10 + b % 10) % 10) * p; a = Math.floor(a / 10); b = Math.floor(b / 10); p *= 10; } return r; };   // forgot to carry
+const colSub = (a, b) => { let r = 0, p = 1; while (a || b) { r += Math.abs(a % 10 - b % 10) * p; a = Math.floor(a / 10); b = Math.floor(b / 10); p *= 10; } return r; };  // took the smaller digit from the bigger one
+const carries = (a, b) => { let c = 0, k = 0; while (a || b) { c = a % 10 + b % 10 + c >= 10 ? 1 : 0; k += c; a = Math.floor(a / 10); b = Math.floor(b / 10); } return k; };
+const borrows = (a, b) => { let c = 0, k = 0; while (a || b) { c = a % 10 - b % 10 - c < 0 ? 1 : 0; k += c; a = Math.floor(a / 10); b = Math.floor(b / 10); } return k; };
+const sixWithZeros = () => { for (;;) { const ds = [R(1, 9), R(0, 9), R(0, 9), R(0, 9), R(0, 9), R(1, 9)], z = ds.slice(1, 5).filter(x => !x).length; if (z >= 1 && z <= 2) return ds; } };
+const halfOf = b => b % 2 ? `${(b - 1) / 2} 1/2` : String(b / 2);
+
+// A test question: the right answer goes first (the test mixes up the order later). Repeated, empty or negative choices are
+// dropped; with fewer than 4 choices left the maker returns null and is asked again.
+function mtq(q, right, wrongs, why) {
+  const opts = [String(right)];
+  for (const w of wrongs) {
+    if (opts.length === 4) break;
+    if (w == null) continue;
+    const s = String(w);
+    if (s && !/^-|NaN|undefined|Infinity/.test(s) && !opts.includes(s)) opts.push(s);
+  }
+  return opts.length === 4 ? [q, opts, 0, why] : null;
+}
+// The same for number answers: every choice is written with f (whole numbers with commas unless f says otherwise)
+const mtn = (q, ans, wrongs, why, f = nf) => mtq(q, f(ans), wrongs.filter(w => Number.isFinite(w) && w >= 0).map(f), why);
+const degF = x => x + '°';
+
+// One or more fractions on either side of one half (a, b) with no two the same size
+function halfPicks(more, dMin, dMax) {
+  const used = [];
+  const mk = want => { let a, b; do { b = R(dMin, dMax); a = R(1, b - 1); } while (2 * a === b || (2 * a > b) !== want || gcd(a, b) !== 1 || used.some(([x, y]) => x * b === a * y)); used.push([a, b]); return [a, b]; };
+  const right = mk(more), wrongs = [mk(!more), mk(!more), mk(!more)];
+  return mtq(`Which of these fractions is ${more ? 'greater' : 'less'} than 1/2?`, fr(...right), wrongs.map(x => fr(...x)),
+    `Compare each top number with half of its bottom number. Half of ${right[1]} is ${halfOf(right[1])}, and ${right[0]} is ${more ? 'more' : 'less'} than that, so ${fr(...right)} is ${more ? 'greater' : 'less'} than 1/2. The others are on the other side of 1/2.`);
+}
+// Denominator pairs the Term 2 practice problems never use
+const PAIRS5 = [[3, 5], [2, 7], [4, 5], [3, 8], [5, 6], [2, 9], [4, 10], [3, 10], [6, 8], [4, 9], [5, 8], [6, 9]];
+const sameVal = (a, b, c, d) => a * d === b * c;
+
+const MATHTEST = {
+  // ---------------- Term 1, Unit 1 ----------------
+  'math-u0-l0': [
+    () => { // which digit is in a place
+      const ds = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 7); if (!ds[0]) [ds[0], ds[1]] = [ds[1], ds[0]];
+      const s = ds.join(''), at = k => s[s.length - 1 - k], p = R(1, 5);
+      return mtq(`In ${nf(+s)}, which digit is in the ${PNAMES[p]} place?`, at(p), [at(p + 1), at(p - 1), at(p < 5 ? p + 2 : p - 2)],
+        `Name the places from the right: ${PNAMES.slice(0, p + 1).join(', ')}. The ${at(p)} is in the ${PNAMES[p]} place.`);
+    },
+    () => { // what a digit is worth
+      let n, s, p, d; do { n = R(100000, 9999999); s = String(n); p = R(2, s.length - 1); d = s[s.length - 1 - p]; } while (d === '0' || s.split(d).length !== 2);
+      const v = k => Number(d) * 10 ** k;
+      return mtn(`How much is the ${d} worth in ${nf(n)}?`, v(p), [v(p + 1), v(p - 1), v(p - 2)],
+        `The ${d} is in the ${PNAMES[p]} place, so it is worth ${d} × ${nf(10 ** p)} = ${nf(v(p))}.`);
+    },
+    () => { // standard form from expanded form
+      const ds = sixWithZeros(), n = +ds.join(''), terms = ds.map((d, i) => d * 10 ** (5 - i)).filter(Boolean), z = ds.indexOf(0, 1);
+      const swap = (i, j) => { const t = ds.slice(); [t[i], t[j]] = [t[j], t[i]]; return +t.join(''); };
+      return mtn(`Which number is ${terms.map(nf).join(' + ')}?`, n, shuffle([+ds.filter((_, i) => i !== z).join(''), swap(z, z + 1), swap(z, z - 1), +ds.filter(Boolean).join('')]),
+        `Write one digit for every place from the hundred thousands down to the ones, with a 0 in each place that's missing: ${terms.map(nf).join(' + ')} = ${nf(n)}.`);
+    },
+    () => { // expanded form of a number
+      const ds = sixWithZeros(), n = +ds.join(''), vals = ds.map((d, i) => d * 10 ** (5 - i)).filter(Boolean), k = vals.length;
+      const show = v => v.map(nf).join(' + '), bump = (i, up) => show(vals.map((v, j) => j === i ? (up ? v * 10 : v / 10) : v));
+      return mtq(`Which shows ${nf(n)} in expanded form?`, show(vals), [bump(0, false), bump(R(1, k - 2), true), bump(k - 1, true), bump(R(1, k - 2), false)],
+        `Write each digit as what it's worth and skip the zeros: ${nf(n)} = ${show(vals)}.`);
+    },
+    () => { // rounding six-digit numbers
+      const p = pick([3, 4, 5]); let n; do { n = R(100000, 999999); } while (n % 10 ** p === 0);
+      const r = k => Math.round(n / 10 ** k) * 10 ** k, ans = r(p), down = Math.floor(n / 10 ** p) * 10 ** p, other = ans === down ? down + 10 ** p : down;
+      const dig = Math.floor(n / 10 ** (p - 1)) % 10;
+      return mtn(`Round ${nf(n)} to the nearest ${PNAMES[p].replace(/s$/, '')}.`, ans, [other, r(p - 1), p < 5 ? r(p + 1) : null, r(p - 2), down + 2 * 10 ** p],
+        `Look at the digit just to the right of the ${PNAMES[p]} place: it's ${dig}. ${dig >= 5 ? '5 or more, so round up' : '4 or less, so round down'} to ${nf(ans)}.`);
+    },
+    () => { // greatest or least of four close numbers
+      let ds; do { ds = String(R(100000, 999999)).split('').map(Number); } while (new Set(ds).size < 5);
+      const set = new Set([+ds.join('')]);
+      for (let i = 1; i <= 4; i++) if (ds[i] !== ds[i + 1]) { const t = ds.slice(); [t[i], t[i + 1]] = [t[i + 1], t[i]]; set.add(+t.join('')); }
+      const four = shuffle([...set]).slice(0, 4); if (four.length < 4) return null;
+      const most = R(0, 1), ans = most ? Math.max(...four) : Math.min(...four);
+      return mtn(`Which of these numbers is the ${most ? 'greatest' : 'least'}?`, ans, four,
+        `They all start with the same digit, so compare place by place from the left until two digits are different. ${nf(ans)} is the ${most ? 'greatest' : 'least'}.`);
+    },
+    () => { // which number has a digit in a given place
+      const d = R(1, 9), ps = shuffle([1, 2, 3, 4, 5]).slice(0, 4);
+      const make = p => { let ds; do { ds = Array.from({ length: 6 }, (_, i) => i === 5 - p ? d : R(i ? 0 : 1, 9)); } while (ds.some((x, i) => x === d && i !== 5 - p)); return +ds.join(''); };
+      const nums = ps.map(make);
+      return mtn(`Which number has a ${d} in the ${PNAMES[ps[0]]} place?`, nums[0], nums.slice(1),
+        `Count the places from the right: ones, tens, hundreds, and so on. In ${nf(nums[0])}, the ${d} is in the ${PNAMES[ps[0]]} place.`);
+    }
+  ],
+  'math-u0-l1': [
+    () => {
+      let a, b; do { a = R(10000, 59999); b = R(10000, 39999); } while (carries(a, b) < 2);
+      const s = a + b;
+      return mtn(`What is ${nf(a)} + ${nf(b)}?`, s, [colAdd(a, b), s + 1000, s - 100, s + 10],
+        `Line up the places and add from the ones, carrying 1 to the next place whenever a column makes 10 or more: ${nf(a)} + ${nf(b)} = ${nf(s)}.`);
+    },
+    () => {
+      let a, b; do { a = R(30000, 89999); b = R(10000, a - 5000); } while (borrows(a, b) < 2);
+      const d = a - b;
+      return mtn(`What is ${nf(a)} − ${nf(b)}?`, d, [colSub(a, b), d + 1000, d + 100, d - 10],
+        `Subtract from the ones. When the top digit is smaller, borrow from the next place. ${nf(a)} − ${nf(b)} = ${nf(d)}. Check: ${nf(d)} + ${nf(b)} = ${nf(a)}.`);
+    },
+    () => { // subtracting from a number with zeros
+      const a = R(3, 9) * 10000; let b; do { b = R(10001, a - 1001); } while (b % 10 === 0);
+      const d = a - b;
+      return mtn(`What is ${nf(a)} − ${nf(b)}?`, d, [colSub(a, b), d + 10, d + 1000, d - 1000],
+        `${nf(a)} has zeros, so borrow across them: ${a / 10000} ten thousands become ${a / 10000 - 1} ten thousands, 9 thousands, 9 hundreds, 9 tens and 10 ones. Then subtract: ${nf(a)} − ${nf(b)} = ${nf(d)}. Check: ${nf(d)} + ${nf(b)} = ${nf(a)}.`);
+    },
+    () => {
+      const C = pick([['A stadium sold ', ' tickets on Friday and ', ' tickets on Saturday. How many tickets did it sell on the two days?'],
+        ['A town recycled ', ' cans in May and ', ' cans in June. How many cans did it recycle in the two months?'],
+        ['A website had ', ' visitors last week and ', ' visitors this week. How many visitors is that in all?'],
+        ['Two trains carried ', ' and ', ' passengers this month. How many passengers is that altogether?']]);
+      let a, b; do { a = R(10000, 49999); b = R(10000, 39999); } while (!carries(a, b));
+      const s = a + b;
+      return mtn(C[0] + nf(a) + C[1] + nf(b) + C[2], s, [colAdd(a, b), Math.abs(a - b), s + 1000, s - 10], `Put the two amounts together by adding: ${nf(a)} + ${nf(b)} = ${nf(s)}.`);
+    },
+    () => {
+      const C = pick([['A library had ', ' books. It gave away ', ' old books. How many books does it have now?'],
+        ['A park had ', ' visitors this year and ', ' visitors last year. How many more visitors came this year?'],
+        ['A farm grew ', ' pumpkins. It sold ', ' of them. How many pumpkins are left?']]);
+      let a, b; do { a = R(20000, 89999); b = R(10000, a - 3000); } while (!borrows(a, b));
+      const d = a - b;
+      return mtn(C[0] + nf(a) + C[1] + nf(b) + C[2], d, [colSub(a, b), a + b, d + 1000, d + 10], `Subtract to find what's left or how many more: ${nf(a)} − ${nf(b)} = ${nf(d)}. Check: ${nf(d)} + ${nf(b)} = ${nf(a)}.`);
+    },
+    () => { // estimate by rounding to thousands
+      const plus = R(0, 1), r = x => Math.round(x / 1000) * 1000;
+      let a, b; do { a = R(1100, 8900); b = R(1100, 8900); } while ([a, b].some(x => x % 1000 >= 400 && x % 1000 < 600) || (!plus && r(a) - r(b) < 2000));
+      const est = plus ? r(a) + r(b) : r(a) - r(b), exact = plus ? a + b : a - b;
+      return mtn(`Round each number to the nearest thousand to estimate ${nf(a)} ${plus ? '+' : '−'} ${nf(b)}.`, est, [est - 1000, est + 1000, exact],
+        `${nf(a)} rounds to ${nf(r(a))} and ${nf(b)} rounds to ${nf(r(b))}. ${nf(r(a))} ${plus ? '+' : '−'} ${nf(r(b))} = ${nf(est)}.`);
+    },
+    () => { // check subtraction by adding
+      const a = R(2000, 9999), b = R(1000, a - 500), c = a - b, lo = Math.min(b, c), hi = Math.max(b, c);
+      return mtq(`Which number sentence checks ${nf(a)} − ${nf(b)} = ${nf(c)}?`, `${nf(c)} + ${nf(b)} = ${nf(a)}`,
+        [`${nf(a)} + ${nf(b)} = ${nf(a + b)}`, `${nf(a)} + ${nf(c)} = ${nf(a + c)}`, `${nf(hi)} − ${nf(lo)} = ${nf(hi - lo)}`],
+        `Add the answer to the number you took away. ${nf(c)} + ${nf(b)} = ${nf(a)}, the number you started with, so the subtraction is right.`);
+    },
+    () => { // missing addend
+      const t = R(20, 95) * 1000; let a; do { a = R(10000, t - 2000); } while (a % 10 === 0);
+      const m = t - a;
+      return mtn(`What number makes this true?  ${nf(a)} + ☐ = ${nf(t)}`, m, [colSub(t, a), m + 1000, m + 10, t + a],
+        `Find the missing part by subtracting: ${nf(t)} − ${nf(a)} = ${nf(m)}. Check: ${nf(a)} + ${nf(m)} = ${nf(t)}.`);
+    }
+  ],
+  'math-u0-l2': [
+    () => { // repeated addition
+      let n, v; do { n = R(3, 6); v = R(3, 9); } while (n === v);
+      return mtq(`Which multiplication means the same as ${Array(n).fill(v).join(' + ')}?`, `${n} × ${v}`, [`${v} × ${v}`, `${n} + ${v}`, `${n + 1} × ${v}`, `${n} × ${n}`],
+        `There are ${n} groups of ${v}, so it's ${n} × ${v} = ${n * v}.`);
+    },
+    () => { // same product
+      const [A, B] = shuffle(pick([[[2, 6], [3, 4]], [[2, 8], [4, 4]], [[2, 9], [3, 6]], [[3, 8], [4, 6]], [[4, 9], [6, 6]], [[4, 5], [2, 10]], [[5, 6], [3, 10]], [[5, 8], [4, 10]]]));
+      const p = A[0] * A[1], f = ([x, y]) => `${x} × ${y}`;
+      const near = [[B[0], B[1] + 1], [B[0] + 1, B[1]], [A[0], A[1] + 1], [B[0], B[1] - 1], [A[0] + 1, A[1]]].filter(([x, y]) => x * y !== p && x > 1 && y > 1);
+      return mtq(`Which fact has the same product as ${f(A)}?`, f(B), near.map(f), `${f(A)} = ${p}, and ${f(B)} = ${p} too.`);
+    },
+    () => { // break apart
+      const a = R(3, 9), b = R(6, 9), k = b - 5;
+      return mtq(`Which is a correct way to break apart ${a} × ${b}?`, `(${a} × 5) + (${a} × ${k})`, [`(${a} × 5) + (${a} × ${k + 1})`, `(${a} × 5) × (${a} × ${k})`, `(${a} + 5) + (${a} + ${k})`],
+        `Split ${b} into 5 and ${k}. ${a} × 5 = ${a * 5} and ${a} × ${k} = ${a * k}. Add them: ${a * 5} + ${a * k} = ${a * b}, which is ${a} × ${b}.`);
+    },
+    () => { // times tens
+      const t = R(2, 9), a = R(2, 9), p = t * a;
+      return mtn(`What is ${t * 10} × ${a}?`, p * 10, [p, p * 100, (t + 1) * a * 10, t * 10 + a],
+        `${t} × ${a} = ${p}. ${t * 10} is ${t} tens, so ${t * 10} × ${a} is ${p} tens, which is ${nf(p * 10)}.`);
+    },
+    () => { // two steps: multiply, then subtract
+      const r = R(3, 9), c = R(3, 9), all = r * c, k = R(2, all - 3);
+      return mtn(`A room has ${r} rows of ${c} chairs. People are sitting in ${k} of the chairs. How many chairs are empty?`, all - k, [all, all + k, all - k - c],
+        `First multiply to find all the chairs: ${r} × ${c} = ${all}. Then subtract the ${k} that are taken: ${all} − ${k} = ${all - k} empty chairs.`);
+    },
+    () => { // which fact is the odd one out
+      const [p, pairs] = pick([[12, [[2, 6], [3, 4]]], [16, [[2, 8], [4, 4]]], [18, [[2, 9], [3, 6]]], [24, [[3, 8], [4, 6]]], [36, [[4, 9], [6, 6]]], [20, [[4, 5], [2, 10]]], [30, [[5, 6], [3, 10]]], [40, [[5, 8], [4, 10]]]]);
+      const facts = shuffle([...new Set(pairs.flatMap(([x, y]) => [`${x} × ${y}`, `${y} × ${x}`]))]).slice(0, 3);
+      const [x, y] = pick(pairs), odd = pick([[x, y + 1], [x + 1, y], [x, y - 1]].filter(([u, v]) => u * v !== p && u > 1 && v > 1));
+      return mtq(`Which fact does NOT equal ${p}?`, `${odd[0]} × ${odd[1]}`, facts, `${odd[0]} × ${odd[1]} = ${odd[0] * odd[1]}, not ${p}. The other facts all make ${p}.`);
+    }
+  ],
+  // ---------------- Term 1, Unit 2 ----------------
+  'math-u1-l0': [
+    () => { // 3-digit × 1-digit
+      let a, b, nc; do { a = R(112, 989); b = R(3, 9); const [H, T, O] = String(a).split('').map(Number); nc = +`${H * b}${(T * b) % 10}${(O * b) % 10}`; } while (nc === a * b);
+      const p = a * b, [H, T, O] = String(a).split('').map(Number);
+      return mtn(`What is ${a} × ${b}?`, p, [nc, p + 100, p - 10, p + b],
+        `Multiply each place by ${b} and add: ${H * 100} × ${b} = ${nf(H * 100 * b)}, ${T * 10} × ${b} = ${T * 10 * b}, and ${O} × ${b} = ${O * b}. ${nf(H * 100 * b)} + ${T * 10 * b} + ${O * b} = ${nf(p)}.`);
+    },
+    () => { // 2-digit × 2-digit
+      let a, b; do { a = R(21, 49); b = R(21, 49); } while (!(a % 10) || !(b % 10));
+      const p = a * b, T = b - b % 10, O = b % 10;
+      return mtn(`What is ${a} × ${b}?`, p, [a * O + a * (T / 10), p + a, p - 10, p + 100],
+        `Break ${b} into ${T} and ${O}. ${a} × ${O} = ${a * O} and ${a} × ${T} = ${nf(a * T)}. Add them: ${a * O} + ${nf(a * T)} = ${nf(p)}.`);
+    },
+    () => { // tens × tens
+      const a = R(2, 9) * 10, b = R(2, 9) * 10, p = a * b;
+      return mtn(`What is ${a} × ${b}?`, p, [p / 10, p * 10, a + b, p / 100],
+        `${a / 10} × ${b / 10} = ${p / 100}. Each number has one zero, so put two zeros on the end: ${nf(p)}.`);
+    },
+    () => { // equal groups story
+      const C = pick([['A theater has ', ' rows with ', ' seats in each row. How many seats are there?'], ['A bakery fills ', ' trays with ', ' muffins on each tray. How many muffins is that?'],
+        ['A school orders ', ' boxes of markers with ', ' markers in each box. How many markers is that?'], ['A garden has ', ' rows of corn with ', ' plants in each row. How many plants are there?']]);
+      let a, b; do { a = R(21, 39); b = R(21, 29); } while (!(a % 10) || !(b % 10));
+      const p = a * b;
+      return mtn(C[0] + a + C[1] + b + C[2], p, [a + b, a * (b % 10) + a * Math.floor(b / 10), p + 10, p - 100], `Equal groups means multiply: ${a} × ${b} = ${nf(p)}.`);
+    },
+    () => { // estimate
+      let a, b; do { a = R(21, 98); b = R(21, 98); } while ([a, b].some(x => x % 10 === 0 || x % 10 === 5));
+      const ra = Math.round(a / 10) * 10, rb = Math.round(b / 10) * 10, e = ra * rb;
+      return mtn(`Which is the best estimate for ${a} × ${b}?`, e, [e / 10, e * 10, ra + rb],
+        `Round each number to the nearest ten: ${a} is about ${ra} and ${b} is about ${rb}. ${ra} × ${rb} = ${nf(e)}.`);
+    },
+    () => { // break apart by place value
+      let a; do { a = R(23, 98); } while (!(a % 10));
+      const b = R(3, 9), T = a - a % 10, O = a % 10;
+      return mtq(`Which shows ${a} × ${b} broken apart by place value?`, `(${T} × ${b}) + (${O} × ${b})`, [`(${T} × ${b}) + ${O}`, `(${T / 10} × ${b}) + (${O} × ${b})`, `(${T} + ${b}) × (${O} + ${b})`],
+        `${a} = ${T} + ${O}. Multiply each part by ${b}, then add: ${T * b} + ${O * b} = ${a * b}.`);
+    }
+  ],
+  'math-u1-l1': [
+    () => { // sharing tens
+      let d, q; do { d = R(3, 9); q = R(2, 9); } while (d * q < 12);
+      const n = d * q * 10, C = pick([[' stickers are shared equally by ', ' classes. How many stickers does each class get?'], [' beads are split equally into ', ' jars. How many beads go in each jar?'], [' trading cards are shared equally by ', ' friends. How many cards does each friend get?']]);
+      return mtn(nf(n) + C[0] + d + C[1], q * 10, [q, q * 100, q * 10 + 10, n - d], `${d} × ${q} = ${d * q}, so ${d} × ${q * 10} = ${nf(n)}. That means ${nf(n)} ÷ ${d} = ${q * 10}.`);
+    },
+    () => { // which division has this remainder
+      const d = R(4, 9), r = R(1, d - 1), q = R(3, 9), n = d * q + r;
+      const others = shuffle([...Array(d).keys()].filter(x => x !== r)).slice(0, 3).map(x => `${d * R(3, 9) + x} ÷ ${d}`);
+      return mtq(`Which division has a remainder of ${r}?`, `${n} ÷ ${d}`, others, `${d} × ${q} = ${d * q}, and ${n} − ${d * q} = ${r}. So ${n} ÷ ${d} = ${q} R${r}.`);
+    },
+    () => { // missing dividend
+      const d = R(3, 9), q = R(3, 9), r = R(1, d - 1), n = d * q + r;
+      return mtn(`What number goes in the box?  ☐ ÷ ${d} = ${q} R${r}`, n, [d * q, d * (q + 1) + r, d * q - r, q * r + d], `Work backwards: ${d} × ${q} = ${d * q}, then add the remainder: ${d * q} + ${r} = ${n}.`);
+    },
+    () => { // round up for leftover people
+      const [units, unit, cap] = pick([['vans', 'van', R(5, 7)], ['boats', 'boat', R(4, 6)], ['cars', 'car', R(4, 5)]]), adults = R(2, 4);
+      let kids, tot; do { kids = R(12, 40); tot = kids + adults; } while (tot % cap === 0);
+      const full = Math.floor(tot / cap), left = tot % cap;
+      return mtn(`${kids} kids and ${adults} grown-ups are going on a trip. Each ${unit} holds ${cap} people. How many ${units} do they need so everyone gets a ride?`, full + 1, [full, full + 2, full - 1, Math.ceil(kids / cap)],
+        `There are ${kids} + ${adults} = ${tot} people. ${tot} ÷ ${cap} = ${full} R${left}. ${full} ${units} would leave ${left} ${left === 1 ? 'person' : 'people'} behind, so they need ${full + 1}.`);
+    },
+    () => { // division words
+      let d, q; do { d = R(3, 9); q = R(3, 9); } while (d === q);
+      const n = d * q, which = R(0, 2), vals = [n, d, q], names = ['the dividend', 'the divisor', 'the quotient'];
+      return mtq(`In ${n} ÷ ${d} = ${q}, what is the ${vals[which]} called?`, names[which], names.filter((_, i) => i !== which).concat(['the remainder']),
+        `In a division, the number being divided (${n}) is the dividend, the number you divide by (${d}) is the divisor, and the answer (${q}) is the quotient.`);
+    },
+    () => { // check with multiplication
+      const d = R(3, 9), q = R(3, 9), r = R(1, d - 1), n = d * q + r;
+      if (q * r + d === n || d * r + q === n) return null;
+      return mtq(`Which number sentence checks ${n} ÷ ${d} = ${q} R${r}?`, `${d} × ${q} + ${r} = ${n}`, [`${q} × ${r} + ${d} = ${q * r + d}`, `${d} × ${r} + ${q} = ${d * r + q}`, `${n} × ${d} + ${r} = ${n * d + r}`],
+        `Multiply the quotient by the divisor, then add the remainder: ${d} × ${q} = ${d * q}, and ${d * q} + ${r} = ${n}. That's the number you started with.`);
+    }
+  ],
+  'math-u1-l2': [
+    () => {
+      let a, b, c; do { a = R(25, 60); b = R(2, 6); c = R(2, 6); } while (a <= b * c);
+      const v = a - b * c;
+      return mtn(`What is ${a} − ${b} × ${c}?`, v, [(a - b) * c, b * c, a - b + c, a + b * c], `Multiply before you subtract: ${b} × ${c} = ${b * c}. Then ${a} − ${b * c} = ${v}.`);
+    },
+    () => {
+      const b = R(2, 6), c = R(2, 6), q = R(2, 9), n = (b + c) * q;
+      return mtn(`What is ${n} ÷ (${b} + ${c})?`, q, [n % b === 0 ? n / b + c : null, q * 2, q + b, n - b - c], `Do the parentheses first: ${b} + ${c} = ${b + c}. Then divide: ${n} ÷ ${b + c} = ${q}.`);
+    },
+    () => {
+      const a = R(2, 9), b = R(6, 12), c = R(1, b - 2), d = R(1, 9), v = a * (b - c) + d;
+      return mtn(`What is ${a} × (${b} − ${c}) + ${d}?`, v, [a * b - c + d, a * (b - c + d), a * (b - c) - d, (a * b - c) * d],
+        `Parentheses first: ${b} − ${c} = ${b - c}. Then multiply: ${a} × ${b - c} = ${a * (b - c)}. Then add: ${a * (b - c)} + ${d} = ${v}.`);
+    },
+    () => { // change from a bill
+      const nm = pick(['Ava', 'Leo', 'Maya', 'Omar', 'Zoe', 'Eli']), its = pick(['notebooks', 'bracelets', 'comic books', 'bags of popcorn']), pay = pick([20, 50]);
+      let n, p; do { n = R(2, 6); p = R(3, 9); } while (n * p >= pay - 1);
+      const v = pay - n * p, usd = x => '$' + x;
+      return mtq(`${nm} buys ${n} ${its} for $${p} each and pays with a $${pay} bill. How much change does ${nm} get?`, usd(v), [usd(n * p), usd(pay - p), usd(pay - n - p), usd(v + p)],
+        `Step 1: ${n} × $${p} = $${n * p}. Step 2: $${pay} − $${n * p} = $${v} in change.`);
+    },
+    () => { // multiply, then add
+      const t = R(3, 8), s = R(11, 25), k = R(5, 30), v = t * s + k;
+      return mtn(`A library has ${t} shelves with ${s} books on each shelf. Then it gets ${k} new books. How many books does it have now?`, v, [t * s, t + s + k, t * (s + k), v + s],
+        `Step 1: ${t} × ${s} = ${t * s} books on the shelves. Step 2: ${t * s} + ${k} = ${v} books.`);
+    },
+    () => { // words to an expression
+      const [a, b, c] = shuffle([2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 3);
+      if (R(0, 1)) return mtq(`Which expression means "add ${a} and ${b}, then multiply by ${c}"?`, `(${a} + ${b}) × ${c}`, [`${a} + ${b} × ${c}`, `${a} × (${b} + ${c})`, `${a} × ${b} + ${c}`],
+        `The adding happens first, so it goes in parentheses: (${a} + ${b}) × ${c}. Without them, you would multiply first.`);
+      return mtq(`Which expression means "multiply ${a} by ${b}, then subtract ${c}"?`, `${a} × ${b} − ${c}`, [`${a} × (${b} − ${c})`, `(${a} − ${b}) × ${c}`, `${c} − ${a} × ${b}`],
+        `Multiplying already comes before subtracting, so ${a} × ${b} − ${c} needs no parentheses: ${a * b} − ${c} = ${a * b - c}.`);
+    },
+    () => { // multiply, then share
+      let n, k, m, tot; do { n = R(2, 5); k = R(4, 12); tot = n * k; m = R(2, 9); } while (tot % m || m === n || m === k || tot === m);
+      const v = tot / m, C = pick([['boxes', 'crayons'], ['bags', 'marbles'], ['packs', 'stickers']]);
+      return mtn(`${n} ${C[0]} hold ${k} ${C[1]} each. The ${C[1]} are shared equally by ${m} kids. How many ${C[1]} does each kid get?`, v, [tot, tot - m, v + n, k],
+        `Step 1: ${n} × ${k} = ${tot} ${C[1]}. Step 2: ${tot} ÷ ${m} = ${v} each.`);
+    }
+  ],
+  // ---------------- Term 1, Unit 3 ----------------
+  'math-u2-l0': [
+    () => { // part eaten or left
+      const d = R(5, 12), e = R(2, d - 2), left = R(0, 1), [thing, piece] = pick([['pan of cornbread', 'pieces'], ['pizza', 'slices'], ['pie', 'slices'], ['granola bar', 'pieces']]);
+      const v = left ? d - e : e;
+      return mtq(`A ${thing} is cut into ${d} equal ${piece}. The family ate ${e} ${piece}. What fraction of the ${thing} ${left ? 'is left' : 'did they eat'}?`, fr(v, d), [fr(d - v, d), fr(v, d - v), fr(d, v), fr(d - v, v)],
+        `There are ${d} equal ${piece} in all${left ? `, and ${d} − ${e} = ${d - e} are left` : `, and ${e} were eaten`}. That's ${v} out of ${d}, or ${v}/${d}.`);
+    },
+    () => { // numerator and denominator
+      let n, d; do { d = R(3, 12); n = R(1, d - 1); } while (2 * n === d);
+      const top = R(0, 1);
+      return mtn(`In the fraction ${n}/${d}, what is the ${top ? 'numerator' : 'denominator'}?`, top ? n : d, [top ? d : n, n + d, d - n, n * d],
+        `The numerator is the top number (${n}): how many parts you have. The denominator is the bottom number (${d}): how many equal parts make the whole.`);
+    },
+    () => { // equivalent fraction
+      let d, n; do { d = R(2, 6); n = R(1, d - 1); } while (gcd(n, d) !== 1);
+      const k = R(2, 4);
+      return mtq(`Which fraction is equivalent to ${n}/${d}?`, fr(n * k, d * k), [fr(n, d * k), fr(n * k, d), fr(n + k, d + k), fr(d * k, n * k)],
+        `Multiply the top and the bottom by the same number: ${n} × ${k} = ${n * k} and ${d} × ${k} = ${d * k}, so ${n}/${d} = ${n * k}/${d * k}.`);
+    },
+    () => { // same top numbers
+      const most = R(0, 1), n = pick([1, 1, 2, 3]), ds = shuffle([2, 3, 4, 5, 6, 8, 10, 12].filter(x => x > n)).slice(0, 4);
+      const ans = most ? Math.min(...ds) : Math.max(...ds);
+      return mtq(`Which of these fractions is the ${most ? 'greatest' : 'least'}?`, fr(n, ans), ds.filter(x => x !== ans).map(x => fr(n, x)),
+        `All the top numbers are ${n}, so compare the bottoms. More equal parts means smaller parts, so ${n}/${ans} is the ${most ? 'greatest' : 'least'}.`);
+    },
+    () => halfPicks(R(0, 1) === 1, 3, 12),
+    () => { // number line
+      const d = R(3, 10), k = R(1, d - 1);
+      return mtq(`A number line from 0 to 1 is split into ${d} equal parts. A dot sits on the ${ordinal(k)} mark after 0. What fraction does the dot show?`, fr(k, d), [fr(k + 1, d), fr(k, d + 1), fr(d - k, d), fr(d, k)],
+        `Each jump is 1/${d}. The dot is ${k} jump${k > 1 ? 's' : ''} from 0, so it shows ${k}/${d}.`);
+    },
+    () => { // same top, different bottoms, in a story
+      const n = R(3, 5); let a, b; do { a = R(n + 1, 12); b = R(n + 1, 12); } while (a === b);
+      const [p1, p2] = shuffle(['Ana', 'Ben', 'Cole', 'Dee', 'Finn', 'Gia']).slice(0, 2), thing = pick(['sandwich', 'pizza', 'pan of brownies', 'pie']);
+      const ans = a < b ? p1 : p2;
+      return mtq(`${p1} ate ${n}/${a} of a ${thing}. ${p2} ate ${n}/${b} of a ${thing} the same size. Who ate more?`, ans, [ans === p1 ? p2 : p1, 'They ate the same amount', 'There is no way to tell'],
+        `Both ate ${n} pieces, but the pieces are different sizes. ${Math.min(a, b)} equal parts are bigger than ${Math.max(a, b)} equal parts, so ${n}/${Math.min(a, b)} is more. ${ans} ate more.`);
+    }
+  ],
+  'math-u2-l1': [
+    () => { // adding, in a story (bottoms the practice never uses)
+      const d = pick([7, 9, 11]), a = R(1, d - 3), b = R(1, d - 1 - a);
+      const [q, u] = pick([[`Leo walked ${a}/${d} mile in the morning and ${b}/${d} mile after lunch. How far did he walk in all?`, ' mile'],
+        [`A plant grew ${a}/${d} inch last week and ${b}/${d} inch this week. How much did it grow in the two weeks?`, ' inch'],
+        [`Mia painted ${a}/${d} of a fence on Saturday and ${b}/${d} of it on Sunday. How much of the fence has she painted?`, ' of the fence']]);
+      return mtq(q, fr(a + b, d) + u, [fr(a + b, d + d) + u, a !== b ? fr(Math.abs(a - b), d) + u : null, fr(a * b, d * d) + u, fr(a + b + 1, d) + u],
+        `The bottoms are the same, so add the tops and keep the bottom: ${a} + ${b} = ${a + b}. The answer is ${a + b}/${d}${u}.`);
+    },
+    () => { // subtracting, in a story
+      const d = pick([7, 9, 11]), a = R(3, d - 1), b = R(1, a - 1);
+      const [q, u] = pick([[`A ribbon is ${a}/${d} yard long. Kim cuts off ${b}/${d} yard. How much ribbon is left?`, ' yard'],
+        [`A jug had ${a}/${d} gallon of lemonade. The team drank ${b}/${d} gallon. How much lemonade is left?`, ' gallon']]);
+      return mtq(q, fr(a - b, d) + u, [fr(a + b, d) + u, fr(b, d) + u, fr(a, d) + u, fr(a - b, d + d) + u],
+        `The bottoms are the same, so subtract the tops and keep the bottom: ${a} − ${b} = ${a - b}. The answer is ${a - b}/${d}${u}.`);
+    },
+    () => { // mixed number → improper fraction
+      const w = R(2, 5), d = R(3, 8), r = R(1, d - 1), n = w * d + r;
+      return mtq(`Which improper fraction equals ${w} ${r}/${d}?`, fr(n, d), [fr(w + r, d), fr(w * r + d, d), fr(w * d - r, d), fr(n, d * w)],
+        `${w} wholes are ${w} × ${d} = ${w * d} pieces of size 1/${d}. Add the ${r} more: ${w * d} + ${r} = ${n}. So ${w} ${r}/${d} = ${n}/${d}.`);
+    },
+    () => { // improper fraction → mixed number (bigger numbers than practice)
+      const d = R(3, 9), w = R(5, 9), r = R(1, d - 1), n = w * d + r, mx = (a, b) => `${a} ${b}/${d}`;
+      return mtq(`Which mixed number equals ${n}/${d}?`, mx(w, r), [mx(w - 1, r), d - r !== r ? mx(w, d - r) : null, mx(w + 1, r), w < d ? mx(r, w) : null],
+        `${n} ÷ ${d} = ${w} R${r}: that's ${w} wholes and ${r}/${d} left over. So ${n}/${d} = ${w} ${r}/${d}.`);
+    },
+    () => { // simplest form
+      let p, q; do { q = R(3, 9); p = R(1, q - 1); } while (gcd(p, q) !== 1);
+      const k = R(2, 4), n = p * k, d = q * k;
+      const cands = [[q - p, q], [p, q + 1], [p + 1, q + 1], [p + 1, q], [p, q - 1]].filter(([a, b]) => a > 0 && a < b && !sameVal(a, b, p, q));
+      return mtq(`What is ${n}/${d} in simplest form?`, fr(p, q), cands.map(([a, b]) => fr(a, b)),
+        `Divide the top and the bottom by ${k}: ${n} ÷ ${k} = ${p} and ${d} ÷ ${k} = ${q}. ${p} and ${q} share no factor except 1, so ${p}/${q} is in simplest form.`);
+    },
+    () => { // whole number × fraction, in a story
+      const k = R(6, 9), d = pick([3, 4, 5, 7, 8]), a = R(1, Math.min(3, d - 1));
+      if (gcd(a, d) !== 1) return null;
+      const [q, w] = pick([[`Each lap around the track is ${a}/${d} mile. Jo runs ${k} laps. How far does she run?`, 'mile'],
+        [`A recipe uses ${a}/${d} cup of oats. Dad makes ${k} batches. How many cups of oats does he use?`, 'cup'],
+        [`Each ribbon is ${a}/${d} yard long. Kai has ${k} ribbons. How many yards of ribbon is that?`, 'yard']]);
+      const f = (x, y) => `${x}/${y} ${w}${x > y ? 's' : ''}`;
+      return mtq(q, f(k * a, d), [f(k * a, k * d), f(k + a, d), f(a, k * d)],
+        `${k} groups of ${a}/${d}: multiply the whole number by the top and keep the bottom. ${k} × ${a} = ${k * a}, so it's ${f(k * a, d)}.`);
+    },
+    () => { // subtract from 1
+      const d = R(3, 12), a = R(1, d - 1);
+      if (gcd(a, d) !== 1) return null;
+      return mtq(`What is 1 − ${a}/${d}?`, fr(d - a, d), [fr(a, d), fr(d - a + 1, d), fr(d - a, d + d), a > 1 ? fr(a - 1, d) : null],
+        `1 whole is ${d}/${d}. ${d}/${d} − ${a}/${d} = ${d - a}/${d}.`);
+    }
+  ],
+  'math-u2-l2': [
+    () => { // decimal → fraction
+      let h; do { h = R(11, 99); } while (!(h % 10));
+      return mtq(`How is 0.${h} written as a fraction?`, fr(h, 100), [fr(h, 10), fr(h, 1000), fr(1, h)], `0.${h} is ${h} hundredths, so it's ${h}/100.`);
+    },
+    () => { // decimal from words
+      if (R(0, 1)) { const t = R(1, 9);
+        return mtq(`Which decimal means "${numWords(t)} tenth${t > 1 ? 's' : ''}"?`, '0.' + t, ['0.0' + t, t + '.0', '0.00' + t], `Tenths are the first place after the decimal point, so ${numWords(t)} tenth${t > 1 ? 's' : ''} is 0.${t}.`); }
+      let h; do { h = R(11, 99); } while (!(h % 10));
+      return mtq(`Which decimal means "${numWords(h)} hundredths"?`, '0.' + h, [dnum(h / 10), '0.0' + h, String(h)], `Hundredths use two places after the decimal point, so ${numWords(h)} hundredths is 0.${h}.`);
+    },
+    () => { // greatest or least decimal
+      const t = R(3, 8), most = R(0, 1);
+      const vals = shuffle([t / 10, clean((t - 1) / 10 + R(1, 9) / 100), R(1, 9) / 100, clean((t - 2) / 10 + R(1, 9) / 100)]);
+      const ans = most ? Math.max(...vals) : Math.min(...vals);
+      return mtq(`Which of these decimals is the ${most ? 'greatest' : 'least'}?`, dnum(ans), vals.filter(v => v !== ans).map(dnum),
+        `Give every number two places after the point: ${vals.map(v => v.toFixed(2)).join(', ')}. Then compare the hundredths like whole numbers. ${dnum(ans)} is the ${most ? 'greatest' : 'least'}.`);
+    },
+    () => { // coins
+      const q = R(1, 3), dm = R(1, 4), n = R(1, 3), c = 25 * q + 10 * dm + 5 * n;
+      return mtq(`Ella has ${plural(q, 'quarter')}, ${plural(dm, 'dime')} and ${plural(n, 'nickel')}. How much money is that?`, money(c), [money(25 * q + 5 * dm + 10 * n), money(c + 5), money(c - 10), money(q + dm + n)],
+        `Quarters are 25¢, dimes 10¢ and nickels 5¢: ${25 * q}¢ + ${10 * dm}¢ + ${5 * n}¢ = ${c}¢, which is ${money(c)}.`);
+    },
+    () => { // how much more
+      const [a1, a2] = pick([['book', 'pen'], ['kite', 'yo-yo'], ['lunch box', 'water bottle'], ['puzzle', 'card game']]);
+      let a, b; do { a = R(300, 999); b = R(105, a - 50); } while (a % 100 >= b % 100 && R(0, 2));
+      const v = a - b;
+      return mtq(`A ${a1} costs ${money(a)} and a ${a2} costs ${money(b)}. How much more does the ${a1} cost?`, money(v), [money(a + b), money(colSub(a, b)), money(v + 100), money(v - 10)],
+        `Line up the decimal points and subtract: ${money(a)} − ${money(b)} = ${money(v)}.`);
+    },
+    () => { // dollars and cents
+      const D = R(2, 9), c = R(1, 9);
+      return mtq(`How do you write ${plural(D, 'dollar')} and ${plural(c, 'cent')}?`, `$${D}.0${c}`, [`$${D}.${c}0`, `$${D}${c}.00`, `$0.${D}${c}`],
+        `Cents use two places after the decimal point, and ${plural(c, 'cent')} is $0.0${c}. So it's $${D}.0${c}.`);
+    },
+    () => { // tenths + hundredths
+      let t, h; do { t = R(1, 8); h = R(11, 89); } while (!(h % 10) || t * 10 + h >= 100);
+      const v = (t * 10 + h) / 100;
+      return mtq(`What is 0.${t} + 0.${h}?`, dnum(v), [dnum((t + h) / 100), dnum(clean(v + 0.1)), dnum((t + h) / 10)],
+        `Line up the decimal points: 0.${t} is the same as 0.${t}0. Then 0.${t}0 + 0.${h} = ${v.toFixed(2)}.`);
+    }
+  ],
+  // ---------------- Term 1, Unit 4 ----------------
+  'math-u3-l0': [
+    () => { // mixed units → the smaller unit
+      const [big, small, f, a1, a2] = pick([['feet', 'inches', 12, 2, 6], ['yards', 'feet', 3, 2, 9], ['pounds', 'ounces', 16, 2, 5], ['gallons', 'quarts', 4, 2, 9], ['hours', 'minutes', 60, 1, 4], ['meters', 'centimeters', 100, 2, 9]]);
+      const a = R(a1, a2), b = R(2, f - 1);
+      return mtn(`How many ${small} are in ${unitOf(a, big)} ${unitOf(b, small)}?`, a * f + b, [a * f, a + b, a * f - b, (a + 1) * f],
+        `1 ${SING[big]} = ${f} ${small}, so ${unitOf(a, big)} = ${a} × ${f} = ${a * f} ${small}. Add the extra ${b}: ${a * f} + ${b} = ${a * f + b} ${small}.`);
+    },
+    () => { // elapsed time in the afternoon
+      let s, e; do { s = 12 * 60 + R(0, 60) * 5; e = s + R(7, 40) * 5; } while (e > 18 * 60 || s % 60 === e % 60);
+      const D = e - s, H = Math.floor(D / 60), M = D % 60, naive = hm(Math.floor(e / 60) - Math.floor(s / 60), Math.abs(e % 60 - s % 60));
+      return mtq(`A ${pick(['soccer game', 'movie', 'piano lesson', 'birthday party'])} starts at ${pm(s)} and ends at ${pm(e)} How long does it last?`, hm(H, M), [naive, hm(H, M + 10 < 60 ? M + 10 : M - 10), hm(H + 1, M), hm(H, (M + 30) % 60)],
+        `Count whole hours first, then minutes: ${pm(s)} to ${pm(s + H * 60)} is ${H ? hm(H, 0) : '0 hours'}, and ${pm(s + H * 60)} to ${pm(e)} is ${M} minutes. Total: ${hm(H, M)}.`);
+    },
+    () => { // end time
+      let s, H, M; do { s = 12 * 60 + R(1, 48) * 5; H = R(1, 2); M = R(1, 11) * 5; } while (s % 60 + M < 60 && R(0, 2));
+      const e = s + H * 60 + M, C = pick(['Soccer practice', 'A swim lesson', 'A field trip', 'Band practice']);
+      return mtq(`${C} starts at ${pm(s)} and lasts ${hm(H, M)}. What time does it end?`, pm(e), [pm(e - 60), pm(e + 10), pm(e - 10), pm(e + 60)],
+        `Add the hours first: ${pm(s)} + ${hm(H, 0)} = ${pm(s + H * 60)} Then add ${M} minutes: ${pm(e)}`);
+    },
+    () => { // metric: what's left
+      const [whole, small, ctx] = pick([['kilometers', 'meters', (k, m) => `A race is ${k} kilometers long. Mia has run ${nf(m)} meters. How many meters does she have left to run?`],
+        ['liters', 'milliliters', (k, m) => `A jug holds ${k} liters of water. Dad pours out ${nf(m)} milliliters. How many milliliters are left in the jug?`]]);
+      const k = R(2, 5); let m; do { m = R(150, k * 1000 - 150); } while (m % 10 === 0 && R(0, 1));
+      const v = k * 1000 - m;
+      return mtn(ctx(k, m), v, [colSub(k * 1000, m), k * 100 - m, v + 1000, k * 1000 + m],
+        `1 ${whole.slice(0, -1)} = 1,000 ${small}, so ${k} ${whole} = ${nf(k * 1000)} ${small}. Subtract: ${nf(k * 1000)} − ${nf(m)} = ${nf(v)} ${small}.`);
+    },
+    () => { // best unit
+      const [thing, right, wrongs, why] = pick([
+        ['the mass of a pencil', 'grams', ['kilograms', 'liters', 'meters'], 'A pencil is very light, so grams fit best.'],
+        ['the water in a bathtub', 'gallons', ['cups', 'inches', 'pounds'], 'A bathtub holds a lot of water, so gallons fit best.'],
+        ['the distance between two cities', 'miles', ['inches', 'feet', 'pounds'], 'Cities are far apart, so miles fit best.'],
+        ['the length of a crayon', 'centimeters', ['meters', 'kilometers', 'liters'], 'A crayon is short, so centimeters fit best.'],
+        ['the mass of a horse', 'kilograms', ['grams', 'liters', 'centimeters'], 'A horse is very heavy, so kilograms fit best.'],
+        ['the juice in a small glass', 'milliliters', ['liters', 'kilograms', 'meters'], 'A small glass holds a little liquid, so milliliters fit best.'],
+        ['the height of a door', 'feet', ['miles', 'ounces', 'gallons'], 'A door is a few feet tall, so feet fit best.'],
+        ['the weight of a bag of apples', 'pounds', ['miles', 'quarts', 'inches'], 'A bag of apples weighs a few pounds, so pounds fit best.']]);
+      return mtq(`Which unit is best for measuring ${thing}?`, right, wrongs, why);
+    }
+  ],
+  'math-u3-l1': [
+    () => { // perimeter (fence)
+      const L = R(13, 30), W = R(5, 12), [thing, unit] = pick([['garden', 'feet'], ['dog pen', 'feet'], ['playground', 'meters'], ['pool', 'meters']]), P = 2 * (L + W);
+      return mtq(`A ${thing} is a rectangle ${L} ${unit} long and ${W} ${unit} wide. How much fence goes all the way around it?`, `${P} ${unit}`, [`${L * W} ${unit}`, `${L + W} ${unit}`, `${2 * L + W} ${unit}`],
+        `The fence goes around the outside, so find the perimeter: ${L} + ${W} + ${L} + ${W} = ${P} ${unit}.`);
+    },
+    () => { // area
+      const L = R(13, 25), W = R(3, 9), [thing, unit] = pick([['patio', 'meters'], ['rug', 'feet'], ['wall', 'feet'], ['classroom floor', 'meters']]);
+      return mtq(`A ${thing} is ${L} ${unit} long and ${W} ${unit} wide. What is its area?`, `${L * W} square ${unit}`, [`${2 * (L + W)} square ${unit}`, `${L + W} square ${unit}`, `${L * W * 2} square ${unit}`],
+        `Area = length × width = ${L} × ${W} = ${L * W} square ${unit}.`);
+    },
+    () => { // side of a square from its area
+      const s = R(3, 12), A = s * s, [thing, unit] = pick([['square rug', 'feet'], ['square garden', 'meters'], ['square tile', 'inches']]);
+      return mtq(`A ${thing} has an area of ${A} square ${unit}. How long is each side?`, `${s} ${unit}`, [A % 2 ? null : `${A / 2} ${unit}`, A % 4 ? null : `${A / 4} ${unit}`, `${s + 1} ${unit}`, `${s - 1} ${unit}`, `${s + 2} ${unit}`],
+        `A square has 4 equal sides, so find the number that times itself makes ${A}: ${s} × ${s} = ${A}. Each side is ${s} ${unit}.`);
+    },
+    () => { // kind of angle
+      const d = pick([R(5, 85), R(5, 85), R(95, 175), R(95, 175), 90, 180]), kinds = ['acute', 'right', 'obtuse', 'straight'], k = d < 90 ? 0 : d === 90 ? 1 : d < 180 ? 2 : 3;
+      return mtq(`An angle measures ${d}°. What kind of angle is it?`, kinds[k], kinds.filter((_, i) => i !== k),
+        `Acute angles are less than 90°, a right angle is exactly 90°, obtuse angles are between 90° and 180°, and a straight angle is 180°. So ${d}° is ${art(kinds[k])} angle.`);
+    },
+    () => { // clock hands
+      const h = pick([1, 2, 4, 5, 7, 8, 10, 11]), marks = Math.min(h, 12 - h), k = marks < 3 ? 'acute' : 'obtuse';
+      return mtq(`What kind of angle do the hands of a clock make at ${h}:00?`, k, ['acute', 'right', 'obtuse', 'straight'].filter(x => x !== k),
+        `At 3:00 the hands make a right angle, and they are 3 hour marks apart. At ${h}:00 they are ${marks} mark${marks > 1 ? 's' : ''} apart, which is ${marks < 3 ? 'less' : 'more'} than a right angle, so the angle is ${k}.`);
+    },
+    () => { // naming polygons
+      const P = [[3, 'triangle'], [4, 'quadrilateral'], [5, 'pentagon'], [6, 'hexagon'], [8, 'octagon']], [n, name] = pick(P);
+      return mtq(`A polygon has ${n} sides. What is it called?`, art(name), shuffle(P.filter(x => x[1] !== name)).map(x => art(x[1])),
+        `${art(name)[0].toUpperCase() + art(name).slice(1)} has ${n} sides. (Tri means 3, quad means 4, penta 5, hexa 6 and octa 8.)`);
+    },
+    () => { // parallel or perpendicular
+      const [thing, ans] = pick([['The top and bottom edges of a door', 'parallel'], ['The lines on a sheet of notebook paper', 'parallel'], ['The two lines in a plus sign (+)', 'perpendicular'],
+        ['The two edges that meet at the corner of a book cover', 'perpendicular'], ['The two edges of a long, straight road', 'parallel'], ['A street that crosses another street at a square corner', 'perpendicular']]);
+      return mtq(`${thing} are an example of:`, ans + ' lines', ['parallel lines', 'perpendicular lines', 'curved lines', 'rays'].filter(x => x !== ans + ' lines'),
+        ans === 'parallel' ? 'Parallel lines stay the same distance apart and never meet.' : 'Perpendicular lines cross or meet to make square corners (right angles).');
+    }
+  ],
+  'math-u3-l2': [
+    () => { // how many more (data in words)
+      const [title, names, what, verb] = pick([['favorite pets', ['dogs', 'cats', 'fish', 'birds'], 'votes', 'get'], ['favorite seasons', ['spring', 'summer', 'fall', 'winter'], 'votes', 'get'], ['cans collected', ['Room 1', 'Room 2', 'Room 3', 'Room 4'], 'cans', 'collect']]);
+      let v; do { v = names.map(() => R(4, 25)); } while (Math.max(...v) === Math.min(...v));   // all four the same would leave no "more"
+      let i, j; do { i = R(0, 3); j = R(0, 3); } while (v[i] <= v[j]);
+      return mtn(`A bar graph shows ${title}: ${names.map((x, k) => `${x} ${v[k]}`).join(', ')}. How many more ${what} did ${names[i]} ${verb} than ${names[j]}?`, v[i] - v[j], [v[i] + v[j], v[i], v[j], v[i] - v[j] + 2],
+        `Find the two bars and subtract: ${v[i]} − ${v[j]} = ${v[i] - v[j]}.`);
+    },
+    () => { // total (data in words)
+      const [title, names, what] = pick([['favorite lunches', ['pizza', 'tacos', 'pasta', 'soup'], 'votes'], ['books read', ['Mon', 'Tue', 'Wed', 'Thu'], 'books'], ['birds counted', ['robins', 'crows', 'jays', 'finches'], 'birds']]);
+      const v = names.map(() => R(4, 25)), s = v.reduce((a, b) => a + b, 0);
+      return mtn(`A table shows ${title}: ${names.map((x, k) => `${x} ${v[k]}`).join(', ')}. How many ${what} is that in all?`, s, [s - Math.min(...v), s + 10, s - 10, Math.max(...v) * 4],
+        `Add every value: ${v.join(' + ')} = ${s}.`);
+    },
+    () => { // picture graph key
+      const k = pick([2, 4, 5, 10]), n = R(3, 8), half = k % 2 === 0 && R(0, 1) === 1, v = n * k + (half ? k / 2 : 0), [icon, what] = pick([['🍎', 'apples'], ['📚', 'books'], ['⚽', 'goals'], ['🐟', 'fish']]);
+      return mtn(`In a picture graph, each ${icon} stands for ${k} ${what}. One row shows ${n}${half ? ' and a half' : ''} ${icon}. How many ${what} is that?`, v, [n + (half ? 1 : 0), n * k, v + k, n + k],
+        `Each ${icon} is ${k}, so ${n} × ${k} = ${n * k}${half ? `. Half of ${k} is ${k / 2} more: ${n * k} + ${k / 2} = ${v}` : ''}.`);
+    },
+    () => { // tallies
+      const g = R(2, 6), r = R(1, 4), v = 5 * g + r;
+      return mtn(`A tally chart shows ${g} full groups of five tally marks and ${r} more mark${r > 1 ? 's' : ''}. What number is that?`, v, [g + r, 10 * g + r, 5 * g, 4 * g + r],
+        `Each full group (four marks with a line across them) stands for 5. ${g} × 5 = ${5 * g}, plus ${r} more is ${v}.`);
+    },
+    () => { // line plot in words
+      const c = [R(2, 6), R(2, 6), R(2, 6), R(2, 6)], v = R(2, 3), atLeast = R(0, 1), tot = c.reduce((a, b) => a + b, 0);
+      const pickd = atLeast ? c.slice(v - 1) : c.slice(0, v - 1), ans = pickd.reduce((a, b) => a + b, 0);
+      return mtn(`A line plot shows how many books each student read. There are ${c[0]} X marks above 1, ${c[1]} above 2, ${c[2]} above 3 and ${c[3]} above 4. How many students read ${atLeast ? `${v} or more` : `fewer than ${v}`} books?`, ans, [tot, tot - ans, c[v - 1], ans + 1],
+        pickd.length === 1 ? `Each X is one student. There are ${ans} X marks above 1, so ${ans} students read fewer than 2 books.` : `Each X is one student. Add the X marks above ${atLeast ? (v === 2 ? '2, 3 and 4' : '3 and 4') : '1 and 2'}: ${pickd.join(' + ')} = ${ans}.`);
+    },
+    () => { // moving on the grid
+      let x, y; do { x = R(1, 9); y = R(1, 9); } while (x === y);
+      return mtq(`Start at (0, 0). Move ${x} units to the right and ${y} units up. Which point are you on?`, `(${x}, ${y})`, [`(${y}, ${x})`, `(${x}, ${x})`, `(${x + y}, 0)`, `(${y}, ${y})`],
+        `The first number tells how far across (${x}), and the second tells how far up (${y}). The point is (${x}, ${y}).`);
+    },
+    () => { // what an ordered pair means
+      let x, y; do { x = R(1, 9); y = R(1, 9); } while (x === y);
+      const up = R(0, 1), n = up ? y : x;
+      return mtq(`In the ordered pair (${x}, ${y}), what does the ${n} tell you to do?`, `Go ${n} units ${up ? 'up' : 'right'}`, [`Go ${n} units ${up ? 'right' : 'up'}`, `Go ${n} units left`, `Go ${n} units down`],
+        `In an ordered pair, the first number tells how far to go right (across) and the second tells how far to go up. The ${n} is ${up ? 'second, so go up' : 'first, so go right'}.`);
+    }
+  ],
+  // ---------------- Term 2, Unit 5 ----------------
+  'math-u4-l0': [
+    () => { // all the factors
+      const n = pick([14, 15, 21, 22, 26, 27, 33, 34, 35, 38, 39, 44, 50, 52, 54, 56, 60, 63, 64, 66]), fs = factorsOf(n), mid = fs.slice(1, -1), show = a => a.join(', ');
+      let e; do { e = R(2, n - 1); } while (n % e === 0);
+      return mtq(`Which list shows all the factors of ${n}?`, show(fs), [show(fs.filter(x => x !== pick(mid))), show([...fs, e].sort((a, b) => a - b)), show(mid), show([n, 2 * n, 3 * n])],
+        `Find the factor pairs: ${factorPairs(n).map(([a, b]) => `${a} × ${b}`).join(', ')}. So the factors of ${n} are ${show(fs)}.`);
+    },
+    () => { // a multiple
+      const k = R(3, 9), m = k * R(3, 12), wr = [];
+      for (let x = m - 6; x < m + 30; x++) if (x % k && x > 1) wr.push(x);
+      return mtn(`Which number is a multiple of ${k}?`, m, shuffle(wr).slice(0, 3), `${m} = ${k} × ${m / k}, so ${m} is a multiple of ${k}. The other numbers are not in the ${k}s count.`);
+    },
+    () => { // prime
+      const p = pick([23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]), comp = shuffle([21, 27, 33, 39, 49, 51, 57, 63, 69, 77, 81, 87, 91, 93]).slice(0, 3);
+      return mtn('Which of these numbers is prime?', p, comp, `${p} has only two factors, 1 and ${p}, so it is prime. ${comp.map(c => `${c} = ${factorsOf(c)[1]} × ${c / factorsOf(c)[1]}`).join(', ')}, so those are composite.`);
+    },
+    () => { // composite
+      const c = pick([21, 27, 33, 39, 49, 51, 57, 63, 69, 77, 81, 87, 91, 93]), pr = shuffle([23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]).slice(0, 3), f = factorsOf(c)[1];
+      return mtn('Which of these numbers is composite?', c, pr, `${c} = ${f} × ${c / f}, so it has more than two factors: it's composite. The other three are prime.`);
+    },
+    () => { // factor pair
+      const n = pick([18, 20, 28, 30, 32, 36, 40, 42, 45, 48, 54, 56, 60, 64, 72]), [a, b] = pick(factorPairs(n).filter(([x]) => x > 1));
+      const cands = shuffle([[a, b + 1], [a + 1, b], [a - 1, b], [a, b - 1], [a + 2, b]]).filter(([x, y]) => x > 1 && y > 1 && x * y !== n);
+      return mtq(`Which pair is a factor pair of ${n}?`, `${a} and ${b}`, cands.map(([x, y]) => `${x} and ${y}`), `${a} × ${b} = ${n}, so ${a} and ${b} are a factor pair of ${n}.`);
+    },
+    () => { // common multiple
+      const [a, b] = shuffle(pick([[2, 9], [3, 8], [4, 9], [5, 6], [3, 7], [2, 11], [4, 7], [5, 8], [6, 7], [3, 10]])), m = lcm(a, b) * R(1, 3);
+      const only = (x, y) => { let v; do { v = x * R(2, 15); } while (v % y === 0); return v; };
+      let neither; do { neither = R(10, 90); } while (neither % a === 0 || neither % b === 0);
+      return mtn(`Which number is a multiple of both ${a} and ${b}?`, m, [only(a, b), only(b, a), neither],
+        `${m} ÷ ${a} = ${m / a} and ${m} ÷ ${b} = ${m / b}, so ${m} is a multiple of both. Each of the others is a multiple of only one of them, or neither.`);
+    },
+    () => { // divisibility by 3
+      let n; do { n = R(102, 999); } while (n % 3 || n % 9 === 0 || n % 5 === 0);
+      const s = String(n).split('').reduce((a, b) => a + +b, 0);
+      return mtq(`The digits of ${n} add up to ${s}. Which number must divide ${n} evenly?`, '3', ['5', '9', '10'],
+        `If the digits add up to a multiple of 3, the number divides evenly by 3. ${s} is a multiple of 3, so ${n} ÷ 3 = ${n / 3}. (${n} doesn't end in 0 or 5, and ${s} isn't a multiple of 9.)`);
+    }
+  ],
+  'math-u4-l1': [
+    () => { // exact, sometimes with a zero in the quotient
+      const d = R(3, 9), zero = R(0, 1); let q; do { q = R(101, 999); } while (zero && String(q)[1] !== '0');
+      const n = d * q, dz = String(q).includes('0') ? +String(q).replace('0', '') : null;
+      return mtn(`What is ${nf(n)} ÷ ${d}?`, q, [dz, q + 10, q - 10, q + 1, q * 10],
+        `Divide one place at a time (divide, multiply, subtract, bring down): ${nf(n)} ÷ ${d} = ${q}. Check: ${q} × ${d} = ${nf(n)}.`);
+    },
+    () => { // with a remainder
+      const d = R(3, 9), q = R(102, 999), r = R(1, d - 1), n = d * q + r, f = (a, b) => `${a} R${b}`;
+      return mtq(`What is ${nf(n)} ÷ ${d}?`, f(q, r), [f(q + 10, r), r + 1 < d ? f(q, r + 1) : f(q, r - 1), f(q - 1, r + d), f(q + 1, r)],
+        `${nf(n)} ÷ ${d} = ${q} R${r}. Check: ${q} × ${d} = ${nf(q * d)}, and ${nf(q * d)} + ${r} = ${nf(n)}.`);
+    },
+    () => { // the right check
+      const d = R(3, 9), q = R(102, 999), r = R(1, d - 1), n = d * q + r;
+      return mtq(`Which is the correct way to check ${nf(n)} ÷ ${d} = ${q} R${r}?`, `${q} × ${d} + ${r} = ${nf(n)}`, [`${q} × ${r} + ${d} = ${nf(n)}`, `${nf(n)} × ${d} + ${r} = ${q}`, `${q} + ${d} + ${r} = ${nf(n)}`],
+        `Multiply the quotient by the divisor, then add the remainder: ${q} × ${d} = ${nf(q * d)}, and ${nf(q * d)} + ${r} = ${nf(n)}.`);
+    },
+    () => { // full groups
+      const [what, d, box, lead] = pick([['eggs', 6, 'cartons', n => `A farm packs ${nf(n)} eggs into cartons of 6. How many cartons can it fill?`], ['days', 7, 'weeks', n => `How many full weeks are in ${nf(n)} days?`],
+        ['crayons', 8, 'boxes', n => `A factory packs ${nf(n)} crayons into boxes of 8. How many boxes can it fill?`], ['tennis balls', 3, 'cans', n => `A store packs ${nf(n)} tennis balls into cans of 3. How many cans can it fill?`]]);
+      const q = R(21, 199), r = R(1, d - 1), n = d * q + r;
+      return mtn(lead(n), q, [q + 1, q - 1, q + 10, r], `${nf(n)} ÷ ${d} = ${q} R${r}. That makes ${q} full ${box}, and the ${r} ${what} left over can't fill another one.`);
+    },
+    () => { // how many digits in the quotient
+      const d = R(3, 9), four = R(0, 1); let n; do { n = R(1000, 9999); } while (four ? Math.floor(n / 1000) < d : Math.floor(n / 1000) >= d);
+      const th = Math.floor(n / 1000), q = Math.floor(n / d), digits = String(q).length;
+      return mtn(`When you divide ${nf(n)} by ${d}, how many digits will the quotient have?`, digits, [1, 2, 3, 4, 5],
+        `Start with the thousands digit, ${th}. ${th < d ? `${th} is less than ${d}, so nothing goes in the thousands place and the quotient starts in the hundreds` : `${d} goes into ${th}, so the quotient starts in the thousands place`}. ${nf(n)} ÷ ${d} = ${nf(q)}${n % d ? ` R${n % d}` : ''}, which has ${digits} digits.`);
+    },
+    () => { // estimate
+      const d = R(3, 9), E = R(2, 9) * 100, n = d * E + R(-d * 15, d * 15);
+      return mtq(`Which is the best estimate for ${nf(n)} ÷ ${d}?`, `About ${nf(E)}`, [`About ${nf(E / 10)}`, `About ${nf(E * 10)}`, `About ${nf(E + 100)}`, `About ${nf(E - 100)}`],
+        `${nf(n)} is close to ${nf(d * E)}, and ${nf(d * E)} ÷ ${d} = ${nf(E)}. So the answer is about ${nf(E)}.`);
+    }
+  ],
+  'math-u4-l2': [
+    () => {
+      const d = R(36, 59), q = R(11, 29), n = d * q;   // divisors bigger than the practice problems use
+      return mtn(`What is ${nf(n)} ÷ ${d}?`, q, [q + 1, q - 1, q * 10, q + 10], `Use a list of multiples or an estimate: ${d} × ${q} = ${nf(n)}, so ${nf(n)} ÷ ${d} = ${q}.`);
+    },
+    () => { // too big or too small
+      const d = R(12, 39), q = R(3, 8), r = R(0, d - 1), n = d * q + r, big = R(0, 1) === 1, g = big ? q + 1 : q - 1, p = d * g;
+      const tooBig = `Try ${g - 1}, because ${nf(p)} is too big`, tooSmall = `Try ${g + 1}, because ${nf(p)} is too small`;
+      return mtq(`Ella's first guess for ${nf(n)} ÷ ${d} is ${g}. She finds ${d} × ${g} = ${nf(p)}. What should she do next?`, big ? tooBig : tooSmall, [big ? tooSmall : tooBig, `Keep ${g}, because ${nf(p)} is close enough`, `Start over with ${d} ÷ ${nf(n)}`],
+        big ? `${nf(p)} is more than ${nf(n)}, so ${g} is too big. Try ${g - 1}: ${d} × ${g - 1} = ${nf(d * (g - 1))}.` : `${nf(n)} − ${nf(p)} = ${nf(n - p)}, which is ${d} or more, so another ${d} still fits. Try ${g + 1}.`);
+    },
+    () => { // remainder: round up
+      const [lead, d] = pick([[(n, d) => `${nf(n)} people are coming to a play. Each row has ${d} chairs. How many rows are needed so everyone gets a seat?`, R(12, 30)],
+        [(n, d) => `${nf(n)} guests are coming to a dinner. Each long table seats ${d} people. How many tables are needed?`, R(12, 16)],
+        [(n, d) => `${nf(n)} campers are crossing a lake. Each boat holds ${d} campers. How many boat trips are needed to get everyone across?`, R(12, 20)]]);
+      const q = R(4, 25), r = R(1, d - 1), n = d * q + r;
+      return mtn(lead(n, d), q + 1, [q, q + 2, q - 1], `${nf(n)} ÷ ${d} = ${q} R${r}. ${q} would leave ${r} ${r === 1 ? 'person' : 'people'} out, so round up to ${q + 1}.`);
+    },
+    () => { // remainder: what's left over
+      const d = R(12, 30), q = R(4, 25), r = R(1, d - 1), n = d * q + r;
+      const q1 = pick([`A teacher has ${nf(n)} stickers. She puts ${d} on each sheet until she can't fill another. How many stickers are left over?`, `A farm packs ${nf(n)} strawberries into baskets of ${d}. How many strawberries are left over?`]);
+      return mtn(q1, r, [q, d - r, r + 1, q + 1], `${nf(n)} ÷ ${d} = ${q} R${r}: ${q} full and ${r} left over.`);
+    },
+    () => { // estimate with friendly numbers
+      let d; do { d = R(18, 62); } while (d % 10 === 5 || d % 10 === 0);
+      const rd = Math.round(d / 10) * 10, E = R(2, 9) * 10, n = rd * E + R(-20, 20);
+      return mtq(`Which is the best estimate for ${nf(n)} ÷ ${d}?`, `About ${E}`, [`About ${E * 10}`, `About ${E / 10}`, `About ${E * 2}`],
+        `Round ${d} to ${rd}. ${nf(n)} is close to ${nf(rd * E)}, and ${nf(rd * E)} ÷ ${rd} = ${E}.`);
+    }
+  ],
+  // ---------------- Term 2, Unit 6 ----------------
+  'math-u5-l0': [
+    () => { // common denominator
+      const [b, d] = shuffle(pick(PAIRS5)), a = R(1, b - 1), c = R(1, d - 1), L = lcm(b, d);
+      if (gcd(a, b) !== 1 || gcd(c, d) !== 1) return null;
+      const bad = [b + d, Math.max(b, d), b * d + b, L + Math.min(b, d), Math.abs(b - d) + L].filter(x => x > 1 && (x % b || x % d));
+      const list = x => Array.from({ length: L / x }, (_, i) => (i + 1) * x).join(', ');
+      return mtn(`Which is a common denominator for ${a}/${b} and ${c}/${d}?`, L, bad, `A common denominator is a multiple of both bottom numbers. Multiples of ${b}: ${list(b)}. Multiples of ${d}: ${list(d)}. ${L} is on both lists.`);
+    },
+    () => { // add
+      const [b, d] = shuffle(pick(PAIRS5)), a = R(1, b - 1), c = R(1, d - 1), L = lcm(b, d), A = a * L / b, C = c * L / d, S = A + C;
+      if (gcd(a, b) !== 1 || gcd(c, d) !== 1 || gcd(S, L) !== 1) return null;
+      return mtq(`What is ${a}/${b} + ${c}/${d}?`, fr(S, L), [[a + c, b + d], [S, 2 * L], [a + c, L], [S + 1, L]].filter(([x, y]) => !sameVal(x, y, S, L)).map(x => fr(...x)),
+        `Make a common denominator of ${L}: ${a}/${b} = ${A}/${L} and ${c}/${d} = ${C}/${L}. Then add the tops: ${A}/${L} + ${C}/${L} = ${S}/${L}.`);
+    },
+    () => { // subtract
+      const [b, d] = shuffle(pick(PAIRS5)), a = R(1, b - 1), c = R(1, d - 1), L = lcm(b, d), A = a * L / b, C = c * L / d;
+      if (A === C || gcd(a, b) !== 1 || gcd(c, d) !== 1) return null;
+      const [hi, lo, H, Lo] = A > C ? [fr(a, b), fr(c, d), A, C] : [fr(c, d), fr(a, b), C, A];
+      if (gcd(H - Lo, L) !== 1) return null;
+      return mtq(`What is ${hi} − ${lo}?`, fr(H - Lo, L), [[Math.abs(a - c), Math.abs(b - d)], [H + Lo, L], [H - Lo, 2 * L], [Math.abs(a - c), L]].filter(([x, y]) => x > 0 && y > 0 && !sameVal(x, y, H - Lo, L)).map(x => fr(...x)),
+        `Make a common denominator of ${L}: ${hi} = ${H}/${L} and ${lo} = ${Lo}/${L}. Then subtract the tops: ${H}/${L} − ${Lo}/${L} = ${H - Lo}/${L}.`);
+    },
+    () => halfPicks(R(0, 1) === 1, 7, 15),
+    () => { // which is greater
+      const [b, d] = shuffle(pick(PAIRS5)), a = R(1, b - 1), c = R(1, d - 1), L = lcm(b, d), A = a * L / b, C = c * L / d;
+      if (A === C || gcd(a, b) !== 1 || gcd(c, d) !== 1) return null;
+      const big = A > C ? fr(a, b) : fr(c, d), small = A > C ? fr(c, d) : fr(a, b);
+      return mtq(`Which is greater: ${a}/${b} or ${c}/${d}?`, big, [small, 'They are equal', 'There is no way to tell'],
+        `Use a common denominator of ${L}: ${a}/${b} = ${A}/${L} and ${c}/${d} = ${C}/${L}. ${Math.max(A, C)} is more than ${Math.min(A, C)}, so ${big} is greater.`);
+    },
+    () => { // adding, in a story
+      const [b, d] = shuffle(pick(PAIRS5)), a = R(1, b - 1), c = R(1, d - 1), L = lcm(b, d), A = a * L / b, C = c * L / d, S = A + C;
+      if (gcd(a, b) !== 1 || gcd(c, d) !== 1 || gcd(S, L) !== 1) return null;
+      const u = x => ` mile${x > 1 ? 's' : ''}`;
+      return mtq(`Jada walked ${a}/${b} mile to the park and then ${c}/${d} mile to the library. How far did she walk in all?`, fr(S, L) + u(S / L), [[a + c, b + d], [S, 2 * L], [a + c, L]].filter(([x, y]) => !sameVal(x, y, S, L)).map(([x, y]) => fr(x, y) + u(x / y)),
+        `Make a common denominator of ${L}: ${a}/${b} = ${A}/${L} and ${c}/${d} = ${C}/${L}. Add: ${A}/${L} + ${C}/${L} = ${S}/${L}${u(S / L)}.`);
+    }
+  ],
+  'math-u5-l1': [
+    () => { // fraction of a number (bigger groups than practice)
+      const d = pick([3, 4, 5, 6, 8, 10]), a = R(1, d - 1), m = R(11, 15), n = d * m;
+      if (gcd(a, d) !== 1) return null;
+      return mtn(`What is ${a}/${d} of ${n}?`, a * m, [m, n - a * m, a * m + m, n * a], `Divide by the bottom: ${n} ÷ ${d} = ${m}. Then multiply by the top: ${m} × ${a} = ${a * m}.`);
+    },
+    () => { // fraction × fraction (bottoms the practice never uses)
+      const [b, d] = shuffle([pick([7, 9]), pick([2, 3, 4, 5, 7, 9])]), a = R(1, b - 1), c = R(1, d - 1);
+      if (gcd(a * c, b * d) !== 1) return null;
+      return mtq(`What is ${a}/${b} × ${c}/${d}?`, fr(a * c, b * d), [fr(a * c, b + d), fr(a + c, b * d), fr(a + c, b + d), fr(a * d, b * c)],
+        `Multiply the tops: ${a} × ${c} = ${a * c}. Multiply the bottoms: ${b} × ${d} = ${b * d}. So the answer is ${a * c}/${b * d}.`);
+    },
+    () => { // bigger or smaller
+      const n = R(4, 20), less = R(0, 1); let p, q; do { q = R(2, 9); p = R(1, q - 1); } while (gcd(p, q) !== 1);
+      const small = `${n} × ${p}/${q}`, big = `${n} × ${q + p}/${q}`, same = [`${n} × 1`, `${n} × ${q}/${q}`];
+      return mtq(`Without multiplying, which product is ${less ? 'less' : 'greater'} than ${n}?`, less ? small : big, [less ? big : small, ...same],
+        `Multiplying by a fraction less than 1 makes a number smaller, by a fraction greater than 1 makes it bigger, and by 1 (like ${q}/${q}) keeps it the same. So ${less ? small : big} is ${less ? 'less' : 'greater'} than ${n}.`);
+    },
+    () => { // whole number × fraction (bigger whole numbers than practice)
+      const k = R(7, 12), d = pick([3, 4, 5, 6, 8]), a = R(1, d - 1);
+      if (k % d === 0 || gcd(a, d) !== 1) return null;   // keeps it from being the same as a practice "fraction of a number"
+      return mtq(`What is ${k} × ${a}/${d}?`, fr(k * a, d), [fr(k * a, k * d), fr(a, k * d), fr(k + a, d)],
+        `Multiply the whole number by the top and keep the bottom: ${k} × ${a} = ${k * a}, so ${k} × ${a}/${d} = ${k * a}/${d}.`);
+    },
+    () => { // fraction of a fraction, in a story
+      const b = pick([9, 10]), d = pick([2, 3, 4, 5]), a = R(2, b - 1), c = R(1, d - 1);
+      if (gcd(a, b) !== 1 || gcd(c, d) !== 1 || gcd(a * c, b * d) !== 1) return null;
+      return mtq(`${a}/${b} of a pan of lasagna is left. Dad eats ${c}/${d} of what is left. What fraction of the whole pan does Dad eat?`, fr(a * c, b * d), [fr(a * c, b + d), fr(c, d), fr(a + c, b * d), fr(c, b)],
+        `"${c}/${d} of ${a}/${b}" means ${c}/${d} × ${a}/${b}. Tops: ${c} × ${a} = ${a * c}. Bottoms: ${d} × ${b} = ${b * d}. Dad eats ${a * c}/${b * d} of the pan.`);
+    },
+    () => { // fraction of a group, in a story
+      const d = pick([3, 4, 5, 6, 8]), a = R(1, d - 1), m = R(11, 15), n = d * m;
+      if (gcd(a, d) !== 1) return null;
+      const q = pick([`There are ${n} students in the gym. ${a}/${d} of them are wearing red. How many students are wearing red?`, `A shelf holds ${n} books. ${a}/${d} of them are mysteries. How many mystery books are there?`, `A parking lot has ${n} cars. ${a}/${d} of them are white. How many white cars are there?`]);
+      return mtn(q, a * m, [m, n - a * m, a * m + a, a + m], `Find 1/${d} first: ${n} ÷ ${d} = ${m}. Then ${a}/${d} is ${a} × ${m} = ${a * m}.`);
+    }
+  ],
+  'math-u5-l2': [
+    () => { // a fraction is a division (more than one whole)
+      const b = R(2, 4); let a; do { a = R(5, 12); } while (a % b === 0);
+      return mtq(`Which division does the fraction ${a}/${b} show?`, `${a} ÷ ${b}`, [`${b} ÷ ${a}`, `${a} × ${b}`, `${a} − ${b}`], `A fraction is the top divided by the bottom, so ${a}/${b} means ${a} ÷ ${b}.`);
+    },
+    () => { // whole ÷ unit fraction (bottoms the practice never uses)
+      const n = R(2, 9), d = R(9, 12);
+      return mtq(`What is ${n} ÷ 1/${d}?`, String(n * d), [fr(n, d), String(n + d), fr(d, n), String(n * d + d)], `How many 1/${d}s fit in ${n}? Each whole holds ${d} of them, so ${n} × ${d} = ${n * d}.`);
+    },
+    () => { // unit fraction ÷ whole (bigger divisors than practice)
+      const d = R(2, 6), n = R(6, 9);
+      return mtq(`What is 1/${d} ÷ ${n}?`, fr(1, d * n), [fr(n, d), fr(1, d + n), String(d * n), fr(d, n)], `Splitting 1/${d} into ${n} equal parts makes pieces ${n} times smaller: 1/${d} ÷ ${n} = 1/${d * n}.`);
+    },
+    () => { // sharing more things than people
+      let n, m; do { n = R(2, 6); m = R(n + 1, 3 * n); } while (m % n === 0 || gcd(m % n, n) !== 1);
+      const w = Math.floor(m / n), r = m % n, [thing, things] = pick([['pizza', 'pizzas'], ['pie', 'pies'], ['sandwich', 'sandwiches']]), nm = (x, y, z) => `${x} ${y}/${z} ${things}`;
+      return mtq(`${n} friends share ${m} ${things} equally. How much does each friend get?`, nm(w, r, n), [`${n}/${m} of a ${thing}`, nm(w, r, m), nm(w + 1, r, n), `${m - n} ${m - n === 1 ? thing : things}`],
+        `Sharing ${m} among ${n} is ${m} ÷ ${n}, which is ${m}/${n}. ${m} ÷ ${n} = ${w} R${r}, so each friend gets ${w} ${r}/${n} ${things}.`);
+    },
+    () => { // how many pieces fit
+      const n = R(10, 15), d = R(2, 5), [q, item] = pick([[`A baker has ${n} pounds of dough. Each loaf uses 1/${d} pound. How many loaves can the baker make?`, 'loaves'],
+        [`A painter has ${n} gallons of paint. Each fence section needs 1/${d} gallon. How many sections can be painted?`, 'sections'], [`A coach has ${n} liters of water. Each cup holds 1/${d} liter. How many cups can be filled?`, 'cups']]);
+      return mtn(q, n * d, [n + d, n * d + d, Math.floor(n / d), d], `How many 1/${d}s fit in ${n}? ${n} ÷ 1/${d} = ${n} × ${d} = ${n * d} ${item}.`);
+    },
+    () => { // splitting a piece
+      const k = R(2, 5), d = R(7, 10);
+      return mtq(`${k} friends share 1/${d} of a cake equally. What fraction of the whole cake does each friend get?`, fr(1, d * k), [fr(k, d), fr(1, d + k), fr(1, d), fr(d, k)],
+        `Split 1/${d} into ${k} equal parts: 1/${d} ÷ ${k} = 1/${d * k}.`);
+    }
+  ],
+  // ---------------- Term 2, Unit 7 ----------------
+  'math-u6-l0': [
+    () => { // which digit is in a place
+      let s; do { s = R(1, 9) + '.' + String(R(0, 999)).padStart(3, '0'); } while (new Set(s.replace('.', '')).size < 4);
+      const names = ['ones', 'tenths', 'hundredths', 'thousandths'], ds = [s[0], s[2], s[3], s[4]], k = R(1, 3);
+      return mtq(`In ${s}, which digit is in the ${names[k]} place?`, ds[k], ds.filter((_, i) => i !== k), `After the decimal point come the tenths, then the hundredths, then the thousandths. In ${s}, the ${names[k]} digit is ${ds[k]}.`);
+    },
+    () => { // what a digit is worth (numbers less than 1)
+      let s, k, d; do { s = '0.' + R(100, 999); k = R(1, 3); d = s[1 + k]; } while (d === '0' || s.split(d).length !== 2);
+      const names = ['', 'tenths', 'hundredths', 'thousandths'];
+      return mtq(`In ${s}, what is the ${d} worth?`, `${d} ${names[k]}`, [...[1, 2, 3].filter(x => x !== k).map(x => `${d} ${names[x]}`), `${d} ones`],
+        `The ${d} is in the ${names[k]} place, so it is worth ${d} ${names[k]}, or ${dnum(d / 10 ** k)}.`);
+    },
+    () => { // number words → decimal
+      const w = R(1, 20), th = R(0, 1);
+      if (th) { let n; do { n = R(1, 99); } while (n % 10 === 0); const ans = dec(w + n / 1000, 3), word = `${numWords(w)} and ${numWords(n)} thousandth${n > 1 ? 's' : ''}`;
+        return mtq(`How do you write "${word}" as a decimal?`, ans, [dnum(w + n / 100), dec(w + n / 10000, 4), dnum((w * 1000 + n) / 100)], `Thousandths use three places after the point, so ${numWords(n)} thousandth${n > 1 ? 's' : ''} is ${dec(n / 1000, 3).slice(1)}. The answer is ${ans}.`); }
+      const n = R(1, 9), ans = dec(w + n / 100, 2), word = `${numWords(w)} and ${numWords(n)} hundredth${n > 1 ? 's' : ''}`;
+      return mtq(`How do you write "${word}" as a decimal?`, ans, [`${w}.${n}`, dec(w + n / 1000, 3), dnum((w * 100 + n) / 10)], `Hundredths use two places after the point, so ${numWords(n)} hundredth${n > 1 ? 's' : ''} is .0${n}. The answer is ${ans}.`);
+    },
+    () => { // greatest or least (with a whole number part)
+      const w = R(1, 9), t = R(3, 8), most = R(0, 1);
+      const vals = shuffle([clean(w + t / 10), clean(w + (t - 1) / 10 + R(1, 9) / 100), clean(w + (t - 2) / 10 + R(11, 99) / 1000), clean(w + R(1, 9) / 100)]);
+      const ans = most ? Math.max(...vals) : Math.min(...vals);
+      return mtq(`Which of these decimals is the ${most ? 'greatest' : 'least'}?`, dnum(ans), vals.filter(v => v !== ans).map(dnum),
+        `Give them all three places after the point: ${vals.map(v => v.toFixed(3)).join(', ')}. The ones are all ${w}, so compare the tenths, then the hundredths, then the thousandths. ${dnum(ans)} is the ${most ? 'greatest' : 'least'}.`);
+    },
+    () => { // rounding (bigger numbers than practice)
+      const to = pick(['whole number', 'tenth', 'hundredth']); let T; do { T = R(30001, 99999); } while (T % 10 === 0);
+      const pl = { 'whole number': 0, tenth: 1, hundredth: 2 }, rnd = p => { const u = 10 ** (3 - p); return Math.round(T / u) * u; };
+      const p = pl[to], u = 10 ** (3 - p), ans = rnd(p), dn = Math.floor(T / u) * u, alt = ans === dn ? dn + u : dn, next = Math.floor(T / (u / 10)) % 10;
+      const wrongs = [[alt, p], ...[0, 1, 2].filter(x => x !== p).map(x => [rnd(x), x]), [dn - u, p]].filter(([v]) => v !== ans).map(([v, x]) => dec(v / 1000, x));
+      return mtq(`Round ${dec(T / 1000, 3)} to the nearest ${to}.`, dec(ans / 1000, p), wrongs,
+        `Look at the digit just to the right of the ${to === 'whole number' ? 'ones' : to + 's'} place: it's ${next}. ${next >= 5 ? '5 or more, so round up' : '4 or less, so round down'}: ${dec(ans / 1000, p)}.`);
+    },
+    () => { // expanded form with a zero
+      const w = R(1, 9); let dg; do { dg = [R(0, 9), R(0, 9), R(1, 9)]; } while (dg.filter(x => !x).length !== 1);
+      const z = dg.indexOf(0), parts = [String(w), ...dg.map((d, i) => d ? dnum(d / 10 ** (i + 1)) : null)].filter(Boolean);
+      const sw = j => { const t = dg.slice(); [t[z], t[j]] = [t[j], t[z]]; return `${w}.${t.join('')}`; }, ans = `${w}.${dg.join('')}`;
+      const cands = [`${w}.${dg.filter(Boolean).join('')}`, sw(z + 1), z ? sw(z - 1) : null, `${w}.0${dg.join('')}`, `${w}.${dg.filter(Boolean).join('')}0${R(1, 9)}`].filter(c => c && +c !== +ans);
+      const wr = cands.filter((c, i) => cands.findIndex(o => +o === +c) === i);
+      return mtq(`Which number is ${parts.join(' + ')}?`, ans, wr,
+        `Write a digit for each place: ${w} ones, then tenths, hundredths and thousandths, with a 0 where a place is missing. ${parts.join(' + ')} = ${w}.${dg.join('')}.`);
+    }
+  ],
+  'math-u6-l1': [
+    () => { // tenths + hundredths (bigger numbers than practice)
+      let A, B; do { A = R(300, 799); B = R(105, 999); } while (B % 10 === 0 || A % 10 === 0);
+      const a = A / 10, b = B / 100, v = clean(a + b);
+      return mtq(`What is ${dnum(a)} + ${dec(b, 2)}?`, dec(v, 2), [dec((A + B) / 100, 2), dec(clean(v + 1), 2), dec(clean(v - 0.1), 2), dec((A + B) / 10, 1)],
+        `Line up the decimal points. Write ${dnum(a)} as ${dec(a, 2)}, then add: ${dec(a, 2)} + ${dec(b, 2)} = ${dec(v, 2)}.`);
+    },
+    () => { // whole number − decimal (bigger whole numbers than practice)
+      const w = R(21, 60); let P; do { P = R(105, 1999); } while (P % 10 === 0);
+      const p = P / 100, v = clean(w - p);
+      return mtq(`What is ${w} − ${dec(p, 2)}?`, dec(v, 2), [dec(clean(w - Math.floor(p) + (P % 100) / 100), 2), dec(clean(v + 1), 2), dec(clean(v - 0.1), 2), dec(clean(w + p), 2)],
+        `Write ${w} as ${w}.00 so both numbers have two places after the point. Then subtract, borrowing across the zeros: ${w}.00 − ${dec(p, 2)} = ${dec(v, 2)}.`);
+    },
+    () => { // estimate
+      const plus = R(0, 1); let a, b; do { a = R(1050, 2999) / 100; b = R(150, 999) / 100; } while ([a, b].some(x => Math.abs(x - Math.round(x)) > 0.35) || (!plus && a - b < 3));
+      const ra = Math.round(a), rb = Math.round(b), E = plus ? ra + rb : ra - rb;
+      return mtq(`Which is the best estimate for ${dec(a, 2)} ${plus ? '+' : '−'} ${dec(b, 2)}?`, `About ${E}`, [`About ${E * 10}`, `About ${plus ? Math.abs(ra - rb) : ra + rb}`, `About ${E + 5}`],
+        `Round each number to the nearest whole number: ${dec(a, 2)} is about ${ra} and ${dec(b, 2)} is about ${rb}. ${ra} ${plus ? '+' : '−'} ${rb} = ${E}.`);
+    },
+    () => { // two prices and change
+      const nm = pick(['Maya', 'Noah', 'Ruby', 'Jack']), [i1, i2] = shuffle(['a notebook', 'a pen', 'a snack', 'a bookmark', 'a sticker pack']).slice(0, 2), pay = pick([10, 20]);
+      let a, b; do { a = R(105, 795); b = R(105, 795); } while (a + b >= pay * 100 - 50);
+      const v = pay * 100 - a - b;
+      return mtq(`${nm} buys ${i1} for ${money(a)} and ${i2} for ${money(b)}, and pays with a $${pay} bill. How much change does ${nm} get?`, money(v), [money(a + b), money(pay * 100 - a), money(v + 100), money(v - 10)],
+        `Step 1: add the prices: ${money(a)} + ${money(b)} = ${money(a + b)}. Step 2: subtract from $${pay}.00: $${pay}.00 − ${money(a + b)} = ${money(v)}.`);
+    },
+    () => { // three jumps
+      let a, b, c; do { a = R(11, 49); b = R(105, 495); c = R(11, 49); } while (!(a % 10) || !(b % 10) || !(c % 10));
+      const s = (a * 10 + b + c * 10) / 100, mis = (a + b + c) / 100;
+      return mtq(`A frog jumps ${dnum(a / 10)} meters, then ${dec(b / 100, 2)} meters, then ${dnum(c / 10)} meters. How far does it jump in all?`, `${dec(s, 2)} meters`, [`${dec(mis, 2)} meters`, `${dec(clean(s - 1), 2)} meters`, `${dec(clean(s + 0.1), 2)} meters`],
+        `Line up the decimal points and add: ${dec(a / 10, 2)} + ${dec(b / 100, 2)} + ${dec(c / 10, 2)} = ${dec(s, 2)} meters.`);
+    },
+    () => { // missing number (bigger whole numbers than practice)
+      const t = R(21, 40); let P; do { P = R(105, t * 100 - 105); } while (P % 10 === 0);
+      const p = P / 100, v = clean(t - p);
+      return mtq(`What number makes this true?  ${dec(p, 2)} + ☐ = ${t}`, dec(v, 2), [dec(clean(t + p), 2), dec(clean(v + 1), 2), dec(clean(t - Math.floor(p) + (P % 100) / 100), 2), dec(clean(v - 0.1), 2)],
+        `Subtract to find the missing part: ${t}.00 − ${dec(p, 2)} = ${dec(v, 2)}. Check: ${dec(p, 2)} + ${dec(v, 2)} = ${t}.00.`);
+    }
+  ],
+  'math-u6-l2': [
+    () => { // powers of ten (thousandths or 4-digit numbers, unlike practice)
+      const k = pick([1, 2, 3]), p = 10 ** k;
+      if (R(0, 1)) { let m; do { m = R(1001, 9999); } while (m % 10 === 0); const x = m / 1000, v = x * p;
+        return mtq(`What is ${dec(x, 3)} × ${nf(p)}?`, nd(v), [nd(x * p * 10), nd(x * p / 10), nd(x / p)], `Multiplying by ${nf(p)} moves every digit ${k} place${k > 1 ? 's' : ''} to the left: ${dec(x, 3)} × ${nf(p)} = ${nd(v)}.`); }
+      let y; do { y = R(1001, 9999); } while (y % 10 === 0);
+      return mtq(`What is ${nf(y)} ÷ ${nf(p)}?`, nd(y / p), [nd(y / p / 10), nd(y / p * 10), nd(y * p)], `Dividing by ${nf(p)} moves every digit ${k} place${k > 1 ? 's' : ''} to the right: ${nf(y)} ÷ ${nf(p)} = ${nd(y / p)}.`);
+    },
+    () => { // hundredths × whole number
+      let X; do { X = R(105, 995); } while (X % 10 === 0);
+      const x = X / 100, w = R(3, 9), v = X * w / 100;
+      return mtq(`What is ${dec(x, 2)} × ${w}?`, nd(v), [nd(v * 10), nd(v / 10), nd(Math.floor(x) * w + (X % 100) / 100)],
+        `Multiply without the point: ${X} × ${w} = ${nf(X * w)}. ${dec(x, 2)} has 2 places after the point, so the answer does too: ${dec(v, 2)}. Estimate: ${Math.round(x)} × ${w} = ${Math.round(x) * w}, which is close.`);
+    },
+    () => { // hundredths ÷ whole number
+      let q, w; do { q = R(105, 999); w = R(3, 9); } while (q % 10 === 0 || (q * w) % 10 === 0);
+      const n = q * w;
+      return mtq(`What is ${dec(n / 100, 2)} ÷ ${w}?`, dec(q / 100, 2), [dec(q / 10, 1), dec(q / 1000, 3), dec(clean(q / 100 + 1), 2)],
+        `Divide like whole numbers: ${nf(n)} ÷ ${w} = ${q}. Then put the decimal point straight up: ${dec(q / 100, 2)}. Check: ${dec(q / 100, 2)} × ${w} = ${dec(n / 100, 2)}.`);
+    },
+    () => { // estimate
+      let X; do { X = R(15, 95); } while (X % 10 === 0 || Math.abs(X % 10 - 5) < 2);
+      const x = X / 10, w = R(3, 9), rx = Math.round(x), E = rx * w;
+      return mtq(`Which is the best estimate for ${dnum(x)} × ${w}?`, `About ${E}`, [`About ${E * 10}`, `About ${nd(E / 10)}`, `About ${E * 2}`],
+        `${dnum(x)} is close to ${rx}, and ${rx} × ${w} = ${E}.`);
+    },
+    () => { // price × 10 or 100
+      const c = R(15, 95), k = pick([10, 100]), item = pick(['sticker', 'pencil', 'eraser', 'bead']);
+      return mtq(`One ${item} costs ${money(c)}. How much do ${k} ${item}s cost?`, money(c * k), [money(c * k / 10), money(c * k * 10), money(c + k * 100)],
+        `Multiplying by ${k} moves each digit ${k === 10 ? 'one place' : 'two places'} to the left: ${money(c)} × ${k} = ${money(c * k)}.`);
+    },
+    () => { // split a bill
+      const n = R(3, 8), each = R(105, 995), total = n * each;
+      return mtq(`${n} friends split a ${money(total)} bill equally. How much does each friend pay?`, money(each), [money(each * 10), money(each + 10), money(each - 5)],
+        `Divide: ${money(total)} ÷ ${n} = ${money(each)}. Check: ${money(each)} × ${n} = ${money(total)}.`);
+    }
+  ],
+  // ---------------- Term 2, Unit 8 ----------------
+  'math-u7-l0': [
+    () => { // kind of angle
+      const d = pick([R(5, 85), R(5, 85), R(95, 175), R(95, 175), 90, 180]), kinds = ['acute', 'right', 'obtuse', 'straight'], k = d < 90 ? 0 : d === 90 ? 1 : d < 180 ? 2 : 3;
+      return mtq(`What kind of angle measures ${d}°?`, art(kinds[k]) + ' angle', kinds.filter((_, i) => i !== k).map(x => art(x) + ' angle'),
+        `Acute angles are less than 90°, a right angle is exactly 90°, obtuse angles are between 90° and 180°, and a straight angle is 180°. So ${d}° is ${art(kinds[k])} angle.`);
+    },
+    () => { // which protractor scale
+      const a = pick([R(3, 17) * 5, R(21, 35) * 5]), small = a < 90, other = 180 - a, [s1, s2] = shuffle([a, other]);
+      return mtn(`A ray points to ${s1} on one protractor scale and ${s2} on the other. The angle is ${small ? 'smaller' : 'larger'} than a right angle. What does it measure?`, a, [other, 90, 360 - a, 180], `An angle ${small ? 'smaller' : 'larger'} than a right angle measures ${small ? 'less' : 'more'} than 90°, so read ${a}°, not ${other}°.`, degF);
+    },
+    () => { // third angle
+      const whole = pick([180, 360]); let a, b; do { a = R(2, whole === 180 ? 12 : 24) * 5; b = R(2, whole === 180 ? 12 : 24) * 5; } while (whole - a - b < 10);
+      const c = whole - a - b;
+      return mtn(`Three angles fit together ${whole === 180 ? 'along a straight line (180°)' : 'all the way around a point (360°)'}. Two of them measure ${a}° and ${b}°. What does the third angle measure?`, c, [a + b, whole - a, whole - b, c + 10],
+        `The three angles add up to ${whole}°. ${a}° + ${b}° = ${a + b}°, and ${whole}° − ${a + b}° = ${c}°.`, degF);
+    },
+    () => { // clock turns
+      const k = R(1, 11), d = 30 * k;
+      return mtn(`The minute hand of a clock turns from the 12 to the ${k}. How many degrees does it turn?`, d, [5 * k, 15 * k, 360 - d, d + 30],
+        `A full turn is 360°, and the clock has 12 numbers, so each number is 360° ÷ 12 = 30°. ${k} × 30° = ${d}°.`, degF);
+    },
+    () => { // three parts make the whole
+      let a, b, c; do { a = R(2, 9) * 5; b = R(2, 9) * 5 + R(1, 4); c = R(10, 50); } while (a + b + c >= 180);
+      const s = a + b + c;
+      return mtn(`An angle is split into three smaller angles that measure ${a}°, ${b}° and ${c}°. What does the whole angle measure?`, s, [s - c, s + 10, s - 10, 180 - s],
+        `The parts add up to the whole: ${a}° + ${b}° + ${c}° = ${s}°.`, degF);
+    },
+    () => { // missing part of an angle that isn't 90° or 180°
+      const W = pick([45, 60, 75, 100, 110, 120, 135, 140, 150, 160]), a = R(2, Math.floor((W - 10) / 5)) * 5;
+      return mtn(`A ${W}° angle is split into two parts. One part measures ${a}°. What does the other part measure?`, W - a, [W + a, 180 - a, 90 - a, a],
+        `Subtract the part you know from the whole: ${W}° − ${a}° = ${W - a}°.`, degF);
+    }
+  ],
+  'math-u7-l1': [
+    () => { // triangle by its sides
+      const kind = pick(['Equilateral', 'Isosceles', 'Scalene']), size = { Equilateral: 1, Isosceles: 2, Scalene: 3 }[kind];
+      const ok = t => { const [a, b, c] = t.slice().sort((x, y) => x - y); return a + b > c && a * a + b * b !== c * c; };
+      let s; do { const x = R(3, 15); s = kind === 'Equilateral' ? [x, x, x] : kind === 'Isosceles' ? shuffle([x, x, R(2, 2 * x - 1)]) : [x, R(3, 15), R(3, 15)]; } while (new Set(s).size !== size || !ok(s));
+      // An equilateral triangle is also isosceles ("at least 2 equal sides"), so Isosceles is never a wrong choice for it
+      const wrongs = kind === 'Equilateral' ? ['Scalene', 'Right', 'Obtuse'] : ['Equilateral', 'Isosceles', 'Scalene', 'Right'].filter(x => x !== kind);
+      return mtq(`A triangle has sides of ${s[0]} cm, ${s[1]} cm and ${s[2]} cm. What kind of triangle is it?`, kind, wrongs,
+        { Equilateral: 'All three sides are equal, so it is equilateral.', Isosceles: 'Exactly two sides are equal, so it is isosceles.', Scalene: 'No two sides are equal, so it is scalene.' }[kind]);
+    },
+    () => { // triangle by its angles
+      const kind = pick(['Acute', 'Right', 'Obtuse']); let a, b, c;
+      do { if (kind === 'Right') { a = 90; b = R(10, 80); } else if (kind === 'Obtuse') { a = R(95, 160); b = R(5, 175 - a); } else { a = R(50, 85); b = R(50, 85); } c = 180 - a - b; }
+      while (c <= 0 || (kind === 'Acute' && (c >= 90 || (a === 60 && b === 60))));
+      const t = shuffle([a, b, c]);
+      return mtq(`A triangle has angles of ${t[0]}°, ${t[1]}° and ${t[2]}°. What kind of triangle is it?`, kind, ['Acute', 'Right', 'Obtuse', 'Equilateral'].filter(x => x !== kind),
+        { Acute: 'All three angles are less than 90°, so it is an acute triangle.', Right: 'One angle is exactly 90°, so it is a right triangle.', Obtuse: 'One angle is more than 90°, so it is an obtuse triangle.' }[kind]);
+    },
+    () => { // quadrilaterals
+      const [desc, ans, why] = pick([['has exactly one pair of parallel sides', 'Trapezoid', 'A trapezoid has exactly one pair of parallel sides. Parallelograms, rectangles, rhombuses and squares all have two pairs.'],
+        ['has 4 equal sides, but its angles are not right angles', 'Rhombus', 'A rhombus has 4 equal sides. With right angles it would be a square, so this one is a rhombus.'],
+        ['has 4 right angles, but its sides are not all equal', 'Rectangle', 'A rectangle has 4 right angles. With 4 equal sides it would be a square, so this one is a rectangle.'],
+        ['has 4 equal sides and 4 right angles', 'Square', 'Only a square has both 4 equal sides and 4 right angles.']]);
+      return mtq(`Which shape ${desc}?`, ans, shuffle(['Trapezoid', 'Rhombus', 'Rectangle', 'Square', 'Parallelogram'].filter(x => x !== ans)).slice(0, 3), why);
+    },
+    () => { // always true
+      const T = { 'Every square is a rhombus.': 'A square has 4 equal sides, so it is always a rhombus.', 'Every rectangle is a parallelogram.': 'A rectangle has two pairs of parallel sides, so it is always a parallelogram.',
+        'Every square is a rectangle.': 'A square has 4 right angles, so it is always a rectangle.', 'Every rhombus is a parallelogram.': 'A rhombus has two pairs of parallel sides, so it is always a parallelogram.' };
+      const t = pick(Object.keys(T));
+      return mtq('Which of these statements is always true?', t, shuffle(['Every rectangle is a square.', 'Every rhombus is a square.', 'Every parallelogram is a rectangle.', 'Every trapezoid is a parallelogram.', 'Every quadrilateral is a rectangle.']).slice(0, 3), T[t] + ' The other statements are only sometimes true, or never.');
+    },
+    () => { // lines, segments, rays and angles
+      const L = [['has two endpoints', 'a line segment', 'A line segment is part of a line with an endpoint at each end.'], ['has one endpoint and goes on forever in one direction', 'a ray', 'A ray starts at one endpoint and goes on forever in one direction.'],
+        ['has no endpoints and goes on forever in both directions', 'a line', 'A line has no endpoints: it goes on forever both ways.'], ['is made of two rays that share an endpoint', 'an angle', 'An angle is two rays that meet at a shared endpoint, the vertex.']];
+      const [d, ans, why] = pick(L);
+      return mtq(`Which of these ${d}?`, ans, L.filter(x => x[1] !== ans).map(x => x[1]), why);
+    },
+    () => { // lines of symmetry
+      const [thing, n, why] = pick([['an isosceles triangle that is not equilateral', 1, 'Only the fold down the middle, through the top corner, makes the two halves match.'], ['a regular pentagon', 5, 'A fold through each corner and the middle of the opposite side works: 5 lines.'],
+        ['a rhombus that is not a square', 2, 'Only the two folds along the diagonals make the halves match.'], ['the capital letter X', 2, 'X folds top to bottom and side to side: 2 lines.'],
+        ['the capital letter N', 0, 'No fold makes N match itself.'], ['the capital letter M', 1, 'M folds down the middle: 1 line.'], ['the capital letter E', 1, 'E folds top to bottom: 1 line.'],
+        ['a parallelogram with slanted sides that is not a rhombus', 0, 'No fold makes a slanted parallelogram match itself.'], ['the capital letter S', 0, 'No fold makes S match itself.']]);
+      return mtn(`How many lines of symmetry does ${thing} have?`, n, [n + 1, n - 1, n + 2, 4, 3], why);
+    }
+  ],
+  'math-u7-l2': [
+    () => { // big box (longer than the practice boxes)
+      const [thing, unit, tall, L, W, H] = pick([['shipping crate', 'feet', 'tall', R(13, 20), R(4, 8), R(4, 8)], ['sandbox', 'feet', 'deep', R(13, 16), R(5, 9), R(1, 2)],
+        ['raised garden bed', 'feet', 'tall', R(13, 18), R(3, 4), R(2, 3)], ['fish tank', 'inches', 'tall', R(13, 20), R(8, 12), R(10, 16)]]), V = L * W * H;
+      return mtq(`A ${thing} is ${L} ${unit} long, ${W} ${unit} wide and ${H} ${unit} ${tall}. What is its volume?`, `${nf(V)} cubic ${unit}`, [`${L + W + H} cubic ${unit}`, `${L * W} cubic ${unit}`, `${nf(V + W * H)} cubic ${unit}`],
+        `Volume = length × width × height = ${L} × ${W} × ${H} = ${nf(V)} cubic ${unit}.`);
+    },
+    () => { // layers
+      const k = R(42, 80), n = R(2, 9);
+      return mtn(`Each layer of a box holds ${k} cubes. The box has ${n} layers. How many cubes fill the box?`, k * n, [k + n, k * (n - 1), k * n + k],
+        `There are ${n} layers of ${k} cubes: ${k} × ${n} = ${nf(k * n)} cubes.`);
+    },
+    () => { // missing height
+      const L = R(4, 10), W = R(2, 6), H = R(3, 9), V = L * W * H;
+      return mtn(`A box has a volume of ${V} cubic centimeters. It is ${L} cm long and ${W} cm wide. How tall is it?`, H, [L * W, H + 1, H + 2, V - L * W], `Length × width × height = volume, so ${L} × ${W} × ? = ${V}. ${L} × ${W} = ${L * W}, and ${V} ÷ ${L * W} = ${H} cm.`, x => x + ' cm');
+    },
+    () => { // perimeter, area or volume
+      const [task, ans] = pick([['how much soil fills a planter box', 'Volume'], ['how many cubes fit in a shoebox', 'Volume'], ['how much water fills a swimming pool', 'Volume'], ['how much ribbon goes around the edge of a picture frame', 'Perimeter'],
+        ['how much fence goes around a yard', 'Perimeter'], ['how much carpet covers a bedroom floor', 'Area'], ['how much paint covers a wall', 'Area']]);
+      return mtq(`Which measurement do you need to find ${task}?`, ans, ['Perimeter', 'Area', 'Volume', 'Angle'].filter(x => x !== ans),
+        { Perimeter: 'Perimeter is the distance around the outside.', Area: 'Area is how much flat space a surface covers, in square units.', Volume: 'Volume is how much space is inside a 3-D shape, in cubic units.' }[ans]);
+    },
+    () => { // compare two boxes
+      let A, B, va, vb; do { A = [R(3, 9), R(3, 9), R(3, 9)]; B = [R(3, 9), R(3, 9), R(3, 9)]; va = A[0] * A[1] * A[2]; vb = B[0] * B[1] * B[2]; } while (A.every(x => x < 7) || B.every(x => x < 7) || va <= vb);
+      const sum = x => x[0] + x[1] + x[2];
+      return mtn(`Box A is ${A.join(' × ')} cm. Box B is ${B.join(' × ')} cm. How much more volume does Box A have?`, va - vb, [va + vb, va, vb, Math.abs(sum(A) - sum(B))],
+        `Box A: ${A.join(' × ')} = ${va} cubic cm. Box B: ${B.join(' × ')} = ${vb} cubic cm. ${va} − ${vb} = ${va - vb} cubic cm more.`, x => `${nf(x)} cubic cm`);
+    },
+    () => { // a cube
+      const s = R(2, 9);
+      return mtn(`A cube has edges that are ${s} inches long. What is its volume?`, s ** 3, [3 * s, s * s, 4 * s * s, s ** 3 + s], `Every edge of a cube is the same length, so V = ${s} × ${s} × ${s} = ${s ** 3} cubic inches.`, x => `${nf(x)} cubic inches`);
+    }
+  ]
+};
+
+// ---- keeping tests apart from practice ----
+const mtNums = t => (String(t).match(/\d[\d,]*(?:\.\d+)?|\.\d+/g) || []).map(s => Number(s.replace(/,/g, ''))).sort((a, b) => a - b).join(' ');
+const mtText = t => String(t).toLowerCase().replace(/\s+/g, ' ').trim();
+// The main number in an answer (2 3/4 → 2.75, 5/8 → 0.625, $6.05 → 6.05, 12 R3 → 12), or '*' when the answer isn't a number
+function mtVal(a) {
+  const s = String(a).replace(/^About /, '').replace(/[$,°]/g, '').trim(); let m;
+  if (!/^(\d+ \d+\/\d+|\d+\/\d+|\d*\.?\d+)( R\d+)?( [a-z][a-z ]*)?$/i.test(s)) return '*';   // expressions, pairs, lists and words aren't numbers
+  if ((m = s.match(/^(\d+) (\d+)\/(\d+)(?!\d)/))) return String(clean(+m[1] + m[2] / m[3]));
+  if ((m = s.match(/^(\d+)\/(\d+)(?!\d)/))) return String(clean(m[1] / m[2]));
+  if ((m = s.match(/^(\d*\.?\d+)/))) return String(clean(+m[1]));
+  return '*';
+}
+let MT_GUARD = null;
+function mtGuard(id) {
+  if (!MT_GUARD) {   // every math lesson and practice question, by its words, and by its numbers together with its answer
+    MT_GUARD = { text: new Set(), qa: new Set(), lesson: {} };
+    subj('math').units.forEach((u, ui) => u.lessons.forEach((l, li) => lessonItems('math', ui, li).forEach(c => {
+      MT_GUARD.text.add(mtText(c[0]));
+      const n = mtNums(c[0]); if (n) MT_GUARD.qa.add(n + '|' + mtVal(c[1][c[2]]));
+    })));
+  }
+  if (!MT_GUARD.lesson[id]) {   // this lesson's practice problems (with a large sample from the Practice Lab and warm-ups): their numbers and answers
+    const own = new Map(), m = id.match(/u(\d+)-l(\d+)/), ex = EXTRA[id] || {};
+    const add = (q, a) => { const n = mtNums(q); if (!n) return; if (!own.has(n)) own.set(n, new Set()); own.get(n).add(mtVal(a)); };
+    lessonItems('math', +m[1], +m[2]).forEach(c => add(c[0], c[1][c[2]]));
+    ((ex.act || {}).pairs || []).forEach(p => add(p[0], p[1]));
+    if (MATHGEN[id]) for (let k = 0; k < 1500; k++) { const p = MATHGEN[id](); add(p.q + (p.see ? ' ' + JSON.stringify(p.see) : ''), answerText(p)); MT_GUARD.text.add(mtText(p.q)); }
+    MT_GUARD.lesson[id] = own;
+  }
+  return MT_GUARD;
+}
+// True when a test problem is unlike practice: not the same words, and not the same numbers with the same answer as a
+// practice problem (the same sum told as a story counts as the same problem). mine = the problems this learner was shown.
+function mtFresh(id, x, mine) {
+  const G = mtGuard(id), n = mtNums(x[0]), v = mtVal(x[1][x[2]]);
+  if (G.text.has(mtText(x[0]))) return false;
+  if (!n) return true;
+  const same = G.lesson[id].get(n);
+  return !(same && same.has(v)) && !G.qa.has(n + '|' + v) && !(mine && mine.has(n + '|' + v));
+}
+// Remembers the Practice Lab and warm-up problems shown to this learner (the latest 600), so a test never repeats one
+function notePractice(probs) {
+  try {
+    const p = prog(), list = p.pseen || (p.pseen = []);
+    probs.forEach(x => { const n = mtNums(x.q + (x.see ? ' ' + JSON.stringify(x.see) : '')); if (n) list.push(n + '|' + mtVal(answerText(x))); });
+    if (list.length > 600) list.splice(0, list.length - 600);
+    saveStore();
+  } catch (e) {}
+}
+// The questions for one math test: an even share from every lesson in the units, each share from different makers.
+// testKey names the test, so nothing from the learner's last try at it comes back on the next one.
+function mathTestPool(units, total, testKey) {
+  const p = prog(), mine = new Set(p.pseen || []), tl = p.tlast || (p.tlast = {}), last = new Set(tl[testKey] || []);
+  const key = x => mtText(x[0]) + '|' + mtText(x[1][x[2]]);
+  const ids = units.flatMap(ui => subj('math').units[ui].lessons.map((l, li) => ({ id: lessonId('math', ui, li), ui })));
+  const per = ids.map(() => Math.floor(total / ids.length));
+  shuffle(ids.map((_, i) => i)).slice(0, total - per.reduce((a, b) => a + b, 0)).forEach(i => per[i]++);
+  const out = [], used = new Set();
+  ids.forEach(({ id, ui }, i) => {
+    const makers = MATHTEST[id] || [], order = shuffle(makers.map((_, k) => k));
+    for (let got = 0, k = 0; got < per[i] && k < order.length * 4; k++) {
+      const make = makers[order[k % order.length]];
+      for (let t = 0; t < 60; t++) {
+        const x = make();
+        if (!x || used.has(mtText(x[0])) || last.has(key(x)) || !mtFresh(id, x, mine)) continue;
+        used.add(mtText(x[0])); out.push({ q: x, unit: ui }); got++;
+        break;
+      }
+    }
+  });
+  if (testKey) { tl[testKey] = out.map(o => key(o.q)); saveStore(); }
+  return shuffle(out);
+}
 
 // ===================== START =====================
 $('learner-name').addEventListener('keydown', e => { if (e.key === 'Enter') saveLearner(); });
